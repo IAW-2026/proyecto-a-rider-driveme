@@ -1,0 +1,28 @@
+import { NextRequest, NextResponse } from "next/server"
+import { prisma } from "@/lib/prisma"
+
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ id_viaje: string }> }
+) {
+  const { id_viaje } = await params
+  const body = await req.json()
+  const { estado_actual } = body
+
+  if (!["EN_CURSO", "FINALIZADO"].includes(estado_actual)) {
+    return NextResponse.json({ error: "Estado inválido" }, { status: 400 })
+  }
+
+  const viaje = await prisma.viaje.findUnique({ where: { id: id_viaje } })
+
+  if (!viaje) {
+    return NextResponse.json({ error: "Viaje no encontrado" }, { status: 404 })
+  }
+
+  await prisma.viaje.update({
+    where: { id: id_viaje },
+    data: { estadoActual: estado_actual },
+  })
+
+  return NextResponse.json({ ok: true })
+}
