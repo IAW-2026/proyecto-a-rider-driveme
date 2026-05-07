@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Pasajero {
+  id             String               @id @default(uuid())
+  clerkId        String               @unique
+  nombre         String
+  email          String               @unique
+  telefono       String?
+  ratingPromedio Decimal              @default(0) @db.Decimal(3,2)
+  solicitudes    SolicitudDeViaje[]
+  direcciones    DireccionFrecuente[]
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+}
+
+model SolicitudDeViaje {
+  id                   String          @id @default(uuid())
+  pasajeroId           String
+  origenLat            Float
+  origenLng            Float
+  destinoLat           Float?
+  destinoLng           Float?
+  precioEstimadoCents  Int?
+  metodoPago           MetodoPago
+  estado               EstadoSolicitud @default(BUSCANDO_CONDUCTOR)
+  creadaEn             DateTime        @default(now())
+  pasajero             Pasajero        @relation(fields: [pasajeroId], references: [id])
+  viaje                Viaje?
+
+  @@index([pasajeroId])
+}
+
+model Viaje {
+  id           String           @id @default(uuid())
+  solicitudId  String           @unique
+  idConductor  String?
+  estadoActual EstadoViaje
+  solicitud    SolicitudDeViaje @relation(fields: [solicitudId], references: [id])
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+}
+
+model DireccionFrecuente {
+  id         String   @id @default(uuid())
+  pasajeroId String
+  nombre     String
+  latitud    Float
+  longitud   Float
+  pasajero   Pasajero @relation(fields: [pasajeroId], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@index([pasajeroId])
+}
+
+enum EstadoSolicitud {
+  BUSCANDO_CONDUCTOR
+  ACEPTADA
+  CANCELADA_POR_PASAJERO
+  EXPIRADA_SIN_ACEPTACION
+}
+
+enum EstadoViaje {
+  ACEPTADO
+  EN_CURSO
+  FINALIZADO
+  CANCELADO_POR_CONDUCTOR
+}
+
+enum MetodoPago {
+  EFECTIVO
+  TARJETA
+}
