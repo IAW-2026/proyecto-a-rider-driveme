@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { currentUser } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/prisma"
 import { requireRole } from "@/lib/auth"
 
@@ -17,7 +18,7 @@ export async function GET(req: NextRequest) {
   })
 
   return NextResponse.json(
-    solicitudes.map((s) => ({
+    solicitudes.map((s: typeof solicitudes[number]) => ({
       id_solicitud: s.id,
       id_pasajero: s.pasajeroId,
       pasajero: s.pasajero,
@@ -36,12 +37,22 @@ export async function POST(req: NextRequest) {
   const auth = await requireRole("rider")
   if ("error" in auth) return auth.error
 
-  const pasajero = await prisma.pasajero.findUnique({
+  let pasajero = await prisma.pasajero.findUnique({
     where: { clerkId: auth.userId },
   })
 
+  // Primer uso: crear el registro del pasajero con los datos de Clerk
   if (!pasajero) {
-    return NextResponse.json({ error: "Pasajero no encontrado" }, { status: 404 })
+    const clerkUser = await currentUser()
+    if (!clerkUser) return NextResponse.json({ error: "No autenticado" }, { status: 401 })
+
+    pasajero = await prisma.pasajero.create({
+      data: {
+        clerkId: clerkUser.id,
+        nombre: `${clerkUser.firstName ?? ""} ${clerkUser.lastName ?? ""}`.trim(),
+        email: clerkUser.emailAddresses[0]?.emailAddress ?? "",
+      },
+    })
   }
 
   const body = await req.json()
