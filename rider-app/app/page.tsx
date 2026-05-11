@@ -1,13 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { SignIn, UserButton, useUser } from '@clerk/nextjs';
 import clerkAppearance from '../lib/clerkAppearance';
 
 export default function Home() {
   const [started, setStarted] = useState(false);
   const { isLoaded, isSignedIn } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isLoaded && isSignedIn) {
+      router.push('/inicio');
+    }
+  }, [isLoaded, isSignedIn, router]);
 
   if (!isLoaded) return null;
 

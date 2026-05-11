@@ -33,25 +33,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Clerk element overrides — belt-and-suspenders fallback */
-.cl-headerSubtitle,
-.cl-dividerText,
-.cl-footerActionText,
-.cl-identityPreviewText,
-.cl-formFieldHintText { color: #a1a1aa !important; }
-
-.cl-headerTitle,
-.cl-formFieldLabel { color: #ffffff !important; }
-
-.cl-socialButtonsBlockButtonText,
-.cl-socialButtonsProviderIcon ~ span { color: #ffffff !important; }
-
-.cl-formFieldInput {
-  background: #18181b !important;
-  border-color: #3f3f46 !important;
-  color: #ffffff !important;
-}
-
 @keyframes neonDrift1 {
   0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.55; }
   33%       { transform: translate(5rem, -6rem) scale(1.25); opacity: 0.8; }
