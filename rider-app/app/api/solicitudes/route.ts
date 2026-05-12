@@ -2,6 +2,16 @@ import { NextRequest, NextResponse } from "next/server"
 import { currentUser } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/prisma"
 import { requireRole, requireM2MToken } from "@/lib/auth"
+import { z } from "zod"
+
+const solicitudSchema = z.object({
+  origen_lat: z.number(),
+  origen_lng: z.number(),
+  destino_lat: z.number().nullable().optional(),
+  destino_lng: z.number().nullable().optional(),
+  metodo_pago: z.enum(["EFECTIVO", "TARJETA"]),
+  precio_estimado: z.number().int().positive().nullable().optional(),
+})
 
 // Driver App consulta solicitudes disponibles
 export async function GET(req: NextRequest) {
@@ -56,11 +66,12 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json()
-  const { origen_lat, origen_lng, destino_lat, destino_lng, metodo_pago, precio_estimado } = body
-
-  if (!origen_lat || !origen_lng || !metodo_pago) {
-    return NextResponse.json({ error: "Faltan campos requeridos" }, { status: 400 })
+  const parsed = solicitudSchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 })
   }
+
+  const { origen_lat, origen_lng, destino_lat, destino_lng, metodo_pago, precio_estimado } = parsed.data
 
   const solicitud = await prisma.solicitudDeViaje.create({
     data: {
