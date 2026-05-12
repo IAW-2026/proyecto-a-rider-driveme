@@ -1,11 +1,13 @@
-import { auth } from "@clerk/nextjs/server"
+import { auth, currentUser } from "@clerk/nextjs/server"
 import { NextResponse } from "next/server"
 
 type Role = "rider" | "admin"
 
 export async function getAuthenticatedUser() {
-  const { userId, sessionClaims } = await auth()
-  const role = (sessionClaims?.metadata as { role?: Role } | undefined)?.role
+  const { userId } = await auth()
+  if (!userId) return { userId: null as null, role: undefined }
+  const user = await currentUser()
+  const role = user?.publicMetadata?.role as Role | undefined
   return { userId, role }
 }
 
