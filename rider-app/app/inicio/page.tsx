@@ -53,7 +53,7 @@ export default function InicioPage() {
             >
               Viaje activo
             </Link>
-            <UserButton afterSignOutUrl="/" />
+            <UserButton />
           </div>
         </div>
       </header>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { SignIn, UserButton, useUser } from '@clerk/nextjs';
@@ -53,9 +54,11 @@ export default function Home() {
               started ? 'lg:-translate-x-10' : ''
             }`}
           >
-            <img
+            <Image
               src="/vader.png"
               alt="Vader"
+              width={960}
+              height={960}
               className="h-auto w-[clamp(22rem,min(52vw,calc(100vh-7rem)),60rem)] object-contain drop-shadow-[0_0_55px_rgba(140,0,0,0.8)] drop-shadow-[0_8px_40px_rgba(0,0,0,0.9)]"
             />
           </div>

@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server"
 import { NextResponse } from "next/server"
 
-type Role = "pasajero" | "admin"
+type Role = "rider" | "admin"
 
 export async function getAuthenticatedUser() {
   const { userId, sessionClaims } = await auth()

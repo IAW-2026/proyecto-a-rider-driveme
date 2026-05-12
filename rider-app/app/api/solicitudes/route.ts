@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
 import { currentUser } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/prisma"
-import { requireRole } from "@/lib/auth"
+import { requireRole, requireM2MToken } from "@/lib/auth"
 
 // Driver App consulta solicitudes disponibles
 export async function GET(req: NextRequest) {
-  const auth = await requireRole("driver")
-  if ("error" in auth) return auth.error
+  const m2mError = requireM2MToken(req)
+  if (m2mError) return m2mError
 
   const { searchParams } = new URL(req.url)
   const estado = searchParams.get("estado") ?? "BUSCANDO_CONDUCTOR"

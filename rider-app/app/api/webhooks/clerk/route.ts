@@ -37,8 +37,9 @@ export async function POST(req: Request) {
   if (evt.type === "user.created") {
     const { id } = evt.data
     const client = await clerkClient()
+    // Tu app solo necesita riders; el webhook deja ese rol listo al crear la cuenta.
     await client.users.updateUserMetadata(id, {
-      publicMetadata: { role: "pasajero" },
+      publicMetadata: { role: "rider" },
     })
   }
 

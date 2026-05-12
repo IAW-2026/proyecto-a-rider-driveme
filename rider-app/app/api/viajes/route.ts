@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { requireRole } from "@/lib/auth"
+import { requireM2MToken } from "@/lib/auth"
 
 export async function POST(req: NextRequest) {
-  const auth = await requireRole("driver")
-  if ("error" in auth) return auth.error
+  const m2mError = requireM2MToken(req)
+  if (m2mError) return m2mError
   const body = await req.json()
   const { id_solicitud, id_conductor } = body
 

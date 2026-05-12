@@ -7,7 +7,7 @@ async function main() {
   console.log('Starting seed...')
 
   // Create sample passengers (skip duplicates)
-  await (prisma as any).pasajero.createMany({
+  await prisma.pasajero.createMany({
     data: [
       {
         clerkId: 'seed_clerk_1',
@@ -27,19 +27,19 @@ async function main() {
     skipDuplicates: true,
   })
 
-  const pasajero = await (prisma as any).pasajero.findUnique({
+  const pasajero = await prisma.pasajero.findUnique({
     where: { clerkId: 'seed_clerk_1' },
   })
 
   if (pasajero) {
     // Create a sample solicitud if none exists recently
-    const existing = await (prisma as any).solicitudDeViaje.findFirst({
+    const existing = await prisma.solicitudDeViaje.findFirst({
       where: { pasajeroId: pasajero.id },
       orderBy: { creadaEn: 'desc' },
     })
 
     if (!existing) {
-      const solicitud = await (prisma as any).solicitudDeViaje.create({
+      const solicitud = await prisma.solicitudDeViaje.create({
         data: {
           pasajeroId: pasajero.id,
           origenLat: -34.6037,
@@ -52,7 +52,7 @@ async function main() {
       })
 
       // Optionally create a viaje linked to the solicitud (simulate accepted)
-      await (prisma as any).viaje.create({
+      await prisma.viaje.create({
         data: {
           solicitudId: solicitud.id,
           idConductor: 'driver_seed_1',
@@ -64,7 +64,7 @@ async function main() {
 
   // Create a frequent address for passenger 1
   if (pasajero) {
-    await (prisma as any).direccionFrecuente.createMany({
+    await prisma.direccionFrecuente.createMany({
       data: [
         {
           pasajeroId: pasajero.id,
