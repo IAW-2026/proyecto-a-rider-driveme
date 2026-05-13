@@ -6,7 +6,7 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id_solicitud: string }> }
 ) {
-  const auth = await requireRole("rider")
+  const auth = await requireRole(["rider", "admin"])
   if ("error" in auth) return auth.error
 
   const { id_solicitud } = await params

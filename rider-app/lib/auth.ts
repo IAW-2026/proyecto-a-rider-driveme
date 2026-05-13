@@ -11,10 +11,11 @@ export async function getAuthenticatedUser() {
   return { userId, role }
 }
 
-export async function requireRole(requiredRole: Role) {
+export async function requireRole(requiredRole: Role | Role[]) {
   const { userId, role } = await getAuthenticatedUser()
   if (!userId) return { error: NextResponse.json({ error: "No autenticado" }, { status: 401 }) }
-  if (role !== requiredRole) return { error: NextResponse.json({ error: "Sin permisos" }, { status: 403 }) }
+  const allowed = Array.isArray(requiredRole) ? requiredRole : [requiredRole]
+  if (!role || !allowed.includes(role)) return { error: NextResponse.json({ error: "Sin permisos" }, { status: 403 }) }
   return { userId, role }
 }
 

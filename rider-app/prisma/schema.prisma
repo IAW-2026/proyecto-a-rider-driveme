@@ -24,8 +24,10 @@ model SolicitudDeViaje {
   pasajeroId           String
   origenLat            Float
   origenLng            Float
+  origenDireccion      String?
   destinoLat           Float?
   destinoLng           Float?
+  destinoDireccion     String?
   precioEstimadoCents  Int?
   metodoPago           MetodoPago
   estado               EstadoSolicitud @default(BUSCANDO_CONDUCTOR)

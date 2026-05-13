@@ -53,6 +53,20 @@ export default function InicioPage() {
             >
               Viaje activo
             </Link>
+            <Link
+              href="/historial"
+              className="hidden rounded-full border border-zinc-700 bg-white/5 px-4 py-2 text-sm text-zinc-200 transition hover:border-zinc-500 hover:bg-white/10 sm:inline-flex"
+            >
+              Mis viajes
+            </Link>
+            {(user?.publicMetadata?.role as string) === "admin" && (
+              <Link
+                href="/admin/solicitudes"
+                className="hidden rounded-full border border-red-700/60 bg-red-500/10 px-4 py-2 text-sm text-red-300 transition hover:border-red-500 hover:bg-red-500/20 sm:inline-flex"
+              >
+                Admin
+              </Link>
+            )}
             <UserButton />
           </div>
         </div>

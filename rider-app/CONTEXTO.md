@@ -158,69 +158,184 @@ enum EstadoViaje {
 
 ## APIs que esta app expone (para que otras apps consuman)
 
-### GET /api/solicitudes?estado=BUSCANDO_CONDUCTOR
-- **Quién llama:** Driver App (para ver solicitudes disponibles)
-- **Auth:** Token válido con `role=driver`
-- **Response:**
-```json
-{
-  "solicitudes": [
-    {
-      "id_solicitud": "uuid",
-      "origen": "Av. Corrientes 1234",
-      "destino": "Palermo Soho",
-      "precio_estimado": 2500,
-      "metodo_pago": "TARJETA"
-    }
-  ]
-}
-```
-
 ### POST /api/viajes
-- **Quién llama:** Driver App (cuando un conductor acepta una solicitud)
+- **Quién llama:** Driver App (cuando conductor acepta solicitud)
 - **Auth:** Token válido con `role=driver`
 - **Request:**
 ```json
 {
-  "id_solicitud": "uuid",
-  "id_conductor": "uuid"
+  "id_solicitud": "sol_abc123",
+  "id_conductor": "cond_2pX...",
+  "id_vehiculo": "veh_abc123",
+  "latitud_actual": -38.7183,
+  "longitud_actual": -62.2664
 }
 ```
-- **Response:** `201` con el viaje creado
-- **Lógica:** Cambia el estado de la solicitud a `ACEPTADA` y crea el registro `Viaje`
+- **Response:**
+```json
+{
+  "id_viaje": "uuid-12345",
+  "estado_actual": "ACEPTADO",
+  "pasajero": { "id_pasajero": "pas_9qL...", "nombre": "Juan Perez" },
+  "origen": { "direccion": "Av. Alem 123", "latitud": -38.7191, "longitud": -62.2652 },
+  "destino": { "direccion": "Zapiola 456", "latitud": -38.7021, "longitud": -62.2801 }
+}
+```
+- **Lógica:** Cambia la solicitud a `ACEPTADA` y crea el registro `Viaje` en Rider (solo lectura)
 
 ### GET /api/pasajeros/{id_pasajero}/viajes/activos
-- **Quién llama:** Rider App frontend (para mostrar el viaje en curso al pasajero)
+- **Quién llama:** Rider frontend + Driver App
 - **Auth:** Token válido con `role=rider`, `sub` debe coincidir con `id_pasajero`
-- **Response:** El viaje activo del pasajero (estado `ACEPTADO` o `EN_CURSO`)
+- **Response:**
+```json
+{
+  "id_pasajero": "pas_9qL...",
+  "viaje_activo": {
+    "id_viaje": "uuid-12345",
+    "id_solicitud": "sol_abc123",
+    "estado_actual": "EN_CURSO",
+    "id_conductor": "cond_2pX..."
+  }
+}
+```
 
-### PATCH /api/solicitudes/{id_solicitud}
-- **Quién llama:** Rider App frontend (pasajero cancela mientras busca conductor)
-- **Auth:** Token válido con `role=rider`, solicitud propia
-- **Regla:** Solo funciona si el estado es `BUSCANDO_CONDUCTOR`
-- **Request:** `{ "estado": "CANCELADA_POR_PASAJERO" }`
-
-### POST /api/pasajero/reputacion
-- **Quién llama:** Feedback App (actualiza el rating del pasajero tras una calificación)
-- **Auth:** Token de servicio M2M
-- **Request:** `{ "id_pasajero": "uuid", "nuevo_rating": 4.3 }`
+### POST /api/notificaciones/viajes/{id_viaje}/estado
+- **Quién llama:** Driver App (notifica cambio de estado al pasajero)
+- **Request:**
+```json
+{
+  "id_viaje": "uuid-12345",
+  "id_pasajero": "pas_9qL...",
+  "estado_actual": "EN_CURSO",
+  "fuente": "DRIVER_APP"
+}
+```
+- **Response:** `200 OK`
 
 ### POST /api/viajes/{id_viaje}/pago-confirmado
-- **Quién llama:** Payments App (confirma que el pago fue procesado)
-- **Auth:** Token de servicio M2M
-- **Lógica:** Actualiza el estado del viaje a `FINALIZADO` en la vista de Rider
+- **Quién llama:** Payments App
+- **Request:**
+```json
+{
+  "id_transaccion": "tx_98765",
+  "estado": "CAPTURED",
+  "monto": 2550.00
+}
+```
+- **Response:** `200 OK`
+
+### PATCH /api/solicitudes/{id_solicitud}
+- **Quién llama:** Rider frontend (pasajero cancela)
+- **Precondición:** Solo si estado es `BUSCANDO_CONDUCTOR`, sino retorna `409 Conflict`
+- **Request:**
+```json
+{
+  "id_pasajero": "pas_9qL...",
+  "estado": "CANCELADA_POR_PASAJERO",
+  "motivo": "DESISTIO"
+}
+```
+- **Response:** `{ "id_solicitud": "sol_abc123", "estado": "CANCELADA_POR_PASAJERO" }`
+
+### POST /api/pasajero/reputacion
+- **Quién llama:** Feedback App (actualiza rating del pasajero)
+- **Request:** `{ "id_pasajero": "pas_9qL...", "puntaje": 4.8 }`
+- **Response:** `200 OK`
 
 ---
 
 ## APIs que esta app consume (de otras apps)
 
-| Acción | App destino | Endpoint | En Etapa 2 |
-|---|---|---|---|
-| Ver telemetría del viaje (ubicación del conductor) | Driver App | GET /api/viajes/{id}/telemetria | **MOCKEAR** |
-| Enviar calificación del conductor | Feedback App | POST /api/resenas | **MOCKEAR** |
-| Reportar una calificación | Feedback App | POST /api/reportes | **MOCKEAR** |
+### De Driver App
 
-**Cómo mockear en Etapa 2:** Crear un archivo `src/lib/mocks.ts` con funciones que devuelvan datos hardcodeados con la misma forma que devolvería la API real.
+#### GET /api/viajes/{id_viaje}/telemetria — **MOCKEAR en Etapa 2**
+```json
+{
+  "id_viaje": "uuid-12345",
+  "coordenadas": { "lat": -38.7190, "lng": -62.2670 },
+  "rumbo": 180,
+  "velocidad_kmh": 45,
+  "ultima_actualizacion": "2026-04-23T14:40:00Z"
+}
+```
+Usar para mover el ícono del conductor en el mapa cada 5-10 segundos mientras el viaje está `EN_CURSO`.
+
+### De Feedback App
+
+#### POST /api/resenas — **MOCKEAR en Etapa 2**
+El pasajero califica al conductor después de un viaje `FINALIZADO`.
+```json
+{
+  "id_viaje": "uuid-12345",
+  "id_emisor": "pas_9qL...",
+  "id_receptor": "cond_2pX...",
+  "puntaje": 4,
+  "comentario": "Buen viaje, conductor profesional."
+}
+```
+Response: `{ "id_calificacion": "cal_abc456", "estado": "REGISTRADA", "timestamp": "..." }`
+
+#### GET /api/usuarios/{id_usuario}/calificaciones — **MOCKEAR en Etapa 2**
+Para mostrar el historial de calificaciones recibidas por el pasajero.
+```json
+{
+  "id_usuario": "pas_9qL...",
+  "calificacion_promedio": 4.7,
+  "total_calificaciones": 42,
+  "detalles": [
+    {
+      "id_calificacion": "cal_xyz789",
+      "id_viaje": "uuid-12345",
+      "puntaje": 5,
+      "comentario": "Pasajero puntual.",
+      "id_emisor": "cond_2pX...",
+      "timestamp": "2026-04-22T20:15:30Z"
+    }
+  ]
+}
+```
+
+#### POST /api/reportes — **MOCKEAR en Etapa 2**
+Para reportar una calificación inapropiada.
+```json
+{
+  "id_reportante": "pas_9qL...",
+  "id_calificacion": "cal_xyz789",
+  "motivo": "COMENTARIO_INAPROPIADO",
+  "descripcion": "Lenguaje ofensivo"
+}
+```
+Response: `{ "id_reporte": "rep_m1n2o3...", "estado": "PENDIENTE", "timestamp": "..." }`
+
+### De Payments App
+
+#### POST /api/pagos/methods — **MOCKEAR en Etapa 2**
+Para agregar método de pago del pasajero.
+```json
+{
+  "id_usuario": "pas_9qL...",
+  "cvv": "tok_xxx",
+  "marca_tarjeta": "VISA",
+  "numero_tarjeta": "4242",
+  "mes_vencimiento": 12,
+  "año_vencimiento": 2027,
+  "direccion_facturacion": "Av Santa Fe..."
+}
+```
+
+#### POST /api/pagos/{id_transaccion}/refunds — **MOCKEAR en Etapa 2**
+Para solicitar reembolso.
+```json
+{
+  "monto": 100.00,
+  "razon": "Usuario pidió devolución",
+  "id_pasajero": "pas_9qL..."
+}
+```
+
+---
+
+**Cómo mockear en Etapa 2:** Crear `src/lib/mocks.ts` con funciones que devuelvan datos hardcodeados con la misma forma que devolvería la API real. En Etapa 3 se reemplazan por llamadas reales.
 
 ---
 
@@ -294,8 +409,8 @@ src/
 |---|---|
 | Páginas y componentes reutilizables | — |
 | API propia con endpoints REST | — |
-| Base de datos PostgreSQL propia |  Neon conectado |
-| Autenticación Clerk (rider + admin) |  Webhook implementado, roles configurados |
+| Base de datos PostgreSQL propia | ✅ Neon conectado |
+| Autenticación Clerk (rider + admin) | ✅ Webhook implementado, roles configurados |
 | Panel de administración | — |
 | Búsqueda y paginación con params en URL | — |
 | Manejo de errores y páginas 404 | — |
@@ -340,7 +455,7 @@ NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/
 1. `prisma/schema.prisma` + migración
 2. `src/lib/prisma.ts` singleton
 3. `src/proxy.ts` middleware Clerk (con `/api/webhooks(.*)` como ruta pública)
-4.  Webhook `POST /api/webhooks/clerk` — asigna `role: "rider"` + crea Pasajero en BD
+4. ✅ Webhook `POST /api/webhooks/clerk` — asigna `role: "rider"` + crea Pasajero en BD
 5. `POST /api/solicitudes` — crear solicitud de viaje
 6. `GET /api/solicitudes?estado=BUSCANDO_CONDUCTOR` — para Driver App
 7. `POST /api/viajes` — Driver App acepta solicitud

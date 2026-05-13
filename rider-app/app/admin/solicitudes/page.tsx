@@ -3,26 +3,23 @@ import { Suspense } from "react"
 import { Prisma } from "@prisma/client"
 import AdminFilters from "@/app/components/AdminFilters"
 import AdminPagination from "@/app/components/AdminPagination"
+import AdminSimularAccion from "@/app/components/AdminSimularAccion"
 
 const LIMIT = 10
 
-const ESTADO_BADGE: Record<string, { label: string; className: string }> = {
-  BUSCANDO_CONDUCTOR: {
-    label: "Buscando conductor",
-    className: "border-yellow-500/30 bg-yellow-500/10 text-yellow-200",
-  },
-  ACEPTADA: {
-    label: "Aceptada",
-    className: "border-cyan-400/30 bg-cyan-500/10 text-cyan-200",
-  },
-  CANCELADA_POR_PASAJERO: {
-    label: "Cancelada",
-    className: "border-red-500/30 bg-red-500/10 text-red-300",
-  },
-  EXPIRADA_SIN_ACEPTACION: {
-    label: "Expirada",
-    className: "border-zinc-600/40 bg-zinc-800/40 text-zinc-400",
-  },
+function getBadge(estado: string, viajeEstado: string | null | undefined) {
+  if (estado === "BUSCANDO_CONDUCTOR")
+    return { label: "Buscando conductor", className: "border-yellow-500/30 bg-yellow-500/10 text-yellow-200" }
+  if (estado === "ACEPTADA") {
+    if (viajeEstado === "FINALIZADO")
+      return { label: "Finalizado", className: "border-green-500/30 bg-green-500/10 text-green-300" }
+    if (viajeEstado === "CANCELADO_POR_CONDUCTOR")
+      return { label: "Cancelado por conductor", className: "border-orange-500/30 bg-orange-500/10 text-orange-300" }
+    return { label: "En curso", className: "border-blue-500/30 bg-blue-500/10 text-blue-300" }
+  }
+  if (estado === "CANCELADA_POR_PASAJERO")
+    return { label: "Cancelada", className: "border-red-500/30 bg-red-500/10 text-red-300" }
+  return { label: "Expirada", className: "border-zinc-600/40 bg-zinc-800/40 text-zinc-400" }
 }
 
 export default async function AdminSolicitudesPage({
@@ -57,6 +54,7 @@ export default async function AdminSolicitudesPage({
       orderBy: { creadaEn: "desc" },
       include: {
         pasajero: { select: { nombre: true, email: true } },
+        viaje: { select: { estadoActual: true } },
       },
     }),
     prisma.solicitudDeViaje.count({ where }),
@@ -76,7 +74,7 @@ export default async function AdminSolicitudesPage({
           {total} solicitud{total !== 1 ? "es" : ""}
           {q && <> que coinciden con <span className="text-zinc-200">&ldquo;{q}&rdquo;</span></>}
           {estado && (
-            <> · estado: <span className="text-zinc-200">{ESTADO_BADGE[estado]?.label ?? estado}</span></>
+            <> · estado: <span className="text-zinc-200">{getBadge(estado, null).label}</span></>
           )}
         </p>
       </div>
@@ -105,11 +103,12 @@ export default async function AdminSolicitudesPage({
                   <th className="px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500 text-right">Precio</th>
                   <th className="px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Pago</th>
                   <th className="px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Fecha</th>
+                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Acción</th>
                 </tr>
               </thead>
               <tbody>
                 {solicitudes.map((s, i) => {
-                  const badge = ESTADO_BADGE[s.estado] ?? { label: s.estado, className: "border-zinc-600 text-zinc-400" }
+                  const badge = getBadge(s.estado, s.viaje?.estadoActual)
                   return (
                     <tr
                       key={s.id}
@@ -143,6 +142,13 @@ export default async function AdminSolicitudesPage({
                       <td className="px-6 py-4 text-zinc-400">{s.metodoPago}</td>
                       <td className="px-6 py-4 text-zinc-500">
                         {new Date(s.creadaEn).toLocaleDateString("es-AR")}
+                      </td>
+                      <td className="px-6 py-4">
+                        <AdminSimularAccion
+                          solicitudId={s.id}
+                          estado={s.estado}
+                          viajeEstado={s.viaje?.estadoActual ?? null}
+                        />
                       </td>
                     </tr>
                   )

@@ -1,12 +1,14 @@
-import { auth } from "@clerk/nextjs/server"
+import { currentUser } from "@clerk/nextjs/server"
 import { redirect } from "next/navigation"
 import Link from "next/link"
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { sessionClaims } = await auth()
-  const role = (sessionClaims?.metadata as { role?: string } | undefined)?.role
+  const user = await currentUser()
+  const role = user?.publicMetadata?.role as string | undefined
 
-  if (role !== "admin") redirect("/inicio")
+  // Allow local development override: set ALLOW_DEV_ADMIN=1 in .env.local
+  const allowDev = process.env.ALLOW_DEV_ADMIN === "1"
+  if (role !== "admin" && !allowDev) redirect("/inicio")
 
   return (
     <div className="min-h-screen bg-black text-white">

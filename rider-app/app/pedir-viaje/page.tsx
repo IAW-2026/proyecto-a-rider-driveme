@@ -4,31 +4,52 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { geocodeAddress } from "@/lib/geocoding"
+import AutocompleteAddress from "@/components/AutocompleteAddress"
 
 type MetodoPago = "EFECTIVO" | "TARJETA"
 
 export default function PedirViajePage() {
   const router = useRouter()
-  const [origen, setOrigen] = useState("")
-  const [destino, setDestino] = useState("")
+  const [origenAddress, setOrigenAddress] = useState("")
+  const [origenCoords, setOrigenCoords] = useState<{ lat: number; lng: number } | null>(null)
+  const [destinoAddress, setDestinoAddress] = useState("")
+  const [destinoCoords, setDestinoCoords] = useState<{ lat: number; lng: number } | null>(null)
   const [metodoPago, setMetodoPago] = useState<MetodoPago>("EFECTIVO")
-  const [precioEstimado, setPrecioEstimado] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [origenVacio, setOrigenVacio] = useState(false)
+  const [destinoVacio, setDestinoVacio] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
+
+    const sinOrigen = !origenAddress.trim()
+    const sinDestino = !destinoAddress.trim()
+    setOrigenVacio(sinOrigen)
+    setDestinoVacio(sinDestino)
+    if (sinOrigen || sinDestino) {
+      setError("Completá el origen y el destino.")
+      return
+    }
     setLoading(true)
 
     try {
-      const coordsOrigen = await geocodeAddress(origen)
+      let coordsOrigen = origenCoords
       if (!coordsOrigen) {
-        setError("No se encontró el origen. Intentá con una dirección más completa.")
-        return
+        const g = await geocodeAddress(origenAddress)
+        if (!g) {
+          setError("No se encontró el origen. Intentá con una dirección más completa.")
+          setLoading(false)
+          return
+        }
+        coordsOrigen = g
       }
 
-      const coordsDestino = destino ? await geocodeAddress(destino) : null
+      let coordsDestino = destinoCoords
+      if (!coordsDestino && destinoAddress) {
+        coordsDestino = await geocodeAddress(destinoAddress)
+      }
 
       const res = await fetch("/api/solicitudes", {
         method: "POST",
@@ -36,16 +57,18 @@ export default function PedirViajePage() {
         body: JSON.stringify({
           origen_lat: coordsOrigen.lat,
           origen_lng: coordsOrigen.lng,
+          origen_direccion: origenAddress,
           destino_lat: coordsDestino?.lat ?? null,
           destino_lng: coordsDestino?.lng ?? null,
+          destino_direccion: destinoAddress || null,
           metodo_pago: metodoPago,
-          precio_estimado: precioEstimado ? Math.round(parseFloat(precioEstimado) * 100) : null,
         }),
       })
 
       if (!res.ok) {
         const data = await res.json()
         setError(data.error ?? "Error al crear la solicitud.")
+        setLoading(false)
         return
       }
 
@@ -67,9 +90,7 @@ export default function PedirViajePage() {
           <div>
             <p className="text-xs uppercase tracking-[0.4em] text-red-400/70">Pedido de viaje</p>
             <h1 className="mt-2 text-3xl font-bold sm:text-4xl">Pedir viaje</h1>
-            <p className="mt-2 max-w-2xl text-sm text-zinc-400">
-              Completá los datos y buscamos un conductor para vos.
-            </p>
+            <p className="mt-2 max-w-2xl text-sm text-zinc-400">Completá los datos y buscamos un conductor para vos.</p>
           </div>
           <Link
             href="/inicio"
@@ -82,37 +103,36 @@ export default function PedirViajePage() {
         <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
           <div className="rounded-3xl border border-zinc-800 bg-gradient-to-b from-zinc-950/90 to-black/70 p-6 shadow-[0_20px_80px_rgba(0,0,0,0.55)] sm:p-8">
             <h2 className="text-xl font-semibold">Tu viaje</h2>
-            <p className="mt-2 text-sm text-zinc-400">
-              Escribí la dirección completa para que podamos ubicarte correctamente.
-            </p>
+            <p className="mt-2 text-sm text-zinc-400">Escribí la dirección completa para que podamos ubicarte correctamente.</p>
 
             <form onSubmit={handleSubmit} className="mt-6 space-y-5">
               <div>
-                <label htmlFor="origen" className="mb-2 block text-sm font-medium text-zinc-200">
-                  Origen <span className="text-red-400">*</span>
-                </label>
-                <input
-                  id="origen"
-                  type="text"
-                  required
-                  value={origen}
-                  onChange={(e) => setOrigen(e.target.value)}
+                <AutocompleteAddress
+                  label="Origen"
                   placeholder="Ej: Av. Corrientes 1234, Buenos Aires"
-                  className="w-full rounded-2xl border border-zinc-700 bg-black/40 px-4 py-3 text-sm text-white outline-none transition placeholder:text-zinc-500 focus:border-red-400/60 focus:ring-2 focus:ring-red-500/20"
+                  initial={origenAddress}
+                  required
+                  hasError={origenVacio}
+                  onSelect={(item) => {
+                    setOrigenAddress(item.direccion)
+                    setOrigenCoords({ lat: item.lat, lng: item.lng })
+                    setOrigenVacio(false)
+                  }}
                 />
               </div>
 
               <div>
-                <label htmlFor="destino" className="mb-2 block text-sm font-medium text-zinc-200">
-                  Destino
-                </label>
-                <input
-                  id="destino"
-                  type="text"
-                  value={destino}
-                  onChange={(e) => setDestino(e.target.value)}
+                <AutocompleteAddress
+                  label="Destino"
                   placeholder="Ej: Palermo Soho, Buenos Aires"
-                  className="w-full rounded-2xl border border-zinc-700 bg-black/40 px-4 py-3 text-sm text-white outline-none transition placeholder:text-zinc-500 focus:border-red-400/60 focus:ring-2 focus:ring-red-500/20"
+                  initial={destinoAddress}
+                  required
+                  hasError={destinoVacio}
+                  onSelect={(item) => {
+                    setDestinoAddress(item.direccion)
+                    setDestinoCoords({ lat: item.lat, lng: item.lng })
+                    setDestinoVacio(false)
+                  }}
                 />
               </div>
 
@@ -128,23 +148,8 @@ export default function PedirViajePage() {
                     className="w-full rounded-2xl border border-zinc-700 bg-black/40 px-4 py-3 text-sm text-white outline-none transition focus:border-red-400/60 focus:ring-2 focus:ring-red-500/20"
                   >
                     <option value="EFECTIVO">Efectivo</option>
-                    <option value="TARJETA">Tarjeta</option>
+                    <option value="TARJETA">Mercado pago</option>
                   </select>
-                </div>
-                <div>
-                  <label htmlFor="precio" className="mb-2 block text-sm font-medium text-zinc-200">
-                    Precio estimado ($)
-                  </label>
-                  <input
-                    id="precio"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={precioEstimado}
-                    onChange={(e) => setPrecioEstimado(e.target.value)}
-                    placeholder="Opcional"
-                    className="w-full rounded-2xl border border-zinc-700 bg-black/40 px-4 py-3 text-sm text-white outline-none transition placeholder:text-zinc-500 focus:border-red-400/60 focus:ring-2 focus:ring-red-500/20"
-                  />
                 </div>
               </div>
 
@@ -179,9 +184,7 @@ export default function PedirViajePage() {
 
             <div className="rounded-3xl border border-zinc-800 bg-gradient-to-b from-red-950/40 to-black/60 p-6">
               <p className="text-xs uppercase tracking-[0.35em] text-red-300/70">Cancelación</p>
-              <p className="mt-3 text-sm text-zinc-300">
-                Podés cancelar mientras no haya un conductor aceptado.
-              </p>
+              <p className="mt-3 text-sm text-zinc-300">Podés cancelar mientras no haya un conductor aceptado.</p>
             </div>
           </aside>
         </section>

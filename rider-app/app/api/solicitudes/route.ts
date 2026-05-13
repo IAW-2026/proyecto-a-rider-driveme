@@ -7,8 +7,10 @@ import { z } from "zod"
 const solicitudSchema = z.object({
   origen_lat: z.number(),
   origen_lng: z.number(),
+  origen_direccion: z.string().optional(),
   destino_lat: z.number().nullable().optional(),
   destino_lng: z.number().nullable().optional(),
+  destino_direccion: z.string().optional(),
   metodo_pago: z.enum(["EFECTIVO", "TARJETA"]),
   precio_estimado: z.number().int().positive().nullable().optional(),
 })
@@ -44,7 +46,7 @@ export async function GET(req: NextRequest) {
 
 // Pasajero crea una nueva solicitud de viaje
 export async function POST(req: NextRequest) {
-  const auth = await requireRole("rider")
+  const auth = await requireRole(["rider", "admin"])
   if ("error" in auth) return auth.error
 
   let pasajero = await prisma.pasajero.findUnique({
@@ -71,17 +73,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 })
   }
 
-  const { origen_lat, origen_lng, destino_lat, destino_lng, metodo_pago, precio_estimado } = parsed.data
+  const { origen_lat, origen_lng, origen_direccion, destino_lat, destino_lng, destino_direccion, metodo_pago } = parsed.data
+
+  // Evitar que el pasajero cree más de una solicitud activa
+  const existing = await prisma.solicitudDeViaje.findFirst({
+    where: { pasajeroId: pasajero.id, estado: { in: ["BUSCANDO_CONDUCTOR", "ACEPTADA"] } },
+    include: { viaje: { select: { estadoActual: true } } },
+  })
+  const isActive = existing && (!existing.viaje || !["FINALIZADO", "CANCELADO_POR_CONDUCTOR"].includes(existing.viaje.estadoActual))
+  if (isActive) {
+    return NextResponse.json({ error: "Ya existe una solicitud activa." }, { status: 409 })
+  }
 
   const solicitud = await prisma.solicitudDeViaje.create({
     data: {
       pasajeroId: pasajero.id,
       origenLat: origen_lat,
       origenLng: origen_lng,
+      origenDireccion: origen_direccion ?? null,
       destinoLat: destino_lat ?? null,
       destinoLng: destino_lng ?? null,
+      destinoDireccion: destino_direccion ?? null,
       metodoPago: metodo_pago,
-      precioEstimadoCents: precio_estimado ?? null,
       estado: "BUSCANDO_CONDUCTOR",
     },
   })
