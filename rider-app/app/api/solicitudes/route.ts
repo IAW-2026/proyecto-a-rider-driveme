@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { currentUser } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/prisma"
 import { requireRole, requireM2MToken } from "@/lib/auth"
+import { getActiveSolicitudByPasajeroId } from "@/lib/activeSolicitud"
 import { z } from "zod"
 
 const solicitudSchema = z.object({
@@ -75,14 +76,17 @@ export async function POST(req: NextRequest) {
 
   const { origen_lat, origen_lng, origen_direccion, destino_lat, destino_lng, destino_direccion, metodo_pago } = parsed.data
 
-  // Evitar que el pasajero cree más de una solicitud activa
-  const existing = await prisma.solicitudDeViaje.findFirst({
-    where: { pasajeroId: pasajero.id, estado: { in: ["BUSCANDO_CONDUCTOR", "ACEPTADA"] } },
-    include: { viaje: { select: { estadoActual: true } } },
-  })
-  const isActive = existing && (!existing.viaje || !["FINALIZADO", "CANCELADO_POR_CONDUCTOR"].includes(existing.viaje.estadoActual))
-  if (isActive) {
-    return NextResponse.json({ error: "Ya existe una solicitud activa." }, { status: 409 })
+  // Guard final: evita crear otra solicitud si ya hay un viaje activo.
+  const activeSolicitud = await getActiveSolicitudByPasajeroId(pasajero.id)
+  if (activeSolicitud) {
+    return NextResponse.json(
+      {
+        error: "Ya tenes un viaje activo.",
+        redirectTo: "/viaje-activo",
+        id_solicitud: activeSolicitud.id,
+      },
+      { status: 409 }
+    )
   }
 
   const solicitud = await prisma.solicitudDeViaje.create({

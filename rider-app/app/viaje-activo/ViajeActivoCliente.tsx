@@ -116,6 +116,14 @@ export default function ViajeActivoCliente({
                 : "Tu viaje llegó a destino. ¡Gracias por usar DriveMe!"}
             </p>
             <div className="mt-8 flex flex-col gap-3">
+              {!esCancelado && (
+                <Link
+                  href={`/historial/${solicitudId}`}
+                  className="inline-flex h-12 items-center justify-center rounded-full bg-gradient-to-r from-cyan-600 to-blue-600 px-6 text-sm font-semibold text-white transition hover:brightness-110"
+                >
+                  Dejar feedback
+                </Link>
+              )}
               <Link
                 href="/pedir-viaje"
                 className="inline-flex h-12 items-center justify-center rounded-full bg-gradient-to-r from-red-700 via-red-600 to-orange-600 px-6 text-sm font-semibold text-white transition hover:brightness-110"
@@ -227,13 +235,6 @@ export default function ViajeActivoCliente({
             <div className="rounded-3xl border border-zinc-800 bg-white/5 p-6">
               <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">Acciones</p>
               <div className="mt-4 flex flex-col gap-3">
-                <Link
-                  href="/pedir-viaje"
-                  className="inline-flex h-12 items-center justify-center rounded-full border border-zinc-700 bg-white/5 px-6 text-sm font-medium text-zinc-200 transition hover:border-zinc-500 hover:bg-white/10"
-                >
-                  Pedir otro viaje
-                </Link>
-
                 {esBuscando && (
                   <button
                     type="button"

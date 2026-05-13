@@ -28,7 +28,20 @@ export default async function HistorialPage() {
   if (!pasajero) redirect("/inicio")
 
   const solicitudes = await prisma.solicitudDeViaje.findMany({
-    where: { pasajeroId: pasajero.id },
+    where: {
+      pasajeroId: pasajero.id,
+      OR: [
+        { estado: "CANCELADA_POR_PASAJERO" },
+        {
+          estado: "ACEPTADA",
+          viaje: {
+            is: {
+              estadoActual: { in: ["FINALIZADO", "CANCELADO_POR_CONDUCTOR"] },
+            },
+          },
+        },
+      ],
+    },
     include: { viaje: { select: { estadoActual: true } } },
     orderBy: { creadaEn: "desc" },
   })
@@ -57,7 +70,7 @@ export default async function HistorialPage() {
 
         {solicitudes.length === 0 ? (
           <div className="rounded-3xl border border-zinc-800 bg-zinc-950/50 px-6 py-20 text-center">
-            <p className="text-zinc-500">Todavía no tenés viajes registrados.</p>
+            <p className="text-zinc-500">Todavía no tenés viajes finalizados o cancelados.</p>
             <Link
               href="/pedir-viaje"
               className="mt-6 inline-flex h-11 items-center justify-center rounded-full bg-gradient-to-r from-red-700 via-red-600 to-orange-600 px-6 text-sm font-semibold text-white transition hover:brightness-110"
@@ -107,6 +120,15 @@ export default async function HistorialPage() {
                     <p className="shrink-0 text-xs text-zinc-500" suppressHydrationWarning>
                       {new Date(s.creadaEn).toLocaleString("es-AR")}
                     </p>
+                  </div>
+
+                  <div className="mt-4 flex justify-end">
+                    <Link
+                      href={`/historial/${s.id}`}
+                      className="inline-flex h-10 items-center justify-center rounded-full border border-zinc-700 bg-white/5 px-4 text-xs font-medium text-white transition hover:border-cyan-500/50 hover:bg-cyan-500/10"
+                    >
+                      Ver detalle
+                    </Link>
                   </div>
                 </div>
               )
