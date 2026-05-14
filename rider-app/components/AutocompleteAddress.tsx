@@ -5,6 +5,7 @@ export default function AutocompleteAddress({
   label,
   placeholder,
   onSelect,
+  onChange,
   initial = "",
   required = false,
   hasError = false,
@@ -14,6 +15,7 @@ export default function AutocompleteAddress({
   initial?: string
   required?: boolean
   hasError?: boolean
+  onChange?: (value: string) => void
   onSelect: (item: { direccion: string; lat: number; lng: number }) => void
 }) {
   const [q, setQ] = useState(initial)
@@ -53,26 +55,31 @@ export default function AutocompleteAddress({
   return (
     <div className="relative">
       {label && (
-        <label className="mb-2 block text-sm font-medium text-zinc-200">
+        <label className="mb-2 block text-sm font-medium text-foreground">
           {label}
-          {required && <span className="ml-1 text-red-500">*</span>}
+          {required && <span className="ml-1 text-destructive">*</span>}
         </label>
       )}
       <input
         value={q}
-        onChange={(e) => setQ(e.target.value)}
+        onChange={(e) => { setQ(e.target.value); onChange?.(e.target.value) }}
         placeholder={placeholder}
-        className={`w-full rounded-2xl border bg-black/40 px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-500 focus:border-red-400/60 ${hasError ? "border-red-500/60" : "border-zinc-700"}`}
+        className={`w-full rounded-xl border bg-input/50 px-4 py-3 text-sm text-foreground outline-none placeholder:text-muted-foreground/60 focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all ${
+          hasError ? "border-destructive/60" : "border-primary/20"
+        }`}
         onFocus={() => { if (suggestions.length) setOpen(true) }}
       />
       {open && suggestions.length > 0 && (
-        <ul role="listbox" className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-black/80 p-1">
+        <ul
+          role="listbox"
+          className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-xl border border-primary/20 bg-popover p-1 shadow-lg"
+        >
           {suggestions.map((s, i) => (
             <li
               key={i}
               role="option"
               onMouseDown={() => handleSelect(s)}
-              className="cursor-pointer rounded px-3 py-2 text-sm text-zinc-200 hover:bg-white/5"
+              className="cursor-pointer rounded-lg px-3 py-2 text-sm text-foreground hover:bg-primary/10 transition-colors"
             >
               {s.displayName}
             </li>

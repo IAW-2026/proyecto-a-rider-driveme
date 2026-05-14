@@ -1,174 +1,103 @@
-'use client';
+import { auth } from "@clerk/nextjs/server"
+import { redirect } from "next/navigation"
+import Link from "next/link"
+import { TrendingUp } from "lucide-react"
+import { AppHeader } from "../components/AppHeader"
+import GalaxyCard from "../components/GalaxyCard"
+import QuickTripForm from "./QuickTripForm"
+import SavedPlaces from "./SavedPlaces"
+import { getActiveSolicitudByClerkId } from "@/lib/activeSolicitud"
 
-import { useUser, UserButton } from '@clerk/nextjs';
-import Link from 'next/link';
-import { useState } from 'react';
-import SearchBar from '../components/SearchBar';
-import GalaxyCard from '../components/GalaxyCard';
+const galaxies = [
+  { name: "Andrómeda", visits: 128, emoji: "🌌", description: "La más distante", color: "from-primary/20 to-glow-magenta/10" },
+  { name: "Tatooine", visits: 94, emoji: "🏜️", description: "Planeta del desierto", color: "from-glow-red/20 to-accent/10" },
+  { name: "Kessel", visits: 72, emoji: "💎", description: "Minas de spice", color: "from-glow-cyan/20 to-primary/10" },
+  { name: "Hoth", visits: 68, emoji: "❄️", description: "Planeta de hielo", color: "from-primary/20 to-glow-magenta/10" },
+  { name: "Dagobah", visits: 55, emoji: "🌫️", description: "El pantano místico", color: "from-accent/20 to-glow-green/10" },
+  { name: "Coruscant", visits: 43, emoji: "🏙️", description: "Capital galáctica", color: "from-glow-red/20 to-glow-magenta/10" },
+]
 
-export default function InicioPage() {
-  const { isLoaded, isSignedIn, user } = useUser();
-  const [query, setQuery] = useState('');
+export default async function InicioPage() {
+  const { userId } = await auth()
+  if (!userId) redirect("/sign-in")
 
-  if (!isLoaded) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-black text-white">
-        <p className="text-zinc-400">Cargando...</p>
-      </main>
-    );
-  }
-
-  if (!isSignedIn) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-black text-white">
-        <div className="text-center">
-          <p className="text-lg text-zinc-400">No estás autenticado.</p>
-          <Link href="/sign-in" className="mt-4 inline-block text-red-500 hover:text-red-400">
-            Ir al login
-          </Link>
-        </div>
-      </main>
-    );
-  }
+  const solicitudActiva = await getActiveSolicitudByClerkId(userId)
 
   return (
-    <main className="min-h-screen bg-black text-white">
-      {/* Header */}
-      <header className="border-b border-zinc-800 bg-black/50 backdrop-blur-sm sticky top-0 z-40">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <div>
-            <h1 className="text-2xl font-bold">Bienvenido, {user?.firstName || user?.emailAddresses[0]?.emailAddress}</h1>
-            <p className="text-sm text-zinc-400">Gestiona tus viajes intergalácticos</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link
-              href="/pedir-viaje"
-              className="hidden rounded-full border border-zinc-700 bg-white/5 px-4 py-2 text-sm text-zinc-200 transition hover:border-red-400/60 hover:bg-red-500/10 sm:inline-flex"
-            >
-              Pedir viaje
-            </Link>
-            <Link
-              href="/viaje-activo"
-              className="hidden rounded-full border border-zinc-700 bg-white/5 px-4 py-2 text-sm text-zinc-200 transition hover:border-cyan-400/60 hover:bg-cyan-500/10 sm:inline-flex"
-            >
-              Viaje activo
-            </Link>
-            <Link
-              href="/historial"
-              className="hidden rounded-full border border-zinc-700 bg-white/5 px-4 py-2 text-sm text-zinc-200 transition hover:border-zinc-500 hover:bg-white/10 sm:inline-flex"
-            >
-              Mis viajes
-            </Link>
-            {(user?.publicMetadata?.role as string) === "admin" && (
-              <Link
-                href="/admin/solicitudes"
-                className="hidden rounded-full border border-red-700/60 bg-red-500/10 px-4 py-2 text-sm text-red-300 transition hover:border-red-500 hover:bg-red-500/20 sm:inline-flex"
-              >
-                Admin
-              </Link>
-            )}
-            <UserButton />
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-background stars-bg relative">
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/30 to-background pointer-events-none" />
 
-      {/* Content */}
-      <div className="mx-auto w-full px-4 py-16 sm:px-6 lg:px-8">
-        {/* Galaxias más visitadas + buscador */}
-        <section className="mb-16 max-w-7xl mx-auto">
-          <div className="mb-8 flex w-full flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-400">Galaxias más visitadas</h2>
-              <p className="mt-2 text-3xl sm:text-4xl font-bold text-white">Explora tus destinos favoritos</p>
-            </div>
-            <div className="w-full lg:max-w-md">
-              <SearchBar placeholder="Próximo salto intergaláctico" onSearch={(q) => setQuery(q)} />
-            </div>
-          </div>
+      <div className="relative z-10 flex flex-col min-h-screen">
+        <AppHeader />
 
-          {/* Grid de galaxias */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {[
-              { name: 'Andrómeda', visits: 128, image: '/andromeda.jpg' },
-              { name: 'Tatooine', visits: 94, image: '/tatooine.jpg' },
-              { name: 'Kessel', visits: 72, image: '/kessel.jpg' },
-              { name: 'Hoth', visits: 68, image: '/hoth.jpg' },
-              { name: 'Dagobah', visits: 55, image: '/dagobah.jpg' },
-              { name: 'Coruscant', visits: 43, image: '/coruscant.jpg' },
-            ]
-              .filter((g) => g.name.toLowerCase().includes(query.trim().toLowerCase()))
-              .map((g) => (
-                <GalaxyCard key={g.name} name={g.name} visits={g.visits} image={g.image} />
-              ))}
-          </div>
-        </section>
+        <main className="flex-1 px-4 py-6 max-w-6xl mx-auto w-full">
+          <div className="flex flex-col lg:flex-row gap-6">
+            {/* Left Column */}
+            <div className="flex-1 space-y-4">
+              {solicitudActiva ? (
+                <div className="holo-border rounded-xl p-8 text-center space-y-4 relative overflow-hidden scan-lines">
+                  <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-glow-red/50 rounded-tl-xl" />
+                  <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-glow-red/50 rounded-tr-xl" />
+                  <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-glow-red/50 rounded-bl-xl" />
+                  <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-glow-red/50 rounded-br-xl" />
 
-        {/* Crear nuevo viaje */}
-        <section className="max-w-7xl mx-auto">
-          <div className="rounded-2xl border border-zinc-800 bg-gradient-to-b from-black/60 to-black/30 p-10 sm:p-12">
-            <div className="mb-10">
-              <h3 className="text-3xl sm:text-4xl font-bold text-white">Crear Nuevo Viaje</h3>
-              <p className="mt-2 text-zinc-400">Lanza tu próxima aventura galáctica</p>
-            </div>
-
-            <form className="space-y-8">
-              <div>
-                <label className="block text-base font-semibold text-white mb-3">
-                  Destino
-                </label>
-                <input
-                  type="text"
-                  placeholder="Ej: Tatooine, Kessel, Coruscant..."
-                  className="w-full rounded-xl border border-zinc-700 bg-black/40 px-5 py-4 text-base text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-base font-semibold text-white mb-3">
-                    Pasajeros
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="8"
-                    placeholder="1"
-                    className="w-full rounded-xl border border-zinc-700 bg-black/40 px-5 py-4 text-base text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition"
-                  />
+                  <div className="w-16 h-16 mx-auto rounded-full bg-glow-red/20 flex items-center justify-center glow-red">
+                    <span className="text-2xl">!</span>
+                  </div>
+                  <h2
+                    className="text-xl font-bold text-foreground"
+                    style={{ fontFamily: "var(--font-orbitron)" }}
+                  >
+                    YA TENÉS UN VIAJE ACTIVO
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    No podés pedir otro viaje hasta finalizar o cancelar el actual.
+                  </p>
+                  <Link
+                    href="/viaje-activo"
+                    className="inline-flex h-12 items-center justify-center rounded-full bg-glow-red text-white text-sm font-semibold glow-red transition hover:brightness-110 px-6"
+                    style={{ fontFamily: "var(--font-orbitron)", letterSpacing: "0.05em" }}
+                  >
+                    VER VIAJE ACTIVO
+                  </Link>
                 </div>
-                <div>
-                  <label className="block text-base font-semibold text-white mb-3">
-                    Precio (créditos)
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="100"
-                    className="w-full rounded-xl border border-zinc-700 bg-black/40 px-5 py-4 text-base text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition"
+              ) : (
+                <>
+                  <QuickTripForm />
+                  <SavedPlaces />
+                </>
+              )}
+            </div>
+
+            {/* Right Column - Galaxias más visitadas */}
+            <div className="lg:w-80 xl:w-96 space-y-3">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-accent" />
+                <h3
+                  className="text-xs text-primary/80 tracking-widest"
+                  style={{ fontFamily: "var(--font-orbitron)" }}
+                >
+                  PLANETAS MÁS VISITADOS
+                </h3>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                {galaxies.map((galaxy, index) => (
+                  <GalaxyCard
+                    key={galaxy.name}
+                    name={galaxy.name}
+                    visits={galaxy.visits}
+                    emoji={galaxy.emoji}
+                    description={galaxy.description}
+                    color={galaxy.color}
+                    rank={index + 1}
                   />
-                </div>
+                ))}
               </div>
-
-              <div>
-                <label className="block text-base font-semibold text-white mb-3">
-                  Descripción
-                </label>
-                <textarea
-                  placeholder="Describe los detalles del viaje, horarios, paradas, etc..."
-                  rows={4}
-                  className="w-full rounded-xl border border-zinc-700 bg-black/40 px-5 py-4 text-base text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition resize-none"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full rounded-xl bg-gradient-to-r from-red-600 to-red-700 px-8 py-4 text-lg font-bold text-white shadow-[0_0_30px_rgba(220,38,38,0.4)] hover:shadow-[0_0_40px_rgba(220,38,38,0.6)] hover:brightness-110 transition-all duration-200"
-              >
-                Iniciar Viaje
-              </button>
-            </form>
+            </div>
           </div>
-        </section>
+        </main>
       </div>
-    </main>
-  );
+    </div>
+  )
 }

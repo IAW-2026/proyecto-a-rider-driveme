@@ -4,11 +4,12 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import dynamic from "next/dynamic"
+import { AppHeader } from "../components/AppHeader"
 
 const Map = dynamic(() => import("@/app/components/Map"), {
   ssr: false,
   loading: () => (
-    <div className="flex h-[300px] items-center justify-center rounded-xl border border-zinc-800 bg-black/40 text-sm text-zinc-500">
+    <div className="flex h-[300px] items-center justify-center rounded-xl border border-border bg-card/50 text-sm text-muted-foreground">
       Cargando mapa…
     </div>
   ),
@@ -55,7 +56,10 @@ export default function ViajeActivoCliente({
   const [loadingDriver, setLoadingDriver] = useState(false)
 
   const esBuscando = estado === "BUSCANDO_CONDUCTOR"
-  const estadoMostrado = viajeEstado ? (ESTADO_LABEL[viajeEstado] ?? viajeEstado) : (ESTADO_LABEL[estado] ?? estado)
+  const estadoMostrado =
+    viajeEstado
+      ? (ESTADO_LABEL[viajeEstado] ?? viajeEstado)
+      : (ESTADO_LABEL[estado] ?? estado)
 
   useEffect(() => {
     let mounted = true
@@ -99,172 +103,244 @@ export default function ViajeActivoCliente({
   if (viajeEstado === "FINALIZADO" || viajeEstado === "CANCELADO_POR_CONDUCTOR") {
     const esCancelado = viajeEstado === "CANCELADO_POR_CONDUCTOR"
     return (
-      <main className="relative min-h-screen overflow-hidden bg-black text-white">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(0,180,255,0.18),transparent),radial-gradient(ellipse_60%_50%_at_15%_80%,rgba(255,0,0,0.14),transparent)]" />
-        <div className="absolute inset-0 opacity-25 [background-image:radial-gradient(rgba(255,255,255,0.07)_1px,transparent_1px)] [background-size:32px_32px]" />
-        <div className="relative z-10 flex min-h-screen items-center justify-center px-6">
-          <div className="w-full max-w-md rounded-3xl border border-zinc-800 bg-gradient-to-b from-zinc-950/90 to-black/70 p-8 text-center shadow-[0_20px_80px_rgba(0,0,0,0.55)]">
-            <span className={`text-4xl ${esCancelado ? "text-red-400" : "text-cyan-400"}`}>
-              {esCancelado ? "✕" : "✓"}
-            </span>
-            <h1 className="mt-4 text-2xl font-bold">
-              {esCancelado ? "Viaje cancelado" : "Viaje finalizado"}
-            </h1>
-            <p className="mt-3 text-sm text-zinc-400">
-              {esCancelado
-                ? "El conductor canceló el viaje. Podés pedir uno nuevo cuando quieras."
-                : "Tu viaje llegó a destino. ¡Gracias por usar DriveMe!"}
-            </p>
-            <div className="mt-8 flex flex-col gap-3">
-              {!esCancelado && (
+      <div className="min-h-screen bg-background stars-bg relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/30 to-background pointer-events-none" />
+        <div className="relative z-10 flex flex-col min-h-screen">
+          <AppHeader />
+
+          <main className="flex-1 flex items-center justify-center px-4 py-6">
+            <div className="w-full max-w-md holo-border rounded-xl p-8 text-center space-y-4 relative overflow-hidden scan-lines">
+              <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-glow-red/50 rounded-tl-xl" />
+              <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-glow-red/50 rounded-tr-xl" />
+              <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-glow-red/50 rounded-bl-xl" />
+              <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-glow-red/50 rounded-br-xl" />
+
+              <div
+                className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center text-2xl ${
+                  esCancelado
+                    ? "bg-destructive/20 text-destructive glow-red"
+                    : "bg-accent/20 text-accent glow-accent"
+                }`}
+              >
+                {esCancelado ? "✕" : "✓"}
+              </div>
+
+              <h1
+                className="text-xl font-bold text-foreground"
+                style={{ fontFamily: "var(--font-orbitron)" }}
+              >
+                {esCancelado ? "VIAJE CANCELADO" : "VIAJE FINALIZADO"}
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                {esCancelado
+                  ? "El conductor canceló el viaje. Podés pedir uno nuevo cuando quieras."
+                  : "Tu viaje llegó a destino. ¡Gracias por usar DriveMe!"}
+              </p>
+
+              <div className="flex flex-col gap-3 pt-2">
+                {!esCancelado && (
+                  <Link
+                    href={`/historial/${solicitudId}`}
+                    className="inline-flex h-12 items-center justify-center rounded-full bg-accent text-accent-foreground text-sm font-semibold glow-accent transition hover:brightness-110"
+                    style={{ fontFamily: "var(--font-orbitron)", letterSpacing: "0.05em" }}
+                  >
+                    DEJAR FEEDBACK
+                  </Link>
+                )}
                 <Link
-                  href={`/historial/${solicitudId}`}
-                  className="inline-flex h-12 items-center justify-center rounded-full bg-gradient-to-r from-cyan-600 to-blue-600 px-6 text-sm font-semibold text-white transition hover:brightness-110"
+                  href="/pedir-viaje"
+                  className="inline-flex h-12 items-center justify-center rounded-full bg-glow-red text-white text-sm font-semibold glow-red transition hover:brightness-110"
+                  style={{ fontFamily: "var(--font-orbitron)", letterSpacing: "0.05em" }}
                 >
-                  Dejar feedback
+                  PEDIR NUEVO VIAJE
                 </Link>
-              )}
-              <Link
-                href="/pedir-viaje"
-                className="inline-flex h-12 items-center justify-center rounded-full bg-gradient-to-r from-red-700 via-red-600 to-orange-600 px-6 text-sm font-semibold text-white transition hover:brightness-110"
-              >
-                Pedir nuevo viaje
-              </Link>
-              <Link
-                href="/inicio"
-                className="inline-flex h-12 items-center justify-center rounded-full border border-zinc-700 bg-white/5 px-6 text-sm font-medium text-zinc-300 transition hover:border-zinc-500 hover:bg-white/10"
-              >
-                Volver al inicio
-              </Link>
+                <Link
+                  href="/inicio"
+                  className="inline-flex h-12 items-center justify-center rounded-full border border-primary/30 text-primary text-sm font-medium transition hover:bg-primary/10"
+                >
+                  Volver al inicio
+                </Link>
+              </div>
             </div>
-          </div>
+          </main>
         </div>
-      </main>
+      </div>
     )
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-black text-white">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(0,180,255,0.18),transparent),radial-gradient(ellipse_60%_50%_at_15%_80%,rgba(255,0,0,0.14),transparent)]" />
-      <div className="absolute inset-0 opacity-25 [background-image:radial-gradient(rgba(255,255,255,0.07)_1px,transparent_1px)] [background-size:32px_32px]" />
+    <div className="min-h-screen bg-background stars-bg relative">
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/30 to-background pointer-events-none" />
+      <div className="relative z-10 flex flex-col min-h-screen">
+        <AppHeader />
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-6xl flex-col px-6 py-8 sm:px-8 lg:px-10">
-        <header className="mb-8 flex flex-col gap-4 border-b border-zinc-800 pb-6 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-[0.4em] text-cyan-300/70">Viaje activo · {nombrePasajero}</p>
-            <h1 className="mt-2 text-3xl font-bold sm:text-4xl">{estadoMostrado}</h1>
-            <p className="mt-2 text-sm text-zinc-400" suppressHydrationWarning>
+        <main className="flex-1 px-4 py-6 max-w-6xl mx-auto w-full">
+          {/* Page title */}
+          <div className="mb-6 border-b border-border/50 pb-4">
+            <p
+              className="text-xs text-glow-cyan/70 tracking-widest"
+              style={{ fontFamily: "var(--font-orbitron)" }}
+            >
+              VIAJE ACTIVO · {nombrePasajero.toUpperCase()}
+            </p>
+            <h1
+              className="mt-1 text-2xl font-bold text-foreground"
+              style={{ fontFamily: "var(--font-orbitron)" }}
+            >
+              {estadoMostrado.toUpperCase()}
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground" suppressHydrationWarning>
               Solicitud creada el {new Date(creadaEn).toLocaleString("es-AR")}
             </p>
           </div>
 
-          <Link
-            href="/inicio"
-            className="inline-flex h-11 items-center justify-center rounded-full border border-zinc-700 bg-white/5 px-5 text-sm font-medium text-white transition hover:border-zinc-500 hover:bg-white/10"
-          >
-            Volver al inicio
-          </Link>
-        </header>
+          <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+            <div className="space-y-4">
+              {/* Status card */}
+              <div className="holo-border rounded-xl p-5 space-y-4 relative overflow-hidden scan-lines">
+                <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-glow-red/50 rounded-tl-xl" />
+                <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-glow-red/50 rounded-br-xl" />
 
-        <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-          <div className="space-y-6">
-            <div className="rounded-3xl border border-zinc-800 bg-gradient-to-b from-zinc-950/90 to-black/70 p-6 shadow-[0_20px_80px_rgba(0,0,0,0.55)] sm:p-8">
-              <div className="mb-6 flex items-center gap-3">
                 <span
-                  className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${
+                  className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium border ${
                     esBuscando
-                      ? "border border-yellow-500/30 bg-yellow-500/10 text-yellow-200"
-                      : "border border-cyan-400/30 bg-cyan-500/10 text-cyan-200"
+                      ? "border-yellow-500/30 bg-yellow-500/10 text-yellow-200"
+                      : "border-glow-cyan/30 bg-glow-cyan/10 text-glow-cyan"
                   }`}
                 >
                   {estadoMostrado}
                 </span>
-              </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-2xl border border-zinc-800 bg-black/40 p-4">
-                  <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">Origen</p>
-                  <p className="mt-2 text-sm font-medium text-zinc-200">
-                    {origenDireccion ?? `${origen.lat.toFixed(5)}, ${origen.lng.toFixed(5)}`}
-                  </p>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-xl border border-border bg-card/50 p-4">
+                    <p
+                      className="text-xs text-muted-foreground tracking-widest"
+                      style={{ fontFamily: "var(--font-orbitron)" }}
+                    >
+                      ORIGEN
+                    </p>
+                    <p className="mt-2 text-sm font-medium text-foreground">
+                      {origenDireccion ?? `${origen.lat.toFixed(5)}, ${origen.lng.toFixed(5)}`}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-border bg-card/50 p-4">
+                    <p
+                      className="text-xs text-muted-foreground tracking-widest"
+                      style={{ fontFamily: "var(--font-orbitron)" }}
+                    >
+                      DESTINO
+                    </p>
+                    <p className="mt-2 text-sm font-medium text-foreground">
+                      {destinoDireccion ??
+                        (destino
+                          ? `${destino.lat.toFixed(5)}, ${destino.lng.toFixed(5)}`
+                          : "No especificado")}
+                    </p>
+                  </div>
                 </div>
-                <div className="rounded-2xl border border-zinc-800 bg-black/40 p-4">
-                  <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">Destino</p>
-                  <p className="mt-2 text-sm font-medium text-zinc-200">
-                    {destinoDireccion ?? (destino ? `${destino.lat.toFixed(5)}, ${destino.lng.toFixed(5)}` : "No especificado")}
-                  </p>
-                </div>
-              </div>
 
-              {idConductor && (
-                <div className="mt-4 rounded-2xl border border-zinc-800 bg-black/40 p-4">
-                  <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">Conductor</p>
-                  {loadingDriver ? (
-                    <div className="mt-2 text-sm text-zinc-500">Cargando datos del conductor…</div>
-                  ) : driver ? (
-                    <div className="mt-2 flex items-center gap-3">
-                      <div>
-                        <p className="text-sm font-medium text-zinc-200">{driver.nombre}</p>
-                        <p className="text-xs text-zinc-400">Patente: {driver.patente}</p>
-                        <p className="text-xs text-zinc-400">Calificación: {driver.calificacionPromedio ?? "—"}</p>
+                {idConductor && (
+                  <div className="rounded-xl border border-border bg-card/50 p-4">
+                    <p
+                      className="text-xs text-muted-foreground tracking-widest"
+                      style={{ fontFamily: "var(--font-orbitron)" }}
+                    >
+                      CONDUCTOR
+                    </p>
+                    {loadingDriver ? (
+                      <div className="mt-2 text-sm text-muted-foreground">Cargando datos del conductor…</div>
+                    ) : driver ? (
+                      <div className="mt-2 flex items-center gap-3">
+                        <div>
+                          <p className="text-sm font-medium text-foreground">{driver.nombre}</p>
+                          <p className="text-xs text-muted-foreground">Patente: {driver.patente}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Calificación: {driver.calificacionPromedio ?? "—"}
+                          </p>
+                        </div>
+                        <div className="ml-auto text-sm text-muted-foreground">
+                          Llega en ~{driver.etaLlegadaMinutos} min
+                        </div>
                       </div>
-                      <div className="ml-auto text-sm text-zinc-400">Llega en ~{driver.etaLlegadaMinutos} min</div>
-                    </div>
-                  ) : (
-                    <div className="mt-2 text-sm text-zinc-500">Información no disponible</div>
-                  )}
-                </div>
-              )}
+                    ) : (
+                      <div className="mt-2 text-sm text-muted-foreground">Información no disponible</div>
+                    )}
+                  </div>
+                )}
 
-              {esBuscando && (
-                <div className="mt-4 rounded-2xl border border-yellow-500/20 bg-yellow-950/30 p-4">
-                  <p className="text-sm text-yellow-200/80">
-                    Tu solicitud está publicada. Un conductor la aceptará en breve.
-                  </p>
-                </div>
-              )}
+                {esBuscando && (
+                  <div className="rounded-xl border border-yellow-500/20 bg-yellow-950/20 p-4">
+                    <p className="text-sm text-yellow-200/80">
+                      Tu solicitud está publicada. Un conductor la aceptará en breve.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Map card */}
+              <div className="holo-border rounded-xl p-5 relative overflow-hidden scan-lines">
+                <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-glow-red/50 rounded-tl-xl" />
+                <p
+                  className="mb-3 text-xs text-muted-foreground tracking-widest"
+                  style={{ fontFamily: "var(--font-orbitron)" }}
+                >
+                  MAPA
+                </p>
+                <Map origen={origen} destino={destino} />
+              </div>
             </div>
 
-            <div className="rounded-3xl border border-zinc-800 bg-gradient-to-b from-zinc-950/90 to-black/70 p-6 sm:p-8">
-              <p className="mb-4 text-xs uppercase tracking-[0.35em] text-zinc-500">Mapa</p>
-              <Map origen={origen} destino={destino} />
-            </div>
-          </div>
+            {/* Sidebar */}
+            <aside className="space-y-4">
+              <div className="holo-border rounded-xl p-5 space-y-3 relative overflow-hidden scan-lines">
+                <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-primary/40 rounded-tl-xl" />
+                <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-primary/40 rounded-br-xl" />
 
-          <aside className="space-y-6">
-            <div className="rounded-3xl border border-zinc-800 bg-white/5 p-6">
-              <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">Acciones</p>
-              <div className="mt-4 flex flex-col gap-3">
+                <p
+                  className="text-xs text-muted-foreground tracking-widest"
+                  style={{ fontFamily: "var(--font-orbitron)" }}
+                >
+                  ACCIONES
+                </p>
+
                 {esBuscando && (
                   <button
                     type="button"
                     onClick={cancelar}
                     disabled={cancelando}
-                    className="inline-flex h-12 items-center justify-center rounded-full border border-red-500/30 bg-red-500/10 px-6 text-sm font-medium text-red-200 transition hover:border-red-400/60 hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="w-full inline-flex h-12 items-center justify-center rounded-xl border border-destructive/30 bg-destructive/10 text-sm font-medium text-destructive-foreground transition hover:bg-destructive/20 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {cancelando ? "Cancelando…" : "Cancelar solicitud"}
                   </button>
                 )}
+
+                {error && (
+                  <p
+                    role="alert"
+                    className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive-foreground"
+                  >
+                    {error}
+                  </p>
+                )}
               </div>
 
-              {error && (
-                <p role="alert" className="mt-4 rounded-xl border border-red-500/30 bg-red-950/40 px-4 py-3 text-sm text-red-300">
-                  {error}
+              <div className="rounded-xl border border-glow-cyan/20 bg-glow-cyan/5 p-5 space-y-2">
+                <p
+                  className="text-xs text-glow-cyan/70 tracking-widest"
+                  style={{ fontFamily: "var(--font-orbitron)" }}
+                >
+                  INFO
                 </p>
-              )}
-            </div>
-
-            <div className="rounded-3xl border border-zinc-800 bg-gradient-to-b from-cyan-950/40 to-black/60 p-6">
-              <p className="text-xs uppercase tracking-[0.35em] text-cyan-300/70">Info</p>
-              <p className="mt-3 text-sm leading-6 text-zinc-400">
-                {esBuscando
-                  ? "Podés cancelar mientras no haya un conductor aceptado."
-                  : "El conductor ya aceptó tu solicitud. Solo él puede cancelar en este punto."}
-              </p>
-            </div>
-          </aside>
-        </section>
+                <p className="text-sm text-muted-foreground leading-6">
+                  {esBuscando
+                    ? "Podés cancelar mientras no haya un conductor aceptado."
+                    : "El conductor ya aceptó tu solicitud. Solo él puede cancelar en este punto."}
+                </p>
+              </div>
+            </aside>
+          </section>
+        </main>
       </div>
-    </main>
+    </div>
   )
 }

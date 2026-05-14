@@ -1,20 +1,33 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
+import { Navigation, MapPin, Banknote, CreditCard, ChevronDown } from "lucide-react"
 import { geocodeAddress } from "@/lib/geocoding"
 import AutocompleteAddress from "@/components/AutocompleteAddress"
+import { cn } from "@/lib/utils"
 
 type MetodoPago = "EFECTIVO" | "TARJETA"
 
 export default function PedirViajeForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  const initialDestino = searchParams.get("destino") ?? ""
+  const initialDestinoLat = searchParams.get("destino_lat")
+  const initialDestinoLng = searchParams.get("destino_lng")
+
   const [origenAddress, setOrigenAddress] = useState("")
   const [origenCoords, setOrigenCoords] = useState<{ lat: number; lng: number } | null>(null)
-  const [destinoAddress, setDestinoAddress] = useState("")
-  const [destinoCoords, setDestinoCoords] = useState<{ lat: number; lng: number } | null>(null)
+  const [destinoAddress, setDestinoAddress] = useState(initialDestino)
+  const [destinoCoords, setDestinoCoords] = useState<{ lat: number; lng: number } | null>(
+    initialDestinoLat && initialDestinoLng
+      ? { lat: parseFloat(initialDestinoLat), lng: parseFloat(initialDestinoLng) }
+      : null
+  )
   const [metodoPago, setMetodoPago] = useState<MetodoPago>("EFECTIVO")
+  const [showPaymentOptions, setShowPaymentOptions] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [origenVacio, setOrigenVacio] = useState(false)
@@ -85,38 +98,46 @@ export default function PedirViajeForm() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-black text-white">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(255,0,0,0.22),transparent),radial-gradient(ellipse_60%_50%_at_80%_80%,rgba(120,0,255,0.12),transparent)]" />
-      <div className="absolute inset-0 opacity-25 [background-image:radial-gradient(rgba(255,255,255,0.07)_1px,transparent_1px)] [background-size:32px_32px]" />
+    <main className="flex-1 px-4 py-6 max-w-5xl mx-auto w-full">
+      <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+        {/* Form card */}
+        <div className="holo-border rounded-xl p-6 space-y-5 relative overflow-hidden scan-lines">
+          <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-glow-red/50 rounded-tl-xl" />
+          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-glow-red/50 rounded-tr-xl" />
+          <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-glow-red/50 rounded-bl-xl" />
+          <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-glow-red/50 rounded-br-xl" />
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-5xl flex-col px-6 py-8 sm:px-8 lg:px-10">
-        <header className="mb-8 flex flex-col gap-4 border-b border-zinc-800 pb-6 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-xs uppercase tracking-[0.4em] text-red-400/70">Pedido de viaje</p>
-            <h1 className="mt-2 text-3xl font-bold sm:text-4xl">Pedir viaje</h1>
-            <p className="mt-2 max-w-2xl text-sm text-zinc-400">Completá los datos y buscamos un conductor para vos.</p>
+            <h2
+              className="text-sm text-glow-red/90 tracking-widest"
+              style={{ fontFamily: "var(--font-orbitron)" }}
+            >
+              COORDENADAS DE VIAJE
+            </h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Escribí la dirección completa para que podamos ubicarte.
+            </p>
           </div>
-          <Link
-            href="/inicio"
-            className="inline-flex h-11 items-center justify-center rounded-full border border-zinc-700 bg-white/5 px-5 text-sm font-medium text-white transition hover:border-red-400/60 hover:bg-red-500/10"
-          >
-            Volver al inicio
-          </Link>
-        </header>
 
-        <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="rounded-3xl border border-zinc-800 bg-gradient-to-b from-zinc-950/90 to-black/70 p-6 shadow-[0_20px_80px_rgba(0,0,0,0.55)] sm:p-8">
-            <h2 className="text-xl font-semibold">Tu viaje</h2>
-            <p className="mt-2 text-sm text-zinc-400">Escribí la dirección completa para que podamos ubicarte correctamente.</p>
-
-            <form onSubmit={handleSubmit} className="mt-6 space-y-5">
-              <div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Origen */}
+            <div className="flex items-start gap-3">
+              <div className="mt-7 w-8 h-8 shrink-0 rounded-full bg-primary/20 flex items-center justify-center">
+                <Navigation className="w-4 h-4 text-primary" />
+              </div>
+              <div className="flex-1">
                 <AutocompleteAddress
                   label="Origen"
-                  placeholder="Ej: Av. Corrientes 1234, Buenos Aires"
+                  placeholder="Av. Corrientes 1234, Buenos Aires"
                   initial={origenAddress}
                   required
                   hasError={origenVacio}
+                  onChange={(val) => {
+                    if (val.trim() !== origenAddress.trim()) {
+                      setOrigenAddress("")
+                      setOrigenCoords(null)
+                    }
+                  }}
                   onSelect={(item) => {
                     setOrigenAddress(item.direccion)
                     setOrigenCoords({ lat: item.lat, lng: item.lng })
@@ -124,14 +145,38 @@ export default function PedirViajeForm() {
                   }}
                 />
               </div>
+            </div>
 
-              <div>
+            {/* Connection line */}
+            <div className="flex justify-start pl-4">
+              <div className="w-px h-4 bg-gradient-to-b from-primary/50 to-accent/50" />
+            </div>
+
+            {/* Destino */}
+            <div className="flex items-start gap-3">
+              <div className={cn(
+                "mt-7 w-8 h-8 shrink-0 rounded-full flex items-center justify-center transition-all duration-300",
+                origenAddress ? "bg-accent/20" : "bg-muted"
+              )}>
+                <MapPin className={cn(
+                  "w-4 h-4 transition-colors",
+                  origenAddress ? "text-accent" : "text-muted-foreground"
+                )} />
+              </div>
+              <div className="flex-1">
                 <AutocompleteAddress
                   label="Destino"
-                  placeholder="Ej: Palermo Soho, Buenos Aires"
+                  placeholder="Palermo Soho, Buenos Aires"
                   initial={destinoAddress}
                   required
                   hasError={destinoVacio}
+                  onChange={(val) => {
+                    if (val.trim() !== destinoAddress.trim()) {
+                      setDestinoAddress("")
+                      setDestinoCoords(null)
+                      setDestinoVacio(false)
+                    }
+                  }}
                   onSelect={(item) => {
                     setDestinoAddress(item.direccion)
                     setDestinoCoords({ lat: item.lat, lng: item.lng })
@@ -139,59 +184,120 @@ export default function PedirViajeForm() {
                   }}
                 />
               </div>
+            </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label htmlFor="metodo-pago" className="mb-2 block text-sm font-medium text-zinc-200">
-                    Método de pago
-                  </label>
-                  <select
-                    id="metodo-pago"
-                    value={metodoPago}
-                    onChange={(e) => setMetodoPago(e.target.value as MetodoPago)}
-                    className="w-full rounded-2xl border border-zinc-700 bg-black/40 px-4 py-3 text-sm text-white outline-none transition focus:border-red-400/60 focus:ring-2 focus:ring-red-500/20"
-                  >
-                    <option value="EFECTIVO">Efectivo</option>
-                    <option value="TARJETA">Mercado pago</option>
-                  </select>
+            {/* Método de pago */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowPaymentOptions(!showPaymentOptions)}
+                className="w-full flex items-center justify-between px-4 py-3 bg-input/30 border border-primary/20 rounded-lg hover:bg-input/50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  {metodoPago === "EFECTIVO" ? (
+                    <Banknote className="w-5 h-5 text-accent" />
+                  ) : (
+                    <CreditCard className="w-5 h-5 text-primary" />
+                  )}
+                  <span className="text-sm text-foreground">
+                    {metodoPago === "EFECTIVO" ? "Efectivo" : "Mercado Pago"}
+                  </span>
                 </div>
-              </div>
+                <ChevronDown
+                  className={cn(
+                    "w-4 h-4 text-muted-foreground transition-transform",
+                    showPaymentOptions && "rotate-180"
+                  )}
+                />
+              </button>
 
-              {error && (
-                <p role="alert" className="rounded-xl border border-red-500/30 bg-red-950/40 px-4 py-3 text-sm text-red-300">
-                  {error}
-                </p>
+              {showPaymentOptions && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-primary/20 rounded-lg overflow-hidden z-20 shadow-lg">
+                  <button
+                    type="button"
+                    onClick={() => { setMetodoPago("EFECTIVO"); setShowPaymentOptions(false) }}
+                    className={cn(
+                      "w-full flex items-center gap-3 px-4 py-3 hover:bg-primary/10 transition-colors",
+                      metodoPago === "EFECTIVO" && "bg-primary/5"
+                    )}
+                  >
+                    <Banknote className="w-5 h-5 text-accent" />
+                    <span className="text-sm">Efectivo</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setMetodoPago("TARJETA"); setShowPaymentOptions(false) }}
+                    className={cn(
+                      "w-full flex items-center gap-3 px-4 py-3 hover:bg-primary/10 transition-colors",
+                      metodoPago === "TARJETA" && "bg-primary/5"
+                    )}
+                  >
+                    <CreditCard className="w-5 h-5 text-primary" />
+                    <span className="text-sm">Mercado Pago</span>
+                  </button>
+                </div>
               )}
+            </div>
 
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="inline-flex h-12 items-center justify-center rounded-full bg-gradient-to-r from-red-700 via-red-600 to-orange-600 px-6 text-sm font-semibold text-white shadow-[0_0_30px_rgba(220,38,38,0.25)] transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {loading ? "Buscando conductor..." : "Solicitar viaje"}
-                </button>
-              </div>
-            </form>
+            {error && (
+              <p
+                role="alert"
+                className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive-foreground"
+              >
+                {error}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full h-14 rounded-lg bg-glow-red text-white glow-red flex items-center justify-center gap-2 transition-all hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ fontFamily: "var(--font-orbitron)", fontSize: "0.875rem", letterSpacing: "0.1em" }}
+            >
+              {loading ? "BUSCANDO CONDUCTOR..." : "SOLICITAR VIAJE"}
+            </button>
+          </form>
+        </div>
+
+        {/* Sidebar */}
+        <aside className="space-y-4">
+          <div className="holo-border rounded-xl p-5 space-y-3 relative overflow-hidden scan-lines">
+            <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-primary/40 rounded-tl-xl" />
+            <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-primary/40 rounded-br-xl" />
+
+            <p
+              className="text-xs text-primary/80 tracking-widest"
+              style={{ fontFamily: "var(--font-orbitron)" }}
+            >
+              ¿CÓMO FUNCIONA?
+            </p>
+            <div className="space-y-2 text-sm text-muted-foreground">
+              <p>1. Escribís tu origen y destino.</p>
+              <p>2. Lo convertimos a coordenadas automáticamente.</p>
+              <p>3. Publicamos tu solicitud para que un conductor la acepte.</p>
+              <p>4. Te mostramos el estado en tiempo real.</p>
+            </div>
           </div>
 
-          <aside className="space-y-6">
-            <div className="rounded-3xl border border-zinc-800 bg-white/5 p-6">
-              <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">¿Cómo funciona?</p>
-              <div className="mt-4 space-y-3 text-sm text-zinc-300">
-                <p>1. Escribís tu origen y destino.</p>
-                <p>2. Lo convertimos a coordenadas automáticamente.</p>
-                <p>3. Publicamos tu solicitud para que un conductor la acepte.</p>
-                <p>4. Te mostramos el estado en tiempo real.</p>
-              </div>
-            </div>
+          <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-5 space-y-2">
+            <p
+              className="text-xs text-destructive/70 tracking-widest"
+              style={{ fontFamily: "var(--font-orbitron)" }}
+            >
+              CANCELACIÓN
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Podés cancelar mientras no haya un conductor aceptado.
+            </p>
+          </div>
 
-            <div className="rounded-3xl border border-zinc-800 bg-gradient-to-b from-red-950/40 to-black/60 p-6">
-              <p className="text-xs uppercase tracking-[0.35em] text-red-300/70">Cancelación</p>
-              <p className="mt-3 text-sm text-zinc-300">Podés cancelar mientras no haya un conductor aceptado.</p>
-            </div>
-          </aside>
-        </section>
+          <Link
+            href="/inicio"
+            className="inline-flex w-full h-11 items-center justify-center rounded-xl border border-border text-muted-foreground text-sm transition hover:border-primary/30 hover:text-foreground"
+          >
+            Volver al inicio
+          </Link>
+        </aside>
       </div>
     </main>
   )

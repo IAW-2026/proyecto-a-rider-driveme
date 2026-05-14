@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Orbitron } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import clerkAppearance from '../lib/clerkAppearance';
 import "./globals.css";
@@ -14,9 +14,15 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const orbitron = Orbitron({
+  variable: "--font-orbitron",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800", "900"],
+});
+
 export const metadata: Metadata = {
-  title: "Rider Drive Me",
-  description: "Plataforma de viajes con una estética Frutiger Aero y animaciones suaves.",
+  title: "DriveMe | Viajes Interestelares",
+  description: "Tu app de viajes con estilo galáctico. Viaja a cualquier rincón de la galaxia.",
 };
 
 export default function RootLayout({
@@ -28,7 +34,7 @@ export default function RootLayout({
     <ClerkProvider appearance={clerkAppearance}>
       <html
         lang="es"
-        className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${orbitron.variable} h-full antialiased`}
       >
         <body className="min-h-full flex flex-col">
           {children}

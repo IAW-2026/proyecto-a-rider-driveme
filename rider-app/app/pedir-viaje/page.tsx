@@ -1,8 +1,10 @@
 import { auth } from "@clerk/nextjs/server"
 import { redirect } from "next/navigation"
+import { Suspense } from "react"
 import Link from "next/link"
 import PedirViajeForm from "./PedirViajeForm"
 import { getActiveSolicitudByClerkId } from "@/lib/activeSolicitud"
+import { AppHeader } from "../components/AppHeader"
 
 export default async function PedirViajePage() {
   const { userId } = await auth()
@@ -11,38 +13,63 @@ export default async function PedirViajePage() {
   const solicitudActiva = await getActiveSolicitudByClerkId(userId)
 
   if (!solicitudActiva) {
-    return <PedirViajeForm />
+    return (
+      <div className="min-h-screen bg-background stars-bg relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/30 to-background pointer-events-none" />
+        <div className="relative z-10 flex flex-col min-h-screen">
+          <AppHeader />
+          <Suspense>
+            <PedirViajeForm />
+          </Suspense>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-black text-white">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(255,0,0,0.22),transparent),radial-gradient(ellipse_60%_50%_at_80%_80%,rgba(120,0,255,0.12),transparent)]" />
-      <div className="absolute inset-0 opacity-25 [background-image:radial-gradient(rgba(255,255,255,0.07)_1px,transparent_1px)] [background-size:32px_32px]" />
+    <div className="min-h-screen bg-background stars-bg relative">
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/30 to-background pointer-events-none" />
+      <div className="relative z-10 flex flex-col min-h-screen">
+        <AppHeader />
 
-      <div className="relative z-10 flex min-h-screen items-center justify-center px-6 py-10">
-        <div className="w-full max-w-md rounded-3xl border border-zinc-800 bg-gradient-to-b from-zinc-950/90 to-black/70 p-8 text-center shadow-[0_20px_80px_rgba(0,0,0,0.55)]">
-          <span className="text-4xl text-yellow-300">!</span>
-          <h1 className="mt-4 text-2xl font-bold">Ya tenes un viaje activo</h1>
-          <p className="mt-3 text-sm text-zinc-400">
-            No podes pedir otro viaje hasta finalizar o cancelar el actual.
-          </p>
+        <main className="flex-1 flex items-center justify-center px-4 py-6">
+          <div className="w-full max-w-md holo-border rounded-xl p-8 text-center space-y-4 relative overflow-hidden scan-lines">
+            <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-glow-red/50 rounded-tl-xl" />
+            <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-glow-red/50 rounded-tr-xl" />
+            <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-glow-red/50 rounded-bl-xl" />
+            <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-glow-red/50 rounded-br-xl" />
 
-          <div className="mt-8 flex flex-col gap-3">
-            <Link
-              href="/viaje-activo"
-              className="inline-flex h-12 items-center justify-center rounded-full bg-gradient-to-r from-red-700 via-red-600 to-orange-600 px-6 text-sm font-semibold text-white transition hover:brightness-110"
+            <div className="w-16 h-16 mx-auto rounded-full bg-glow-red/20 flex items-center justify-center glow-red">
+              <span className="text-2xl">!</span>
+            </div>
+            <h1
+              className="text-xl font-bold text-foreground"
+              style={{ fontFamily: "var(--font-orbitron)" }}
             >
-              Ver mi viaje activo
-            </Link>
-            <Link
-              href="/inicio"
-              className="inline-flex h-12 items-center justify-center rounded-full border border-zinc-700 bg-white/5 px-6 text-sm font-medium text-zinc-300 transition hover:border-zinc-500 hover:bg-white/10"
-            >
-              Volver al inicio
-            </Link>
+              YA TENES UN VIAJE ACTIVO
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              No podés pedir otro viaje hasta finalizar o cancelar el actual.
+            </p>
+
+            <div className="flex flex-col gap-3 pt-2">
+              <Link
+                href="/viaje-activo"
+                className="inline-flex h-12 items-center justify-center rounded-full bg-glow-red text-white text-sm font-semibold glow-red transition hover:brightness-110"
+                style={{ fontFamily: "var(--font-orbitron)", letterSpacing: "0.05em" }}
+              >
+                VER VIAJE ACTIVO
+              </Link>
+              <Link
+                href="/inicio"
+                className="inline-flex h-12 items-center justify-center rounded-full border border-primary/30 text-primary text-sm font-medium transition hover:bg-primary/10"
+              >
+                Volver al inicio
+              </Link>
+            </div>
           </div>
-        </div>
+        </main>
       </div>
-    </main>
+    </div>
   )
 }

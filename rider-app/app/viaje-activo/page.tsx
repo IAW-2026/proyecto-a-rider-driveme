@@ -4,6 +4,7 @@ import Link from "next/link"
 import { prisma } from "@/lib/prisma"
 import { getActiveSolicitudByClerkId } from "@/lib/activeSolicitud"
 import ViajeActivoCliente from "./ViajeActivoCliente"
+import { AppHeader } from "../components/AppHeader"
 
 export default async function ViajeActivoPage() {
   const { userId } = await auth()
@@ -13,33 +14,52 @@ export default async function ViajeActivoPage() {
 
   if (!solicitud) {
     return (
-      <main className="relative min-h-screen overflow-hidden bg-black text-white">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(0,180,255,0.18),transparent),radial-gradient(ellipse_60%_50%_at_15%_80%,rgba(255,0,0,0.14),transparent)]" />
-        <div className="absolute inset-0 opacity-25 [background-image:radial-gradient(rgba(255,255,255,0.07)_1px,transparent_1px)] [background-size:32px_32px]" />
-        <div className="relative z-10 flex min-h-screen items-center justify-center px-6">
-          <div className="w-full max-w-md rounded-3xl border border-zinc-800 bg-gradient-to-b from-zinc-950/90 to-black/70 p-8 text-center shadow-[0_20px_80px_rgba(0,0,0,0.55)]">
-            <span className="text-4xl text-cyan-300">i</span>
-            <h1 className="mt-4 text-2xl font-bold">No tenes un viaje activo</h1>
-            <p className="mt-3 text-sm text-zinc-400">
-              Cuando quieras, podes pedir uno nuevo desde aca.
-            </p>
-            <div className="mt-8 flex flex-col gap-3">
-              <Link
-                href="/pedir-viaje"
-                className="inline-flex h-12 items-center justify-center rounded-full bg-gradient-to-r from-red-700 via-red-600 to-orange-600 px-6 text-sm font-semibold text-white transition hover:brightness-110"
+      <div className="min-h-screen bg-background stars-bg relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/30 to-background pointer-events-none" />
+        <div className="relative z-10 flex flex-col min-h-screen">
+          <AppHeader />
+
+          <main className="flex-1 flex items-center justify-center px-4 py-6">
+            <div className="w-full max-w-md holo-border rounded-xl p-8 text-center space-y-4 relative overflow-hidden scan-lines">
+              <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-glow-cyan/50 rounded-tl-xl" />
+              <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-glow-cyan/50 rounded-tr-xl" />
+              <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-glow-cyan/50 rounded-bl-xl" />
+              <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-glow-cyan/50 rounded-br-xl" />
+
+              <div className="w-16 h-16 mx-auto rounded-full bg-glow-cyan/20 flex items-center justify-center"
+                style={{ boxShadow: "0 0 20px oklch(0.75 0.15 200 / 0.4), 0 0 40px oklch(0.75 0.15 200 / 0.2)" }}>
+                <span className="text-2xl text-glow-cyan">i</span>
+              </div>
+
+              <h1
+                className="text-xl font-bold text-foreground"
+                style={{ fontFamily: "var(--font-orbitron)" }}
               >
-                Pedir viaje
-              </Link>
-              <Link
-                href="/inicio"
-                className="inline-flex h-12 items-center justify-center rounded-full border border-zinc-700 bg-white/5 px-6 text-sm font-medium text-zinc-300 transition hover:border-zinc-500 hover:bg-white/10"
-              >
-                Volver al inicio
-              </Link>
+                SIN VIAJE ACTIVO
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                Cuando quieras, podés pedir uno nuevo desde acá.
+              </p>
+
+              <div className="flex flex-col gap-3 pt-2">
+                <Link
+                  href="/pedir-viaje"
+                  className="inline-flex h-12 items-center justify-center rounded-full bg-glow-red text-white text-sm font-semibold glow-red transition hover:brightness-110"
+                  style={{ fontFamily: "var(--font-orbitron)", letterSpacing: "0.05em" }}
+                >
+                  PEDIR VIAJE
+                </Link>
+                <Link
+                  href="/inicio"
+                  className="inline-flex h-12 items-center justify-center rounded-full border border-primary/30 text-primary text-sm font-medium transition hover:bg-primary/10"
+                >
+                  Volver al inicio
+                </Link>
+              </div>
             </div>
-          </div>
+          </main>
         </div>
-      </main>
+      </div>
     )
   }
 
