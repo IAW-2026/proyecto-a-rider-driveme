@@ -23,26 +23,84 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url)
   const estado = searchParams.get("estado") ?? "BUSCANDO_CONDUCTOR"
+  const limit = Math.min(parseInt(searchParams.get("limit") ?? "20"), 100)
+  const offset = parseInt(searchParams.get("offset") ?? "0")
+  const latitud = searchParams.get("latitud") ? parseFloat(searchParams.get("latitud")!) : null
+  const longitud = searchParams.get("longitud") ? parseFloat(searchParams.get("longitud")!) : null
+  const radius = searchParams.get("radius") ? parseInt(searchParams.get("radius")!) : null
+  const orden = searchParams.get("orden") ?? "creada_en" // "distancia" o "creada_en"
 
-  const solicitudes = await prisma.solicitudDeViaje.findMany({
+  // Función para calcular distancia Haversine (en metros)
+  const calcularDistancia = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371000 // radio de la tierra en metros
+    const dLat = ((lat2 - lat1) * Math.PI) / 180
+    const dLon = ((lon2 - lon1) * Math.PI) / 180
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2)
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+    return R * c
+  }
+
+  let solicitudes = await prisma.solicitudDeViaje.findMany({
     where: { estado: estado as never },
     include: { pasajero: { select: { id: true, nombre: true, ratingPromedio: true } } },
-    orderBy: { creadaEn: "desc" },
   })
 
-  return NextResponse.json(
-    solicitudes.map((s: typeof solicitudes[number]) => ({
+  // Filtrar por distancia si se proporciona ubicación
+  if (latitud !== null && longitud !== null && radius !== null) {
+    solicitudes = solicitudes.filter((s) => {
+      const distance = calcularDistancia(latitud, longitud, s.origenLat, s.origenLng)
+      return distance <= radius
+    })
+  }
+
+  // Mapear respuesta con distancia y ETA
+  let solicitudesFormateadas = solicitudes.map((s) => {
+    const distancia = latitud !== null && longitud !== null ? calcularDistancia(latitud, longitud, s.origenLat, s.origenLng) : 0
+    const etaMin = Math.ceil(distancia / 500) // aproximadamente 30 km/h = 500 m/min
+
+    return {
       id_solicitud: s.id,
       id_pasajero: s.pasajeroId,
-      pasajero: s.pasajero,
-      origen: { latitud: s.origenLat, longitud: s.origenLng },
-      destino: { latitud: s.destinoLat, longitud: s.destinoLng },
+      origen: { 
+        direccion: s.origenDireccion, 
+        latitud: s.origenLat, 
+        longitud: s.origenLng 
+      },
+      destino: { 
+        direccion: s.destinoDireccion, 
+        latitud: s.destinoLat, 
+        longitud: s.destinoLng 
+      },
       precio_estimado: s.precioEstimadoCents,
       metodo_pago: s.metodoPago,
-      estado: s.estado,
-      creada_en: s.creadaEn,
-    }))
-  )
+      created_at: s.creadaEn,
+      distance_m: latitud !== null && longitud !== null ? Math.round(distancia) : 0,
+      eta_min: etaMin,
+    }
+  })
+
+  // Ordenar según parámetro
+  if (orden === "distancia" && latitud !== null && longitud !== null) {
+    solicitudesFormateadas.sort((a, b) => a.distance_m - b.distance_m)
+  } else {
+    solicitudesFormateadas.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+  }
+
+  // Aplicar paginación
+  const total = solicitudesFormateadas.length
+  const paginated = solicitudesFormateadas.slice(offset, offset + limit)
+
+  return NextResponse.json({
+    total,
+    limit,
+    offset,
+    solicitudes: paginated,
+  })
 }
 
 // Pasajero crea una nueva solicitud de viaje

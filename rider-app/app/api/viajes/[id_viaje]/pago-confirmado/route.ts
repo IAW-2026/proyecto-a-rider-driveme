@@ -17,12 +17,25 @@ export async function POST(
     return NextResponse.json({ error: "Faltan campos requeridos" }, { status: 400 })
   }
 
+  if (!["CAPTURED", "FAILED"].includes(estado)) {
+    return NextResponse.json({ error: "Estado de transacción inválido" }, { status: 400 })
+  }
+
   const viaje = await prisma.viaje.findUnique({ where: { id: id_viaje } })
 
   if (!viaje) {
     return NextResponse.json({ error: "Viaje no encontrado" }, { status: 404 })
   }
 
-  // Solo registramos la notificación — el cierre operativo del viaje es responsabilidad de Driver App
+  // Registrar la transacción de pago
+  await prisma.transaccion.create({
+    data: {
+      viajeId: id_viaje,
+      idTransaccion: id_transaccion,
+      estado: estado,
+      monto: Math.round(monto * 100), // convertir a cents
+    },
+  })
+
   return NextResponse.json({ ok: true })
 }

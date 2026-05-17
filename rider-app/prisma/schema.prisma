@@ -39,13 +39,29 @@ model SolicitudDeViaje {
 }
 
 model Viaje {
-  id           String           @id @default(uuid())
-  solicitudId  String           @unique
-  idConductor  String?
-  estadoActual EstadoViaje
-  solicitud    SolicitudDeViaje @relation(fields: [solicitudId], references: [id])
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
+  id                String           @id @default(uuid())
+  solicitudId       String           @unique
+  idConductor       String?
+  idVehiculo        String?
+  latitudActual     Float?
+  longitudActual    Float?
+  estadoActual      EstadoViaje
+  solicitud         SolicitudDeViaje @relation(fields: [solicitudId], references: [id])
+  transacciones     Transaccion[]
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+}
+
+model Transaccion {
+  id            String   @id @default(uuid())
+  viajeId       String
+  idTransaccion String
+  estado        String   // "CAPTURED" | "FAILED"
+  monto         Int      // en cents
+  viaje         Viaje    @relation(fields: [viajeId], references: [id])
+  createdAt     DateTime @default(now())
+
+  @@index([viajeId])
 }
 
 model DireccionFrecuente {
