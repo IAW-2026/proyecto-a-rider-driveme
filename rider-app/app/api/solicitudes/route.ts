@@ -13,7 +13,7 @@ const solicitudSchema = z.object({
   destino_lng: z.number().nullable().optional(),
   destino_direccion: z.string().optional(),
   metodo_pago: z.enum(["EFECTIVO", "TARJETA"]),
-  precio_estimado: z.number().int().positive().nullable().optional(),
+  precio_estimado: z.number().positive().nullable().optional(),
 })
 
 // Driver App consulta solicitudes disponibles
@@ -76,7 +76,7 @@ export async function GET(req: NextRequest) {
         latitud: s.destinoLat, 
         longitud: s.destinoLng 
       },
-      precio_estimado: s.precioEstimadoCents,
+      precio_estimado: s.precioEstimadoCents != null ? s.precioEstimadoCents / 100 : null,
       metodo_pago: s.metodoPago,
       created_at: s.creadaEn,
       distance_m: latitud !== null && longitud !== null ? Math.round(distancia) : 0,
@@ -132,7 +132,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 })
   }
 
-  const { origen_lat, origen_lng, origen_direccion, destino_lat, destino_lng, destino_direccion, metodo_pago } = parsed.data
+  const { origen_lat, origen_lng, origen_direccion, destino_lat, destino_lng, destino_direccion, metodo_pago, precio_estimado } = parsed.data
 
   // Guard final: evita crear otra solicitud si ya hay un viaje activo.
   const activeSolicitud = await getActiveSolicitudByPasajeroId(pasajero.id)
@@ -156,6 +156,7 @@ export async function POST(req: NextRequest) {
       destinoLat: destino_lat ?? null,
       destinoLng: destino_lng ?? null,
       destinoDireccion: destino_direccion ?? null,
+      precioEstimadoCents: precio_estimado != null ? Math.round(precio_estimado * 100) : null,
       metodoPago: metodo_pago,
       estado: "BUSCANDO_CONDUCTOR",
     },

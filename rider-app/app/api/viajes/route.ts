@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
     id_viaje: viaje.id,
     id_solicitud: solicitud.id,
     estado_actual: viaje.estadoActual,
-    precio_estimado: solicitud.precioEstimadoCents,
+    precio_estimado: solicitud.precioEstimadoCents != null ? solicitud.precioEstimadoCents / 100 : null,
     metodo_pago: solicitud.metodoPago,
     pasajero: {
       id_pasajero: solicitud.pasajero.id,
