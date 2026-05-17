@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { requireRole } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { crearResena } from "@/lib/feedback"
+import { generatePublicId } from "@/lib/ids"
 
 export async function POST(req: NextRequest) {
   const auth = await requireRole(["rider", "admin"])
@@ -21,7 +22,7 @@ export async function POST(req: NextRequest) {
 
   const pasajero = await prisma.pasajero.findUnique({
     where: { clerkId: auth.userId },
-    select: { id: true },
+    select: { id: true, publicId: true, clerkId: true },
   })
 
   if (!pasajero) {
@@ -41,9 +42,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "El viaje todavía no terminó" }, { status: 409 })
   }
 
+  // Ensure pasajero tiene publicId para exponerlo a servicios externos
+  let idEmisorPublic = pasajero.publicId
+  if (!idEmisorPublic) {
+    idEmisorPublic = generatePublicId("pas", pasajero.clerkId ?? pasajero.id)
+    await prisma.pasajero.update({ where: { id: pasajero.id }, data: { publicId: idEmisorPublic } })
+  }
+
   const feedback = await crearResena({
     id_viaje,
-    id_emisor: pasajero.id,
+    id_emisor: idEmisorPublic,
     id_receptor,
     puntaje: puntajeNumero,
     comentario: String(comentario).trim(),

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { requireM2MToken } from "@/lib/auth"
+import { resolvePublicIdToInternalId } from "@/lib/ids"
 
 // Feedback App actualiza el rating promedio del pasajero
 export async function POST(req: NextRequest) {
@@ -8,10 +9,15 @@ export async function POST(req: NextRequest) {
   if (authError) return authError
 
   const body = await req.json()
-  const { id_pasajero, puntaje } = body
+  let { id_pasajero, puntaje } = body
 
   if (!id_pasajero || puntaje === undefined) {
     return NextResponse.json({ error: "Faltan campos requeridos" }, { status: 400 })
+  }
+
+  // aceptar tanto id interno (UUID) como publicId (pas_...)
+  if (typeof id_pasajero === "string" && id_pasajero.startsWith("pas_")) {
+    id_pasajero = await resolvePublicIdToInternalId(id_pasajero)
   }
 
   const pasajero = await prisma.pasajero.findUnique({ where: { id: id_pasajero } })

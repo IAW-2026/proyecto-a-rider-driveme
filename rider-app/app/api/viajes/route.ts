@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { requireM2MToken } from "@/lib/auth"
+import { resolvePublicIdToInternalId } from "@/lib/ids"
 
 export async function POST(req: NextRequest) {
   const m2mError = requireM2MToken(req)
@@ -15,7 +16,7 @@ export async function POST(req: NextRequest) {
 
   const solicitud = await prisma.solicitudDeViaje.findUnique({
     where: { id: id_solicitud },
-    include: { pasajero: true },
+    include: { pasajero: { select: { id: true, publicId: true, nombre: true } } },
   })
 
   if (!solicitud) {
@@ -23,8 +24,14 @@ export async function POST(req: NextRequest) {
   }
 
   // Si el caller provee id_pasajero, validar que coincida con la solicitud
-  if (id_pasajero && solicitud.pasajero.id !== id_pasajero) {
-    return NextResponse.json({ error: "id_pasajero no coincide con la solicitud" }, { status: 400 })
+  if (id_pasajero) {
+    let internalId = id_pasajero
+    if (typeof id_pasajero === "string" && id_pasajero.startsWith("pas_")) {
+      internalId = await resolvePublicIdToInternalId(id_pasajero)
+    }
+    if (!internalId || solicitud.pasajero.id !== internalId) {
+      return NextResponse.json({ error: "id_pasajero no coincide con la solicitud" }, { status: 400 })
+    }
   }
 
   if (solicitud.estado !== "BUSCANDO_CONDUCTOR") {
@@ -55,7 +62,7 @@ export async function POST(req: NextRequest) {
     precio_estimado: solicitud.precioEstimadoCents != null ? solicitud.precioEstimadoCents / 100 : null,
     metodo_pago: solicitud.metodoPago,
     pasajero: {
-      id_pasajero: solicitud.pasajero.id,
+      id_pasajero: solicitud.pasajero.publicId ?? solicitud.pasajero.id,
       nombre: solicitud.pasajero.nombre,
     },
     origen: {

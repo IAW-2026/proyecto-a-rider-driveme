@@ -7,6 +7,11 @@ const isPublicRoute = createRouteMatcher([
   "/api/webhooks(.*)",
   // Public API endpoints used by client without auth
   "/api/geocoding(.*)",
+  "/api/solicitudes(.*)",
+  "/api/viajes(.*)",
+  "/api/notificaciones(.*)",
+  "/api/pasajeros(.*)",
+  "/api/pasajero/reputacion(.*)",
   "/api/conductores(.*)",
   "/api/auth/me(.*)",
 ]);

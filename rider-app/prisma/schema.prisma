@@ -8,6 +8,7 @@ datasource db {
 
 model Pasajero {
   id             String               @id @default(uuid())
+  publicId       String?              @unique
   clerkId        String               @unique
   nombre         String
   email          String               @unique

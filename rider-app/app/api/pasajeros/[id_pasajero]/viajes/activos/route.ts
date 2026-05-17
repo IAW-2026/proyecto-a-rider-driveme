@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { resolvePublicIdToInternalId } from "@/lib/ids"
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id_pasajero: string }> }
 ) {
-  const { id_pasajero } = await params
+  let { id_pasajero } = await params
+
+  // aceptar publicId (pas_...) o id interno
+  if (typeof id_pasajero === "string" && id_pasajero.startsWith("pas_")) {
+    id_pasajero = await resolvePublicIdToInternalId(id_pasajero) ?? id_pasajero
+  }
 
   const solicitud = await prisma.solicitudDeViaje.findFirst({
     where: {

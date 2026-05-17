@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
 
   let solicitudes = await prisma.solicitudDeViaje.findMany({
     where: { estado: estado as never },
-    include: { pasajero: { select: { id: true, nombre: true, ratingPromedio: true } } },
+    include: { pasajero: { select: { id: true, publicId: true, nombre: true, ratingPromedio: true } } },
   })
 
   // Filtrar por distancia si se proporciona ubicación
@@ -65,26 +65,22 @@ export async function GET(req: NextRequest) {
 
     return {
       id_solicitud: s.id,
-      id_pasajero: s.pasajeroId,
-      return {
-        id_solicitud: s.id,
-        id_pasajero: s.pasajeroId,
-        origen: { 
-          direccion: s.origenDireccion, 
-          latitud: s.origenLat, 
-          longitud: s.origenLng 
-        },
-        destino: { 
-          direccion: s.destinoDireccion, 
-          latitud: s.destinoLat, 
-          longitud: s.destinoLng 
-        },
-        precio_estimado: s.precioEstimadoCents != null ? s.precioEstimadoCents / 100 : null,
-        metodo_pago: s.metodoPago,
-        created_at: s.creadaEn,
-        distance_m: latitud !== null && longitud !== null ? Math.round(distancia) : 0,
-        eta_min: etaMin,
-      }
+      id_pasajero: s.pasajero.publicId ?? s.pasajeroId,
+      pasajero: {
+        id_pasajero_public: s.pasajero.publicId ?? null,
+        nombre: s.pasajero.nombre ?? null,
+        rating_promedio: s.pasajero.ratingPromedio ?? null,
+      },
+      origen: { direccion: s.origenDireccion, latitud: s.origenLat, longitud: s.origenLng },
+      destino: { direccion: s.destinoDireccion, latitud: s.destinoLat, longitud: s.destinoLng },
+      precio_estimado: s.precioEstimadoCents != null ? s.precioEstimadoCents / 100 : null,
+      metodo_pago: s.metodoPago,
+      created_at: s.creadaEn,
+      distance_m: latitud !== null && longitud !== null ? Math.round(distancia) : 0,
+      eta_min: etaMin,
+    }
+  })
+
   if (orden === "distancia" && latitud !== null && longitud !== null) {
     solicitudesFormateadas.sort((a, b) => a.distance_m - b.distance_m)
   } else {
