@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useLocalStorageValue } from "@/lib/useLocalStorage"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import dynamic from "next/dynamic"
@@ -23,9 +24,17 @@ interface Props {
   destino: { lat: number; lng: number } | null
   destinoDireccion: string | null
   viajeEstado: string | null
+  viajeId: string | null
   idConductor: string | null
   creadaEn: string
   nombrePasajero: string
+}
+
+type Driver = {
+  nombre: string
+  patente: string
+  calificacionPromedio: number | null
+  etaLlegadaMinutos: number
 }
 
 const ESTADO_LABEL: Record<string, string> = {
@@ -45,6 +54,7 @@ export default function ViajeActivoCliente({
   destino,
   destinoDireccion,
   viajeEstado,
+  viajeId,
   idConductor,
   creadaEn,
   nombrePasajero,
@@ -52,8 +62,43 @@ export default function ViajeActivoCliente({
   const router = useRouter()
   const [cancelando, setCancelando] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [driver, setDriver] = useState<any | null>(null)
+  const [driver, setDriver] = useState<Driver | null>(null)
   const [loadingDriver, setLoadingDriver] = useState(false)
+
+  const [showFeedback, setShowFeedback] = useState(false)
+  const [puntaje, setPuntaje] = useState(0)
+  const [comentario, setComentario] = useState("")
+  const [feedbackLoading, setFeedbackLoading] = useState(false)
+  const [feedbackError, setFeedbackError] = useState<string | null>(null)
+  const [feedbackEnviado, setFeedbackEnviado] = useState(false)
+  const feedbackGuardado = useLocalStorageValue(viajeId ? `feedback_viaje_${viajeId}` : null)
+  const feedbackYaDado = feedbackGuardado === "1"
+
+  async function handleEnviarFeedback() {
+    setFeedbackLoading(true)
+    setFeedbackError(null)
+    try {
+      const res = await fetch("/api/resenas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id_viaje: viajeId, id_receptor: idConductor, puntaje, comentario }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        if (viajeId) {
+          localStorage.setItem(`feedback_viaje_${viajeId}`, "1")
+          if (data.id_calificacion) localStorage.setItem(`feedback_calificacion_${viajeId}`, data.id_calificacion)
+        }
+        setFeedbackEnviado(true)
+      } else {
+        setFeedbackError(data.error ?? "Error al enviar el feedback.")
+      }
+    } catch {
+      setFeedbackError("Error de conexión.")
+    } finally {
+      setFeedbackLoading(false)
+    }
+  }
 
   const esBuscando = estado === "BUSCANDO_CONDUCTOR"
   const estadoMostrado =
@@ -138,14 +183,21 @@ export default function ViajeActivoCliente({
               </p>
 
               <div className="flex flex-col gap-3 pt-2">
-                {!esCancelado && (
-                  <Link
-                    href={`/historial/${solicitudId}`}
-                    className="inline-flex h-12 items-center justify-center rounded-full bg-accent text-accent-foreground text-sm font-semibold glow-accent transition hover:brightness-110"
-                    style={{ fontFamily: "var(--font-orbitron)", letterSpacing: "0.05em" }}
-                  >
-                    DEJAR FEEDBACK
-                  </Link>
+                {!esCancelado && viajeId && idConductor && (
+                  feedbackYaDado ? (
+                    <p className="text-sm text-muted-foreground text-center py-1">
+                      Ya calificaste este viaje ★
+                    </p>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setShowFeedback(true)}
+                      className="inline-flex h-12 items-center justify-center rounded-full bg-accent text-accent-foreground text-sm font-semibold glow-accent transition hover:brightness-110"
+                      style={{ fontFamily: "var(--font-orbitron)", letterSpacing: "0.05em" }}
+                    >
+                      DEJAR FEEDBACK
+                    </button>
+                  )
                 )}
                 <Link
                   href="/pedir-viaje"
@@ -164,6 +216,98 @@ export default function ViajeActivoCliente({
             </div>
           </main>
         </div>
+
+        {/* Modal de feedback */}
+        {showFeedback && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => !feedbackLoading && setShowFeedback(false)}
+            />
+            <div className="relative holo-border rounded-xl p-6 w-full max-w-sm space-y-5 bg-card scan-lines">
+              <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-glow-red/50 rounded-tl-xl" />
+              <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-glow-red/50 rounded-tr-xl" />
+              <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-glow-red/50 rounded-bl-xl" />
+              <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-glow-red/50 rounded-br-xl" />
+
+              <p
+                className="text-xs text-glow-red/90 tracking-widest text-center"
+                style={{ fontFamily: "var(--font-orbitron)" }}
+              >
+                CALIFICÁ TU VIAJE
+              </p>
+
+              {feedbackEnviado ? (
+                <div className="space-y-4 text-center">
+                  <div className="w-14 h-14 mx-auto rounded-full bg-accent/20 flex items-center justify-center text-2xl text-accent">
+                    ✓
+                  </div>
+                  <p className="text-sm text-foreground font-medium">¡Gracias por tu calificación!</p>
+                  <button
+                    type="button"
+                    onClick={() => setShowFeedback(false)}
+                    className="w-full h-11 rounded-lg border border-border text-muted-foreground text-sm hover:border-primary/30 hover:text-foreground transition"
+                  >
+                    Cerrar
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {/* Estrellas */}
+                  <div className="flex justify-center gap-2">
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => setPuntaje(n)}
+                        className={`text-3xl transition-transform hover:scale-110 ${
+                          n <= puntaje ? "text-accent" : "text-muted-foreground/30"
+                        }`}
+                      >
+                        ★
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Comentario */}
+                  <textarea
+                    rows={3}
+                    placeholder="¿Cómo fue el viaje?"
+                    value={comentario}
+                    onChange={(e) => setComentario(e.target.value)}
+                    className="w-full rounded-lg bg-input/30 border border-primary/20 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:border-primary/50 transition"
+                  />
+
+                  {feedbackError && (
+                    <p className="text-xs text-destructive-foreground bg-destructive/10 border border-destructive/30 rounded-lg px-3 py-2">
+                      {feedbackError}
+                    </p>
+                  )}
+
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      disabled={feedbackLoading}
+                      onClick={() => setShowFeedback(false)}
+                      className="flex-1 h-11 rounded-lg border border-border text-muted-foreground text-sm hover:border-primary/30 hover:text-foreground transition disabled:opacity-40"
+                    >
+                      Cerrar
+                    </button>
+                    <button
+                      type="button"
+                      disabled={feedbackLoading || puntaje === 0}
+                      onClick={handleEnviarFeedback}
+                      className="flex-1 h-11 rounded-lg bg-glow-red text-white glow-red text-sm transition hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
+                      style={{ fontFamily: "var(--font-orbitron)", fontSize: "0.75rem", letterSpacing: "0.05em" }}
+                    >
+                      {feedbackLoading ? "ENVIANDO..." : "ENVIAR"}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     )
   }

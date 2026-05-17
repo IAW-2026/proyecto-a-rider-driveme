@@ -51,6 +51,7 @@ export default async function HistorialDetallePage({
           id: true,
           idConductor: true,
           estadoActual: true,
+          idCalificacion: true,
         },
       },
     },
@@ -68,7 +69,6 @@ export default async function HistorialDetallePage({
 
   const conductor = solicitud.viaje?.idConductor ? await getConductorById(solicitud.viaje.idConductor) : null
   const badge = getBadge(solicitud.estado, solicitud.viaje?.estadoActual)
-  const puedeFeedback = esViajeFinalizado && Boolean(solicitud.viaje?.id)
 
   return (
     <div className="min-h-screen bg-background stars-bg relative">
@@ -230,7 +230,7 @@ export default async function HistorialDetallePage({
               <FeedbackActions
                 viajeId={solicitud.viaje?.id ?? null}
                 conductorId={solicitud.viaje?.idConductor ?? null}
-                puedeDejarFeedback={puedeFeedback}
+                idCalificacion={solicitud.viaje?.idCalificacion ?? null}
               />
             </aside>
           </section>

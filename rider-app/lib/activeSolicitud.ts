@@ -39,3 +39,34 @@ export async function getActiveSolicitudByClerkId(clerkId: string) {
   if (!pasajero) return null
   return getActiveSolicitudByPasajeroId(pasajero.id)
 }
+
+// Returns the most recent solicitud whose viaje is FINALIZADO, within the last 2 hours,
+// so the rider can still leave feedback after the trip ends.
+export async function getRecentlyFinishedSolicitudByClerkId(clerkId: string) {
+  const pasajero = await prisma.pasajero.findUnique({
+    where: { clerkId },
+    select: { id: true },
+  })
+  if (!pasajero) return null
+
+  const since = new Date(Date.now() - 2 * 60 * 60 * 1000)
+
+  return prisma.solicitudDeViaje.findFirst({
+    where: {
+      pasajeroId: pasajero.id,
+      estado: { in: SOLICITUDES_ACTIVAS },
+      viaje: { estadoActual: "FINALIZADO" },
+      creadaEn: { gte: since },
+    },
+    include: {
+      viaje: {
+        select: {
+          id: true,
+          estadoActual: true,
+          idConductor: true,
+        },
+      },
+    },
+    orderBy: { creadaEn: "desc" },
+  })
+}

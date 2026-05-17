@@ -46,6 +46,7 @@ model Viaje {
   latitudActual     Float?
   longitudActual    Float?
   estadoActual      EstadoViaje
+  idCalificacion    String?
   solicitud         SolicitudDeViaje @relation(fields: [solicitudId], references: [id])
   transacciones     Transaccion[]
   createdAt         DateTime         @default(now())

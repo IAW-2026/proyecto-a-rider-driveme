@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server"
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import { prisma } from "@/lib/prisma"
-import { getActiveSolicitudByClerkId } from "@/lib/activeSolicitud"
+import { getActiveSolicitudByClerkId, getRecentlyFinishedSolicitudByClerkId } from "@/lib/activeSolicitud"
 import ViajeActivoCliente from "./ViajeActivoCliente"
 import { AppHeader } from "../components/AppHeader"
 
@@ -10,7 +10,9 @@ export default async function ViajeActivoPage() {
   const { userId } = await auth()
   if (!userId) redirect("/sign-in")
 
-  const solicitud = await getActiveSolicitudByClerkId(userId)
+  const solicitud =
+    (await getActiveSolicitudByClerkId(userId)) ??
+    (await getRecentlyFinishedSolicitudByClerkId(userId))
 
   if (!solicitud) {
     return (
@@ -81,6 +83,7 @@ export default async function ViajeActivoPage() {
       }
       destinoDireccion={solicitud.destinoDireccion ?? null}
       viajeEstado={solicitud.viaje?.estadoActual ?? null}
+      viajeId={solicitud.viaje?.id ?? null}
       idConductor={solicitud.viaje?.idConductor ?? null}
       creadaEn={solicitud.creadaEn.toISOString()}
       nombrePasajero={pasajero?.nombre ?? "Pasajero"}

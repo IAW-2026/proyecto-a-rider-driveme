@@ -37,8 +37,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Viaje no encontrado" }, { status: 404 })
   }
 
-  if (viaje.estadoActual !== "FINALIZADO") {
-    return NextResponse.json({ error: "Solo podés dejar feedback al finalizar el viaje" }, { status: 409 })
+  if (!["FINALIZADO", "CANCELADO_POR_CONDUCTOR"].includes(viaje.estadoActual)) {
+    return NextResponse.json({ error: "El viaje todavía no terminó" }, { status: 409 })
   }
 
   const feedback = await crearResena({
@@ -48,6 +48,13 @@ export async function POST(req: NextRequest) {
     puntaje: puntajeNumero,
     comentario: String(comentario).trim(),
   })
+
+  if (feedback.id_calificacion) {
+    await prisma.viaje.update({
+      where: { id: id_viaje },
+      data: { idCalificacion: feedback.id_calificacion },
+    })
+  }
 
   return NextResponse.json(feedback, { status: 201 })
 }

@@ -1,19 +1,40 @@
 "use client"
 
 import { useState } from "react"
+import { useLocalStorageValue } from "@/lib/useLocalStorage"
 
 type Props = {
   viajeId: string | null
   conductorId: string | null
-  puedeDejarFeedback: boolean
+  idCalificacion: string | null
 }
 
-export default function FeedbackActions({ viajeId, conductorId, puedeDejarFeedback }: Props) {
+const MOTIVOS = [
+  { value: "SOLICITUD_EDICION", label: "Quiero corregir mi calificación" },
+  { value: "COMENTARIO_INAPROPIADO", label: "Comentario inapropiado" },
+  { value: "OTRO", label: "Otro reclamo" },
+]
+
+export default function FeedbackActions({ viajeId, conductorId, idCalificacion: idCalificacionProp }: Props) {
   const [puntaje, setPuntaje] = useState("5")
   const [comentario, setComentario] = useState("")
   const [loading, setLoading] = useState(false)
   const [enviado, setEnviado] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const feedbackGuardado = useLocalStorageValue(viajeId ? `feedback_viaje_${viajeId}` : null)
+  const feedbackYaDado = feedbackGuardado === "1"
+
+  const idCalificacionGuardado = useLocalStorageValue(viajeId ? `feedback_calificacion_${viajeId}` : null)
+  const [idCalificacionLocal, setIdCalificacionLocal] = useState<string | null>(null)
+  const idCalificacion = idCalificacionLocal ?? idCalificacionGuardado ?? idCalificacionProp
+
+  const [showReporte, setShowReporte] = useState(false)
+  const [reporteMotivo, setReporteMotivo] = useState(MOTIVOS[0].value)
+  const [reporteDescripcion, setReporteDescripcion] = useState("")
+  const [reporteLoading, setReporteLoading] = useState(false)
+  const [reporteEnviado, setReporteEnviado] = useState(false)
+  const [reporteError, setReporteError] = useState<string | null>(null)
 
   async function enviar() {
     if (!viajeId || !conductorId) return
@@ -32,6 +53,13 @@ export default function FeedbackActions({ viajeId, conductorId, puedeDejarFeedba
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? "No se pudo enviar el feedback")
+      if (viajeId) {
+        localStorage.setItem(`feedback_viaje_${viajeId}`, "1")
+        if (data.id_calificacion) {
+          localStorage.setItem(`feedback_calificacion_${viajeId}`, data.id_calificacion)
+          setIdCalificacionLocal(data.id_calificacion)
+        }
+      }
       setEnviado(true)
       setComentario("")
     } catch (err) {
@@ -41,32 +69,149 @@ export default function FeedbackActions({ viajeId, conductorId, puedeDejarFeedba
     }
   }
 
-  if (!puedeDejarFeedback) {
+  async function enviarReporte() {
+    if (!idCalificacion) return
+    setReporteLoading(true)
+    setReporteError(null)
+    try {
+      const res = await fetch("/api/reportes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id_calificacion: idCalificacion,
+          motivo: reporteMotivo,
+          descripcion: reporteDescripcion,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? "No se pudo enviar el reclamo")
+      setReporteEnviado(true)
+    } catch (err) {
+      setReporteError(err instanceof Error ? err.message : "Error de conexión")
+    } finally {
+      setReporteLoading(false)
+    }
+  }
+
+  const panelContacto = !idCalificacion ? null : (
+    <div className="rounded-xl border border-primary/20 bg-primary/5 p-5 space-y-3">
+      <p
+        className="text-xs text-primary/60 tracking-widest"
+        style={{ fontFamily: "var(--font-orbitron)" }}
+      >
+        ¿MÁS FEEDBACK?
+      </p>
+
+      {reporteEnviado ? (
+        <div className="flex items-center gap-2">
+          <span className="text-accent">✓</span>
+          <p className="text-sm text-accent">Reclamo enviado. Lo revisaremos pronto.</p>
+        </div>
+      ) : !showReporte ? (
+        <div className="space-y-2">
+          <p className="text-sm text-muted-foreground">
+            ¿Querés corregir tu reseña o hacer un reclamo?
+          </p>
+          <button
+            type="button"
+            onClick={() => setShowReporte(true)}
+            className="text-sm text-primary underline underline-offset-2 hover:text-primary/80 transition"
+          >
+            Enviar un reclamo
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          <label className="block">
+            <span className="mb-1 block text-xs text-muted-foreground">Motivo</span>
+            <select
+              value={reporteMotivo}
+              onChange={(e) => setReporteMotivo(e.target.value)}
+              disabled={reporteLoading}
+              className="w-full rounded-lg border border-primary/20 bg-input/50 px-3 py-2 text-sm text-foreground outline-none focus:border-primary disabled:opacity-50"
+            >
+              {MOTIVOS.map((m) => (
+                <option key={m.value} value={m.value}>{m.label}</option>
+              ))}
+            </select>
+          </label>
+
+          <label className="block">
+            <span className="mb-1 block text-xs text-muted-foreground">Descripción</span>
+            <textarea
+              rows={3}
+              value={reporteDescripcion}
+              onChange={(e) => setReporteDescripcion(e.target.value)}
+              disabled={reporteLoading}
+              placeholder="Explicá qué querés modificar o reportar"
+              className="w-full rounded-lg border border-primary/20 bg-input/50 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-primary resize-none disabled:opacity-50"
+            />
+          </label>
+
+          {reporteError && (
+            <p className="text-xs text-destructive-foreground bg-destructive/10 border border-destructive/30 rounded-lg px-3 py-2">
+              {reporteError}
+            </p>
+          )}
+
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setShowReporte(false)}
+              disabled={reporteLoading}
+              className="flex-1 h-9 rounded-lg border border-border text-muted-foreground text-sm hover:border-primary/30 hover:text-foreground transition disabled:opacity-40"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={enviarReporte}
+              disabled={reporteLoading || !reporteDescripcion.trim()}
+              className="flex-1 h-9 rounded-lg bg-primary text-primary-foreground text-sm font-medium transition hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {reporteLoading ? "Enviando…" : "Enviar"}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+
+  if (!viajeId || !conductorId) {
     return (
-      <div className="holo-border rounded-xl p-5">
-        <p
-          className="text-xs text-muted-foreground tracking-widest"
-          style={{ fontFamily: "var(--font-orbitron)" }}
-        >
-          FEEDBACK
-        </p>
-        <p className="mt-3 text-sm text-muted-foreground">
-          El feedback solo está disponible en viajes finalizados correctamente.
-        </p>
+      <div className="space-y-3">
+        <div className="holo-border rounded-xl p-5">
+          <p
+            className="text-xs text-muted-foreground tracking-widest"
+            style={{ fontFamily: "var(--font-orbitron)" }}
+          >
+            FEEDBACK
+          </p>
+          <p className="mt-3 text-sm text-muted-foreground">
+            No hay datos de conductor para calificar este viaje.
+          </p>
+        </div>
+        {panelContacto}
       </div>
     )
   }
 
-  if (enviado) {
+  if (feedbackYaDado || enviado) {
     return (
-      <div className="rounded-xl border border-accent/30 bg-accent/10 p-5">
-        <p
-          className="text-xs text-accent/70 tracking-widest"
-          style={{ fontFamily: "var(--font-orbitron)" }}
-        >
-          FEEDBACK
-        </p>
-        <p className="mt-3 text-sm text-accent">Tu feedback fue enviado. ¡Gracias!</p>
+      <div className="space-y-3">
+        <div className="rounded-xl border border-accent/30 bg-accent/10 p-5 space-y-2">
+          <p
+            className="text-xs text-accent/70 tracking-widest"
+            style={{ fontFamily: "var(--font-orbitron)" }}
+          >
+            FEEDBACK
+          </p>
+          <div className="flex items-center gap-2 mt-2">
+            <span className="text-accent text-lg">★</span>
+            <p className="text-sm text-accent font-medium">Ya dejaste tu calificación para este viaje.</p>
+          </div>
+        </div>
+        {panelContacto}
       </div>
     )
   }
