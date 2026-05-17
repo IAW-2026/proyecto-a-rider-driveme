@@ -215,23 +215,14 @@ export default async function HistorialDetallePage({
             </div>
 
             <aside className="space-y-4">
-              <div className="rounded-xl border border-glow-cyan/20 bg-glow-cyan/5 p-5 space-y-2">
-                <p
-                  className="text-xs text-glow-cyan/70 tracking-widest"
-                  style={{ fontFamily: "var(--font-orbitron)" }}
-                >
-                  ACCIONES
-                </p>
-                <p className="text-sm text-muted-foreground leading-6">
-                  Desde este detalle podés dejar feedback y, una vez generado, enviar un reporte a la app de feedback.
-                </p>
-              </div>
-
-              <FeedbackActions
-                viajeId={solicitud.viaje?.id ?? null}
-                conductorId={solicitud.viaje?.idConductor ?? null}
-                idCalificacion={solicitud.viaje?.idCalificacion ?? null}
-              />
+              {!esCanceladoPorPasajero && (
+                <FeedbackActions
+                  viajeId={solicitud.viaje?.id ?? null}
+                  conductorId={solicitud.viaje?.idConductor ?? null}
+                  idCalificacion={solicitud.viaje?.idCalificacion ?? null}
+                  sinEstrellas={esCanceladoPorConductor}
+                />
+              )}
             </aside>
           </section>
         </main>

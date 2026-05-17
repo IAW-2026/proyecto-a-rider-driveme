@@ -46,6 +46,13 @@ const ESTADO_LABEL: Record<string, string> = {
   CANCELADO_POR_CONDUCTOR: "Cancelado por el conductor",
 }
 
+const MOTIVOS_CANCELACION = [
+  "Me equivoqué de destino",
+  "Tardó demasiado",
+  "Ya no lo necesito",
+  "Otro",
+]
+
 export default function ViajeActivoCliente({
   solicitudId,
   estado,
@@ -65,7 +72,7 @@ export default function ViajeActivoCliente({
   const [driver, setDriver] = useState<Driver | null>(null)
   const [loadingDriver, setLoadingDriver] = useState(false)
 
-  const [showFeedback, setShowFeedback] = useState(false)
+  // feedback post-FINALIZADO
   const [puntaje, setPuntaje] = useState(0)
   const [comentario, setComentario] = useState("")
   const [feedbackLoading, setFeedbackLoading] = useState(false)
@@ -73,6 +80,17 @@ export default function ViajeActivoCliente({
   const [feedbackEnviado, setFeedbackEnviado] = useState(false)
   const feedbackGuardado = useLocalStorageValue(viajeId ? `feedback_viaje_${viajeId}` : null)
   const feedbackYaDado = feedbackGuardado === "1"
+
+  // mounted guard para evitar flash de hidratación en el modal
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
+
+  // feedback post-CANCELADO_POR_CONDUCTOR
+  const [comentarioCancelacion, setComentarioCancelacion] = useState("")
+  const [cancelFeedbackLoading, setCancelFeedbackLoading] = useState(false)
+
+  // modal motivos post-cancelación del pasajero
+  const [showCancelMotivo, setShowCancelMotivo] = useState(false)
 
   async function handleEnviarFeedback() {
     setFeedbackLoading(true)
@@ -90,6 +108,7 @@ export default function ViajeActivoCliente({
           if (data.id_calificacion) localStorage.setItem(`feedback_calificacion_${viajeId}`, data.id_calificacion)
         }
         setFeedbackEnviado(true)
+        router.push("/inicio")
       } else {
         setFeedbackError(data.error ?? "Error al enviar el feedback.")
       }
@@ -100,11 +119,39 @@ export default function ViajeActivoCliente({
     }
   }
 
+  async function handleCancelFeedback() {
+    if (!viajeId || !idConductor) { router.push("/inicio"); return }
+    setCancelFeedbackLoading(true)
+    try {
+      const res = await fetch("/api/resenas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id_viaje: viajeId, id_receptor: idConductor, puntaje: 1, comentario: comentarioCancelacion }),
+      })
+      const data = await res.json()
+      if (res.ok && viajeId) {
+        localStorage.setItem(`feedback_viaje_${viajeId}`, "1")
+        if (data.id_calificacion) localStorage.setItem(`feedback_calificacion_${viajeId}`, data.id_calificacion)
+      }
+    } catch {}
+    router.push("/inicio")
+  }
+
   const esBuscando = estado === "BUSCANDO_CONDUCTOR"
   const estadoMostrado =
     viajeEstado
       ? (ESTADO_LABEL[viajeEstado] ?? viajeEstado)
       : (ESTADO_LABEL[estado] ?? estado)
+
+  const [elapsed, setElapsed] = useState(0)
+  useEffect(() => {
+    if (!esBuscando) return
+    const start = new Date(creadaEn).getTime()
+    const tick = () => setElapsed(Math.floor((Date.now() - start) / 1000))
+    tick()
+    const id = setInterval(tick, 1000)
+    return () => clearInterval(id)
+  }, [esBuscando, creadaEn])
 
   useEffect(() => {
     let mounted = true
@@ -133,7 +180,7 @@ export default function ViajeActivoCliente({
         body: JSON.stringify({ estado: "CANCELADA_POR_PASAJERO" }),
       })
       if (res.ok) {
-        router.push("/inicio")
+        setShowCancelMotivo(true)
       } else {
         const data = await res.json()
         setError(data.error ?? "No se pudo cancelar la solicitud.")
@@ -145,14 +192,84 @@ export default function ViajeActivoCliente({
     }
   }
 
-  if (viajeEstado === "FINALIZADO" || viajeEstado === "CANCELADO_POR_CONDUCTOR") {
-    const esCancelado = viajeEstado === "CANCELADO_POR_CONDUCTOR"
+  // ─── CANCELADO POR CONDUCTOR ──────────────────────────────────────────────
+  if (viajeEstado === "CANCELADO_POR_CONDUCTOR") {
     return (
       <div className="min-h-screen bg-background stars-bg relative">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/30 to-background pointer-events-none" />
         <div className="relative z-10 flex flex-col min-h-screen">
           <AppHeader />
+          <main className="flex-1 flex items-center justify-center px-4 py-6">
+            <div className="w-full max-w-md holo-border rounded-xl p-8 space-y-5 relative overflow-hidden scan-lines">
+              <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-glow-red/50 rounded-tl-xl" />
+              <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-glow-red/50 rounded-tr-xl" />
+              <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-glow-red/50 rounded-bl-xl" />
+              <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-glow-red/50 rounded-br-xl" />
 
+              <div className="text-center space-y-3">
+                <div className="w-16 h-16 mx-auto rounded-full bg-destructive/20 flex items-center justify-center text-2xl text-destructive glow-red">
+                  ✕
+                </div>
+                <h1 className="text-xl font-bold text-foreground" style={{ fontFamily: "var(--font-orbitron)" }}>
+                  EL CONDUCTOR CANCELÓ
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  ¿Querés contarnos qué pasó? Tu comentario nos ayuda a mejorar.
+                </p>
+              </div>
+
+              <textarea
+                rows={4}
+                value={comentarioCancelacion}
+                onChange={(e) => setComentarioCancelacion(e.target.value)}
+                disabled={cancelFeedbackLoading}
+                placeholder="Contanos lo que pasó (opcional)"
+                className="w-full rounded-xl border border-primary/20 bg-input/50 px-4 py-3 text-sm text-foreground outline-none transition placeholder:text-muted-foreground/60 focus:border-primary disabled:opacity-50 resize-none"
+              />
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => router.push("/inicio")}
+                  disabled={cancelFeedbackLoading}
+                  className="flex-1 h-11 rounded-xl border border-border text-muted-foreground text-sm hover:border-primary/30 hover:text-foreground transition disabled:opacity-40"
+                >
+                  Omitir
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCancelFeedback}
+                  disabled={cancelFeedbackLoading}
+                  className="flex-1 h-11 rounded-xl bg-primary text-primary-foreground text-sm font-medium transition hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ fontFamily: "var(--font-orbitron)", fontSize: "0.75rem", letterSpacing: "0.05em" }}
+                >
+                  {cancelFeedbackLoading ? "ENVIANDO…" : "ENVIAR"}
+                </button>
+              </div>
+
+              <Link
+                href="/pedir-viaje"
+                className="inline-flex w-full h-11 items-center justify-center rounded-xl bg-glow-red text-white text-xs font-semibold glow-red transition hover:brightness-110"
+                style={{ fontFamily: "var(--font-orbitron)", letterSpacing: "0.05em" }}
+              >
+                PEDIR NUEVO VIAJE
+              </Link>
+            </div>
+          </main>
+        </div>
+      </div>
+    )
+  }
+
+  // ─── FINALIZADO ───────────────────────────────────────────────────────────
+  if (viajeEstado === "FINALIZADO") {
+    const showFeedbackModal = mounted && !feedbackYaDado && !feedbackEnviado
+
+    return (
+      <div className="min-h-screen bg-background stars-bg relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/30 to-background pointer-events-none" />
+        <div className="relative z-10 flex flex-col min-h-screen">
+          <AppHeader />
           <main className="flex-1 flex items-center justify-center px-4 py-6">
             <div className="w-full max-w-md holo-border rounded-xl p-8 text-center space-y-4 relative overflow-hidden scan-lines">
               <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-glow-red/50 rounded-tl-xl" />
@@ -160,70 +277,41 @@ export default function ViajeActivoCliente({
               <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-glow-red/50 rounded-bl-xl" />
               <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-glow-red/50 rounded-br-xl" />
 
-              <div
-                className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center text-2xl ${
-                  esCancelado
-                    ? "bg-destructive/20 text-destructive glow-red"
-                    : "bg-accent/20 text-accent glow-accent"
-                }`}
-              >
-                {esCancelado ? "✕" : "✓"}
+              <div className="w-16 h-16 mx-auto rounded-full bg-accent/20 flex items-center justify-center text-2xl text-accent glow-accent">
+                ✓
               </div>
-
-              <h1
-                className="text-xl font-bold text-foreground"
-                style={{ fontFamily: "var(--font-orbitron)" }}
-              >
-                {esCancelado ? "VIAJE CANCELADO" : "VIAJE FINALIZADO"}
+              <h1 className="text-xl font-bold text-foreground" style={{ fontFamily: "var(--font-orbitron)" }}>
+                VIAJE FINALIZADO
               </h1>
               <p className="text-sm text-muted-foreground">
-                {esCancelado
-                  ? "El conductor canceló el viaje. Podés pedir uno nuevo cuando quieras."
-                  : "Tu viaje llegó a destino. ¡Gracias por usar DriveMe!"}
+                Tu viaje llegó a destino. ¡Gracias por usar DriveMe!
               </p>
 
-              <div className="flex flex-col gap-3 pt-2">
-                {!esCancelado && viajeId && idConductor && (
-                  feedbackYaDado ? (
-                    <p className="text-sm text-muted-foreground text-center py-1">
-                      Ya calificaste este viaje ★
-                    </p>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => setShowFeedback(true)}
-                      className="inline-flex h-12 items-center justify-center rounded-full bg-accent text-accent-foreground text-sm font-semibold glow-accent transition hover:brightness-110"
-                      style={{ fontFamily: "var(--font-orbitron)", letterSpacing: "0.05em" }}
-                    >
-                      DEJAR FEEDBACK
-                    </button>
-                  )
-                )}
-                <Link
-                  href="/pedir-viaje"
-                  className="inline-flex h-12 items-center justify-center rounded-full bg-glow-red text-white text-sm font-semibold glow-red transition hover:brightness-110"
-                  style={{ fontFamily: "var(--font-orbitron)", letterSpacing: "0.05em" }}
-                >
-                  PEDIR NUEVO VIAJE
-                </Link>
-                <Link
-                  href="/inicio"
-                  className="inline-flex h-12 items-center justify-center rounded-full border border-primary/30 text-primary text-sm font-medium transition hover:bg-primary/10"
-                >
-                  Volver al inicio
-                </Link>
-              </div>
+              {(feedbackEnviado || feedbackYaDado) && (
+                <div className="flex flex-col gap-3 pt-2">
+                  <Link
+                    href="/pedir-viaje"
+                    className="inline-flex h-12 items-center justify-center rounded-full bg-glow-red text-white text-sm font-semibold glow-red transition hover:brightness-110"
+                    style={{ fontFamily: "var(--font-orbitron)", letterSpacing: "0.05em" }}
+                  >
+                    PEDIR NUEVO VIAJE
+                  </Link>
+                  <Link
+                    href="/inicio"
+                    className="inline-flex h-12 items-center justify-center rounded-full border border-primary/30 text-primary text-sm font-medium transition hover:bg-primary/10"
+                  >
+                    Volver al inicio
+                  </Link>
+                </div>
+              )}
             </div>
           </main>
         </div>
 
-        {/* Modal de feedback */}
-        {showFeedback && (
+        {/* Modal de feedback obligatorio */}
+        {showFeedbackModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-              onClick={() => !feedbackLoading && setShowFeedback(false)}
-            />
+            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
             <div className="relative holo-border rounded-xl p-6 w-full max-w-sm space-y-5 bg-card scan-lines">
               <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-glow-red/50 rounded-tl-xl" />
               <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-glow-red/50 rounded-tr-xl" />
@@ -237,74 +325,50 @@ export default function ViajeActivoCliente({
                 CALIFICÁ TU VIAJE
               </p>
 
-              {feedbackEnviado ? (
-                <div className="space-y-4 text-center">
-                  <div className="w-14 h-14 mx-auto rounded-full bg-accent/20 flex items-center justify-center text-2xl text-accent">
-                    ✓
-                  </div>
-                  <p className="text-sm text-foreground font-medium">¡Gracias por tu calificación!</p>
-                  <button
-                    type="button"
-                    onClick={() => setShowFeedback(false)}
-                    className="w-full h-11 rounded-lg border border-border text-muted-foreground text-sm hover:border-primary/30 hover:text-foreground transition"
-                  >
-                    Cerrar
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {/* Estrellas */}
-                  <div className="flex justify-center gap-2">
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <button
-                        key={n}
-                        type="button"
-                        onClick={() => setPuntaje(n)}
-                        className={`text-3xl transition-transform hover:scale-110 ${
-                          n <= puntaje ? "text-accent" : "text-muted-foreground/30"
-                        }`}
-                      >
-                        ★
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Comentario */}
-                  <textarea
-                    rows={3}
-                    placeholder="¿Cómo fue el viaje?"
-                    value={comentario}
-                    onChange={(e) => setComentario(e.target.value)}
-                    className="w-full rounded-lg bg-input/30 border border-primary/20 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:border-primary/50 transition"
-                  />
-
-                  {feedbackError && (
-                    <p className="text-xs text-destructive-foreground bg-destructive/10 border border-destructive/30 rounded-lg px-3 py-2">
-                      {feedbackError}
-                    </p>
-                  )}
-
-                  <div className="flex gap-3">
+              <div className="space-y-4">
+                {/* Estrellas */}
+                <div className="flex justify-center gap-2">
+                  {[1, 2, 3, 4, 5].map((n) => (
                     <button
+                      key={n}
                       type="button"
+                      onClick={() => setPuntaje(n)}
                       disabled={feedbackLoading}
-                      onClick={() => setShowFeedback(false)}
-                      className="flex-1 h-11 rounded-lg border border-border text-muted-foreground text-sm hover:border-primary/30 hover:text-foreground transition disabled:opacity-40"
+                      className={`text-3xl transition-transform hover:scale-110 ${
+                        n <= puntaje ? "text-accent" : "text-muted-foreground/30"
+                      }`}
                     >
-                      Cerrar
+                      ★
                     </button>
-                    <button
-                      type="button"
-                      disabled={feedbackLoading || puntaje === 0}
-                      onClick={handleEnviarFeedback}
-                      className="flex-1 h-11 rounded-lg bg-glow-red text-white glow-red text-sm transition hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
-                      style={{ fontFamily: "var(--font-orbitron)", fontSize: "0.75rem", letterSpacing: "0.05em" }}
-                    >
-                      {feedbackLoading ? "ENVIANDO..." : "ENVIAR"}
-                    </button>
-                  </div>
+                  ))}
                 </div>
-              )}
+
+                {/* Comentario */}
+                <textarea
+                  rows={3}
+                  placeholder="¿Cómo fue el viaje?"
+                  value={comentario}
+                  onChange={(e) => setComentario(e.target.value)}
+                  disabled={feedbackLoading}
+                  className="w-full rounded-lg bg-input/30 border border-primary/20 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:border-primary/50 transition disabled:opacity-50"
+                />
+
+                {feedbackError && (
+                  <p className="text-xs text-destructive-foreground bg-destructive/10 border border-destructive/30 rounded-lg px-3 py-2">
+                    {feedbackError}
+                  </p>
+                )}
+
+                <button
+                  type="button"
+                  disabled={feedbackLoading || puntaje === 0}
+                  onClick={handleEnviarFeedback}
+                  className="w-full h-11 rounded-lg bg-glow-red text-white glow-red text-sm transition hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ fontFamily: "var(--font-orbitron)", fontSize: "0.75rem", letterSpacing: "0.05em" }}
+                >
+                  {feedbackLoading ? "ENVIANDO..." : "ENVIAR FEEDBACK"}
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -312,6 +376,7 @@ export default function ViajeActivoCliente({
     )
   }
 
+  // ─── ACTIVO (buscando / en curso / etc.) ─────────────────────────────────
   return (
     <div className="min-h-screen bg-background stars-bg relative">
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/30 to-background pointer-events-none" />
@@ -413,10 +478,24 @@ export default function ViajeActivoCliente({
                 )}
 
                 {esBuscando && (
-                  <div className="rounded-xl border border-yellow-500/20 bg-yellow-950/20 p-4">
+                  <div className="rounded-xl border border-yellow-500/20 bg-yellow-950/20 p-4 space-y-3">
                     <p className="text-sm text-yellow-200/80">
-                      Tu solicitud está publicada. Un conductor la aceptará en breve.
+                      Tu solicitud está publicada. Un conductor se contactará pronto.
                     </p>
+                    <div className="flex items-center gap-3">
+                      <span className="relative flex h-2.5 w-2.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-yellow-400" />
+                      </span>
+                      <span
+                        className="text-2xl text-yellow-300 tabular-nums"
+                        style={{ fontFamily: "var(--font-orbitron)" }}
+                        suppressHydrationWarning
+                      >
+                        {String(Math.floor(elapsed / 60)).padStart(2, "0")}:{String(elapsed % 60).padStart(2, "0")}
+                      </span>
+                      <span className="text-xs text-yellow-200/60">buscando…</span>
+                    </div>
                   </div>
                 )}
               </div>
@@ -439,13 +518,6 @@ export default function ViajeActivoCliente({
               <div className="holo-border rounded-xl p-5 space-y-3 relative overflow-hidden scan-lines">
                 <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-primary/40 rounded-tl-xl" />
                 <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-primary/40 rounded-br-xl" />
-
-                <p
-                  className="text-xs text-muted-foreground tracking-widest"
-                  style={{ fontFamily: "var(--font-orbitron)" }}
-                >
-                  ACCIONES
-                </p>
 
                 {esBuscando && (
                   <button
@@ -485,6 +557,42 @@ export default function ViajeActivoCliente({
           </section>
         </main>
       </div>
+
+      {/* Modal motivos de cancelación del pasajero */}
+      {showCancelMotivo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+          <div className="relative holo-border rounded-xl p-6 w-full max-w-sm space-y-4 bg-card scan-lines">
+            <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-glow-red/50 rounded-tl-xl" />
+            <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-glow-red/50 rounded-tr-xl" />
+            <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-glow-red/50 rounded-bl-xl" />
+            <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-glow-red/50 rounded-br-xl" />
+
+            <p
+              className="text-xs text-glow-red/90 tracking-widest text-center"
+              style={{ fontFamily: "var(--font-orbitron)" }}
+            >
+              ¿POR QUÉ CANCELASTE?
+            </p>
+            <p className="text-sm text-muted-foreground text-center">
+              Tocá el motivo para continuar.
+            </p>
+
+            <div className="flex flex-col gap-2">
+              {MOTIVOS_CANCELACION.map((motivo) => (
+                <button
+                  key={motivo}
+                  type="button"
+                  onClick={() => router.push("/inicio")}
+                  className="w-full h-11 rounded-xl border border-border text-foreground text-sm hover:border-primary/40 hover:bg-primary/5 transition text-left px-4"
+                >
+                  {motivo}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

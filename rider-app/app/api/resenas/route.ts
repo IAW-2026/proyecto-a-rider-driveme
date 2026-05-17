@@ -52,7 +52,11 @@ export async function POST(req: NextRequest) {
   if (feedback.id_calificacion) {
     await prisma.viaje.update({
       where: { id: id_viaje },
-      data: { idCalificacion: feedback.id_calificacion },
+      data: {
+        idCalificacion: feedback.id_calificacion,
+        puntajeCalificacion: puntajeNumero,
+        comentarioCalificacion: String(comentario).trim() || null,
+      },
     })
   }
 

@@ -55,7 +55,7 @@ export async function getRecentlyFinishedSolicitudByClerkId(clerkId: string) {
     where: {
       pasajeroId: pasajero.id,
       estado: { in: SOLICITUDES_ACTIVAS },
-      viaje: { estadoActual: "FINALIZADO" },
+      viaje: { estadoActual: { in: ["FINALIZADO", "CANCELADO_POR_CONDUCTOR"] } },
       creadaEn: { gte: since },
     },
     include: {

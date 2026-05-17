@@ -183,7 +183,7 @@ export default function PedirViajeForm() {
                 ${precioEstimado?.toLocaleString("es-AR") ?? "—"} ARS
               </p>
               {distanciaKm !== null && (
-                <p className="text-xs text-muted-foreground">aprox. {distanciaKm} km en línea recta</p>
+                <p className="text-xs text-muted-foreground">aprox. {distanciaKm} km</p>
               )}
             </div>
 

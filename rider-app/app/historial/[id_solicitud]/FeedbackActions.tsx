@@ -7,6 +7,7 @@ type Props = {
   viajeId: string | null
   conductorId: string | null
   idCalificacion: string | null
+  sinEstrellas?: boolean
 }
 
 const MOTIVOS = [
@@ -15,7 +16,7 @@ const MOTIVOS = [
   { value: "OTRO", label: "Otro reclamo" },
 ]
 
-export default function FeedbackActions({ viajeId, conductorId, idCalificacion: idCalificacionProp }: Props) {
+export default function FeedbackActions({ viajeId, conductorId, idCalificacion: idCalificacionProp, sinEstrellas = false }: Props) {
   const [puntaje, setPuntaje] = useState("5")
   const [comentario, setComentario] = useState("")
   const [loading, setLoading] = useState(false)
@@ -41,13 +42,14 @@ export default function FeedbackActions({ viajeId, conductorId, idCalificacion: 
     setLoading(true)
     setError(null)
     try {
+      const puntajeEfectivo = sinEstrellas ? 1 : Number(puntaje)
       const res = await fetch("/api/resenas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id_viaje: viajeId,
           id_receptor: conductorId,
-          puntaje: Number(puntaje),
+          puntaje: puntajeEfectivo,
           comentario,
         }),
       })
@@ -177,24 +179,7 @@ export default function FeedbackActions({ viajeId, conductorId, idCalificacion: 
     </div>
   )
 
-  if (!viajeId || !conductorId) {
-    return (
-      <div className="space-y-3">
-        <div className="holo-border rounded-xl p-5">
-          <p
-            className="text-xs text-muted-foreground tracking-widest"
-            style={{ fontFamily: "var(--font-orbitron)" }}
-          >
-            FEEDBACK
-          </p>
-          <p className="mt-3 text-sm text-muted-foreground">
-            No hay datos de conductor para calificar este viaje.
-          </p>
-        </div>
-        {panelContacto}
-      </div>
-    )
-  }
+  if (!viajeId || !conductorId) return null
 
   if (feedbackYaDado || enviado) {
     return (
@@ -207,8 +192,14 @@ export default function FeedbackActions({ viajeId, conductorId, idCalificacion: 
             FEEDBACK
           </p>
           <div className="flex items-center gap-2 mt-2">
-            <span className="text-accent text-lg">★</span>
-            <p className="text-sm text-accent font-medium">Ya dejaste tu calificación para este viaje.</p>
+            {sinEstrellas ? (
+              <p className="text-sm text-accent font-medium">Ya dejaste tu comentario.</p>
+            ) : (
+              <>
+                <span className="text-accent text-lg">★</span>
+                <p className="text-sm text-accent font-medium">Ya dejaste tu calificación para este viaje.</p>
+              </>
+            )}
           </div>
         </div>
         {panelContacto}
@@ -225,25 +216,31 @@ export default function FeedbackActions({ viajeId, conductorId, idCalificacion: 
           className="text-xs text-glow-cyan/70 tracking-widest"
           style={{ fontFamily: "var(--font-orbitron)" }}
         >
-          FEEDBACK
+          {sinEstrellas ? "DEJÁ UN COMENTARIO" : "FEEDBACK"}
         </p>
-        <h2 className="mt-2 text-lg font-semibold text-foreground">Calificá tu viaje</h2>
-        <p className="text-sm text-muted-foreground">Se envía a la app de feedback compartida.</p>
+        <h2 className="mt-2 text-lg font-semibold text-foreground">
+          {sinEstrellas ? "¿Querés contarnos qué pasó?" : "Calificá tu viaje"}
+        </h2>
+        {!sinEstrellas && (
+          <p className="text-sm text-muted-foreground">Se envía a la app de feedback compartida.</p>
+        )}
       </div>
 
-      <label className="block">
-        <span className="mb-2 block text-sm text-foreground/80">Puntaje</span>
-        <select
-          value={puntaje}
-          onChange={(e) => setPuntaje(e.target.value)}
-          disabled={loading}
-          className="w-full rounded-xl border border-primary/20 bg-input/50 px-4 py-3 text-sm text-foreground outline-none transition focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {[5, 4, 3, 2, 1].map((v) => (
-            <option key={v} value={v}>{v} estrellas</option>
-          ))}
-        </select>
-      </label>
+      {!sinEstrellas && (
+        <label className="block">
+          <span className="mb-2 block text-sm text-foreground/80">Puntaje</span>
+          <select
+            value={puntaje}
+            onChange={(e) => setPuntaje(e.target.value)}
+            disabled={loading}
+            className="w-full rounded-xl border border-primary/20 bg-input/50 px-4 py-3 text-sm text-foreground outline-none transition focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {[5, 4, 3, 2, 1].map((v) => (
+              <option key={v} value={v}>{v} estrellas</option>
+            ))}
+          </select>
+        </label>
+      )}
 
       <label className="block">
         <span className="mb-2 block text-sm text-foreground/80">Comentario</span>
@@ -252,7 +249,7 @@ export default function FeedbackActions({ viajeId, conductorId, idCalificacion: 
           onChange={(e) => setComentario(e.target.value)}
           disabled={loading}
           rows={4}
-          placeholder="Contá cómo fue el viaje"
+          placeholder={sinEstrellas ? "Contanos qué pasó con la cancelación" : "Contá cómo fue el viaje"}
           className="w-full rounded-xl border border-primary/20 bg-input/50 px-4 py-3 text-sm text-foreground outline-none transition placeholder:text-muted-foreground/60 focus:border-primary disabled:cursor-not-allowed disabled:opacity-50 resize-none"
         />
       </label>
@@ -264,7 +261,7 @@ export default function FeedbackActions({ viajeId, conductorId, idCalificacion: 
         className="inline-flex h-11 items-center justify-center rounded-xl bg-accent text-accent-foreground px-5 text-sm font-semibold glow-accent transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
         style={{ fontFamily: "var(--font-orbitron)", letterSpacing: "0.05em" }}
       >
-        {loading ? "Enviando…" : "ENVIAR FEEDBACK"}
+        {loading ? "Enviando…" : "ENVIAR"}
       </button>
 
       {error && (
