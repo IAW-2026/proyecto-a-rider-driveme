@@ -11,7 +11,7 @@ export async function PATCH(
 
   const { id_solicitud } = await params
   const body = await req.json()
-  const { estado } = body
+  const { estado, motivo: _motivo } = body
 
   if (estado !== "CANCELADA_POR_PASAJERO") {
     return NextResponse.json({ error: "Estado inválido" }, { status: 400 })

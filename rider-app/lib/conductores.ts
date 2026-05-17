@@ -10,6 +10,15 @@ export interface ConductorDetalle {
 export async function getConductorById(id: string): Promise<ConductorDetalle | null> {
   if (!id) return null
 
+  const driverAppUrl = process.env.DRIVER_APP_URL
+  if (driverAppUrl) {
+    const res = await fetch(`${driverAppUrl}/api/conductores/${id}`, {
+      headers: { "x-api-key": process.env.INTERNAL_API_KEY ?? "" },
+      next: { revalidate: 30 },
+    })
+    if (res.ok) return res.json()
+  }
+
   return {
     id,
     nombre: "Carlos Gómez",
