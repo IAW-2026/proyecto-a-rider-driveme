@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
   if (m2mError) return m2mError
   
   const body = await req.json()
-  const { id_solicitud, id_conductor, id_vehiculo, latitud_actual, longitud_actual } = body
+  const { id_solicitud, id_conductor, id_vehiculo, latitud_actual, longitud_actual, id_pasajero } = body
 
   if (!id_solicitud || !id_conductor || !id_vehiculo || latitud_actual === undefined || longitud_actual === undefined) {
     return NextResponse.json({ error: "Faltan campos requeridos" }, { status: 400 })
@@ -20,6 +20,11 @@ export async function POST(req: NextRequest) {
 
   if (!solicitud) {
     return NextResponse.json({ error: "Solicitud no encontrada" }, { status: 404 })
+  }
+
+  // Si el caller provee id_pasajero, validar que coincida con la solicitud
+  if (id_pasajero && solicitud.pasajero.id !== id_pasajero) {
+    return NextResponse.json({ error: "id_pasajero no coincide con la solicitud" }, { status: 400 })
   }
 
   if (solicitud.estado !== "BUSCANDO_CONDUCTOR") {

@@ -36,9 +36,19 @@ async function postToFeedbackApp<TResponse>(path: string, payload: unknown, fall
     return fallback()
   }
 
+  const headers: Record<string, string> = { "Content-Type": "application/json" }
+  // Prefer using existing internal API key header for M2M auth if available
+  if (process.env.INTERNAL_API_KEY) {
+    headers["x-api-key"] = process.env.INTERNAL_API_KEY
+  }
+  // Optionally include a dedicated feedback token as Bearer
+  if (process.env.FEEDBACK_APP_TOKEN) {
+    headers["Authorization"] = `Bearer ${process.env.FEEDBACK_APP_TOKEN}`
+  }
+
   const response = await fetch(`${baseUrl}${path}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(payload),
   })
 
