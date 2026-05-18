@@ -53,8 +53,12 @@ export default async function HistorialDetallePage({
         select: {
           id: true,
           idConductor: true,
+          idVehiculo: true,
+          idViajeDriver: true,
           estadoActual: true,
           idCalificacion: true,
+          puntajeCalificacion: true,
+          comentarioCalificacion: true,
         },
       },
     },
@@ -72,6 +76,14 @@ export default async function HistorialDetallePage({
   }
 
   const conductor = solicitud.viaje?.idConductor ? await getConductorById(solicitud.viaje.idConductor) : null
+  const transaccion = solicitud.viaje
+    ? await prisma.transaccion.findFirst({
+        where: { viajeId: solicitud.viaje.id },
+        orderBy: { createdAt: "desc" },
+      })
+    : null
+  const idVehiculo = solicitud.viaje?.idVehiculo ?? null
+  const idViajeDriver = solicitud.viaje?.idViajeDriver ?? null
   const badge = getBadge(solicitud.estado, solicitud.viaje?.estadoActual)
 
   return (
@@ -212,6 +224,39 @@ export default async function HistorialDetallePage({
                     </div>
                   </div>
                 )}
+
+                {solicitud.viaje && (idVehiculo || idViajeDriver) && (
+                  <div className="rounded-xl border border-border bg-card/50 p-4">
+                    <p
+                      className="text-xs text-muted-foreground tracking-widest"
+                      style={{ fontFamily: "var(--font-orbitron)" }}
+                    >
+                      VIAJE ASIGNADO
+                    </p>
+                    <div className="mt-2 grid gap-1">
+                      <p className="text-xs text-muted-foreground">
+                        ID Rider:{" "}
+                        <span className="font-mono text-foreground/80">
+                          {solicitud.viaje.id.slice(0, 8).toUpperCase()}
+                        </span>
+                      </p>
+                      {idViajeDriver && (
+                        <p className="text-xs text-muted-foreground">
+                          ID Driver:{" "}
+                          <span className="font-mono text-foreground/80">
+                            {idViajeDriver.slice(0, 8).toUpperCase()}
+                          </span>
+                        </p>
+                      )}
+                      {idVehiculo && (
+                        <p className="text-xs text-muted-foreground">
+                          Vehículo:{" "}
+                          <span className="font-mono text-foreground/80">{idVehiculo}</span>
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Map card */}
@@ -235,6 +280,38 @@ export default async function HistorialDetallePage({
             </div>
 
             <aside className="space-y-4">
+              {transaccion && (
+                <div className="holo-border rounded-xl p-5 space-y-3 relative overflow-hidden scan-lines">
+                  <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-glow-cyan/40 rounded-tl-xl" />
+                  <p
+                    className="text-xs text-glow-cyan/70 tracking-widest"
+                    style={{ fontFamily: "var(--font-orbitron)" }}
+                  >
+                    PAGO
+                  </p>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Estado</span>
+                      <span className={`text-sm font-medium ${transaccion.estado === "CAPTURED" ? "text-accent" : "text-destructive-foreground"}`}>
+                        {transaccion.estado === "CAPTURED" ? "Pago confirmado" : transaccion.estado === "FAILED" ? "Pago fallido" : transaccion.estado}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Monto</span>
+                      <span className="text-sm font-medium text-foreground">
+                        $ {(transaccion.monto / 100).toLocaleString("es-AR")}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">ID</span>
+                      <span className="font-mono text-xs text-muted-foreground/60">
+                        {transaccion.idTransaccion.slice(0, 8)}…
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {esExpirada ? (
                 <div className="holo-border rounded-xl p-5 space-y-3 relative overflow-hidden scan-lines">
                   <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-yellow-500/30 rounded-tl-xl" />
@@ -254,6 +331,8 @@ export default async function HistorialDetallePage({
                   viajeId={solicitud.viaje?.id ?? null}
                   conductorId={solicitud.viaje?.idConductor ?? null}
                   idCalificacion={solicitud.viaje?.idCalificacion ?? null}
+                  puntajeGuardado={solicitud.viaje?.puntajeCalificacion ?? null}
+                  comentarioGuardado={solicitud.viaje?.comentarioCalificacion ?? null}
                   sinEstrellas={esCanceladoPorConductor}
                 />
               ) : null}

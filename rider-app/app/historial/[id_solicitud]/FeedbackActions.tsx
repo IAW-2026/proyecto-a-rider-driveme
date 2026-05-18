@@ -7,6 +7,8 @@ type Props = {
   viajeId: string | null
   conductorId: string | null
   idCalificacion: string | null
+  puntajeGuardado?: number | null
+  comentarioGuardado?: string | null
   sinEstrellas?: boolean
 }
 
@@ -16,19 +18,32 @@ const MOTIVOS = [
   { value: "OTRO", label: "Otro reclamo" },
 ]
 
-export default function FeedbackActions({ viajeId, conductorId, idCalificacion: idCalificacionProp, sinEstrellas = false }: Props) {
+function renderEstrellas(n: number) {
+  const clamped = Math.max(1, Math.min(5, Math.round(n)))
+  return "★".repeat(clamped) + "☆".repeat(5 - clamped)
+}
+
+export default function FeedbackActions({ viajeId, conductorId, idCalificacion: idCalificacionProp, puntajeGuardado = null, comentarioGuardado = null, sinEstrellas = false }: Props) {
   const [puntaje, setPuntaje] = useState("5")
   const [comentario, setComentario] = useState("")
   const [loading, setLoading] = useState(false)
   const [enviado, setEnviado] = useState(false)
+  const [puntajeEnviado, setPuntajeEnviado] = useState<number | null>(null)
+  const [comentarioEnviado, setComentarioEnviado] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const feedbackGuardado = useLocalStorageValue(viajeId ? `feedback_viaje_${viajeId}` : null)
   const feedbackYaDado = feedbackGuardado === "1"
 
+  const puntajeLocalStorage = useLocalStorageValue(viajeId ? `feedback_puntaje_${viajeId}` : null)
+  const comentarioLocalStorage = useLocalStorageValue(viajeId ? `feedback_comentario_${viajeId}` : null)
+
   const idCalificacionGuardado = useLocalStorageValue(viajeId ? `feedback_calificacion_${viajeId}` : null)
   const [idCalificacionLocal, setIdCalificacionLocal] = useState<string | null>(null)
   const idCalificacion = idCalificacionLocal ?? idCalificacionGuardado ?? idCalificacionProp
+
+  const puntajeMostrado = puntajeEnviado ?? (puntajeLocalStorage ? Number(puntajeLocalStorage) : null) ?? puntajeGuardado
+  const comentarioMostrado = comentarioEnviado ?? comentarioLocalStorage ?? comentarioGuardado
 
   const [showReporte, setShowReporte] = useState(false)
   const [reporteMotivo, setReporteMotivo] = useState(MOTIVOS[0].value)
@@ -57,11 +72,15 @@ export default function FeedbackActions({ viajeId, conductorId, idCalificacion: 
       if (!res.ok) throw new Error(data.error ?? "No se pudo enviar el feedback")
       if (viajeId) {
         localStorage.setItem(`feedback_viaje_${viajeId}`, "1")
+        localStorage.setItem(`feedback_puntaje_${viajeId}`, String(puntajeEfectivo))
+        localStorage.setItem(`feedback_comentario_${viajeId}`, comentario)
         if (data.id_calificacion) {
           localStorage.setItem(`feedback_calificacion_${viajeId}`, data.id_calificacion)
           setIdCalificacionLocal(data.id_calificacion)
         }
       }
+      setPuntajeEnviado(puntajeEfectivo)
+      setComentarioEnviado(comentario)
       setEnviado(true)
       setComentario("")
     } catch (err) {
@@ -184,23 +203,30 @@ export default function FeedbackActions({ viajeId, conductorId, idCalificacion: 
   if (feedbackYaDado || enviado) {
     return (
       <div className="space-y-3">
-        <div className="rounded-xl border border-accent/30 bg-accent/10 p-5 space-y-2">
+        <div className="rounded-xl border border-accent/30 bg-accent/10 p-5 space-y-3">
           <p
             className="text-xs text-accent/70 tracking-widest"
             style={{ fontFamily: "var(--font-orbitron)" }}
           >
             FEEDBACK
           </p>
-          <div className="flex items-center gap-2 mt-2">
-            {sinEstrellas ? (
-              <p className="text-sm text-accent font-medium">Ya dejaste tu comentario.</p>
-            ) : (
-              <>
-                <span className="text-accent text-lg">★</span>
-                <p className="text-sm text-accent font-medium">Ya dejaste tu calificación para este viaje.</p>
-              </>
-            )}
-          </div>
+          {sinEstrellas ? (
+            <p className="text-sm text-accent font-medium">Ya dejaste tu comentario.</p>
+          ) : (
+            <div className="space-y-2">
+              {puntajeMostrado != null && (
+                <p className="text-xl tracking-wider text-accent" aria-label={`${puntajeMostrado} estrellas`}>
+                  {renderEstrellas(puntajeMostrado)}
+                </p>
+              )}
+              <p className="text-sm text-accent font-medium">Ya calificaste este viaje.</p>
+            </div>
+          )}
+          {comentarioMostrado && (
+            <p className="text-sm text-foreground/70 italic leading-relaxed border-t border-accent/20 pt-3">
+              &ldquo;{comentarioMostrado}&rdquo;
+            </p>
+          )}
         </div>
         {panelContacto}
       </div>
