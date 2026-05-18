@@ -14,6 +14,8 @@ function getEstadoBadge(estado: string, viajeEstado: string | null | undefined) 
       return { label: "El conductor canceló", className: "border-yellow-500/30 bg-yellow-500/10 text-yellow-200" }
     return { label: "En curso", className: "border-primary/30 bg-primary/10 text-primary" }
   }
+  if (estado === "EXPIRADA_SIN_ACEPTACION")
+    return { label: "Sin conductor disponible", className: "border-yellow-500/30 bg-yellow-500/10 text-yellow-200" }
   if (estado === "BUSCANDO_CONDUCTOR")
     return { label: "Sin conductor", className: "border-yellow-500/30 bg-yellow-500/10 text-yellow-200" }
   return { label: estado, className: "border-border bg-muted/40 text-muted-foreground" }
@@ -33,6 +35,7 @@ export default async function HistorialPage() {
       pasajeroId: pasajero.id,
       OR: [
         { estado: "CANCELADA_POR_PASAJERO" },
+        { estado: "EXPIRADA_SIN_ACEPTACION" },
         {
           estado: "ACEPTADA",
           viaje: {

@@ -3,12 +3,26 @@ import { prisma } from "@/lib/prisma"
 
 const SOLICITUDES_ACTIVAS: EstadoSolicitud[] = ["BUSCANDO_CONDUCTOR", "ACEPTADA"]
 const VIAJES_TERMINADOS: EstadoViaje[] = ["FINALIZADO", "CANCELADO_POR_CONDUCTOR"]
+const EXPIRY_MS = 2 * 60 * 1000 // 2 minutos
 
 function solicitudSigueActiva(solicitud: { viaje: { estadoActual: EstadoViaje } | null }) {
   return !solicitud.viaje || !VIAJES_TERMINADOS.includes(solicitud.viaje.estadoActual)
 }
 
+async function expireOldSolicitudesByPasajeroId(pasajeroId: string) {
+  await prisma.solicitudDeViaje.updateMany({
+    where: {
+      pasajeroId,
+      estado: "BUSCANDO_CONDUCTOR",
+      creadaEn: { lt: new Date(Date.now() - EXPIRY_MS) },
+    },
+    data: { estado: "EXPIRADA_SIN_ACEPTACION" },
+  })
+}
+
 export async function getActiveSolicitudByPasajeroId(pasajeroId: string) {
+  await expireOldSolicitudesByPasajeroId(pasajeroId)
+
   const solicitud = await prisma.solicitudDeViaje.findFirst({
     where: {
       pasajeroId,

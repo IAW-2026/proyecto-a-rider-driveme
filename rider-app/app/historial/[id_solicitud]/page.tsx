@@ -11,6 +11,9 @@ function getBadge(estado: string, viajeEstado: string | null | undefined) {
   if (estado === "CANCELADA_POR_PASAJERO") {
     return { label: "Cancelaste este viaje", className: "border-destructive/30 bg-destructive/10 text-destructive-foreground" }
   }
+  if (estado === "EXPIRADA_SIN_ACEPTACION") {
+    return { label: "Sin conductor disponible", className: "border-yellow-500/30 bg-yellow-500/10 text-yellow-200" }
+  }
   if (estado === "ACEPTADA") {
     if (viajeEstado === "FINALIZADO") {
       return { label: "Viaje finalizado", className: "border-accent/30 bg-accent/10 text-accent" }
@@ -62,8 +65,9 @@ export default async function HistorialDetallePage({
   const esViajeFinalizado = solicitud.estado === "ACEPTADA" && solicitud.viaje?.estadoActual === "FINALIZADO"
   const esCanceladoPorConductor = solicitud.estado === "ACEPTADA" && solicitud.viaje?.estadoActual === "CANCELADO_POR_CONDUCTOR"
   const esCanceladoPorPasajero = solicitud.estado === "CANCELADA_POR_PASAJERO"
+  const esExpirada = solicitud.estado === "EXPIRADA_SIN_ACEPTACION"
 
-  if (!esViajeFinalizado && !esCanceladoPorConductor && !esCanceladoPorPasajero) {
+  if (!esViajeFinalizado && !esCanceladoPorConductor && !esCanceladoPorPasajero && !esExpirada) {
     redirect("/historial")
   }
 
@@ -170,9 +174,25 @@ export default async function HistorialDetallePage({
                       ? "Este viaje terminó correctamente. Ya podés dejar feedback."
                       : esCanceladoPorConductor
                         ? "El conductor canceló el viaje. Podés revisar el detalle y dejar un reporte si lo necesitás."
-                        : "Cancelaste la solicitud antes de que un conductor la tomara."}
+                        : esExpirada
+                          ? "Ningún conductor tomó la solicitud en 2 minutos y expiró automáticamente."
+                          : "Cancelaste la solicitud antes de que un conductor la tomara."}
                   </p>
                 </div>
+
+                {esExpirada && solicitud.comentarioExpiracion && (
+                  <div className="rounded-xl border border-yellow-500/20 bg-yellow-500/5 p-4">
+                    <p
+                      className="text-xs text-yellow-400/70 tracking-widest"
+                      style={{ fontFamily: "var(--font-orbitron)" }}
+                    >
+                      TU COMENTARIO
+                    </p>
+                    <p className="mt-2 text-sm text-foreground/80 leading-relaxed">
+                      &ldquo;{solicitud.comentarioExpiracion}&rdquo;
+                    </p>
+                  </div>
+                )}
 
                 {conductor && (
                   <div className="rounded-xl border border-border bg-card/50 p-4">
@@ -215,14 +235,28 @@ export default async function HistorialDetallePage({
             </div>
 
             <aside className="space-y-4">
-              {!esCanceladoPorPasajero && (
+              {esExpirada ? (
+                <div className="holo-border rounded-xl p-5 space-y-3 relative overflow-hidden scan-lines">
+                  <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-yellow-500/30 rounded-tl-xl" />
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    No se encontró conductor en el tiempo límite. Podés volver a intentarlo cuando quieras.
+                  </p>
+                  <Link
+                    href="/pedir-viaje"
+                    className="inline-flex w-full h-11 items-center justify-center rounded-xl bg-glow-red text-white text-xs font-semibold glow-red transition hover:brightness-110"
+                    style={{ fontFamily: "var(--font-orbitron)", letterSpacing: "0.05em" }}
+                  >
+                    PEDIR NUEVO VIAJE
+                  </Link>
+                </div>
+              ) : !esCanceladoPorPasajero ? (
                 <FeedbackActions
                   viajeId={solicitud.viaje?.id ?? null}
                   conductorId={solicitud.viaje?.idConductor ?? null}
                   idCalificacion={solicitud.viaje?.idCalificacion ?? null}
                   sinEstrellas={esCanceladoPorConductor}
                 />
-              )}
+              ) : null}
             </aside>
           </section>
         </main>

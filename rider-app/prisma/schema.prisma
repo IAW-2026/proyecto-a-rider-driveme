@@ -30,9 +30,10 @@ model SolicitudDeViaje {
   destinoLng           Float?
   destinoDireccion     String?
   precioEstimadoCents  Int?
-  metodoPago           MetodoPago
-  estado               EstadoSolicitud @default(BUSCANDO_CONDUCTOR)
-  creadaEn             DateTime        @default(now())
+  metodoPago               MetodoPago
+  estado                   EstadoSolicitud @default(BUSCANDO_CONDUCTOR)
+  comentarioExpiracion     String?
+  creadaEn                 DateTime        @default(now())
   pasajero             Pasajero        @relation(fields: [pasajeroId], references: [id])
   viaje                Viaje?
 

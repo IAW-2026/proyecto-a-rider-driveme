@@ -11,15 +11,11 @@ export async function PATCH(
 
   const { id_solicitud } = await params
   const body = await req.json()
-  const { estado, motivo: _motivo } = body
-
-  if (estado !== "CANCELADA_POR_PASAJERO") {
-    return NextResponse.json({ error: "Estado inválido" }, { status: 400 })
-  }
+  const { estado, motivo: _motivo, comentario } = body
 
   const solicitud = await prisma.solicitudDeViaje.findUnique({
     where: { id: id_solicitud },
-    include: { viaje: true, pasajero: true },
+    include: { pasajero: true },
   })
 
   if (!solicitud) {
@@ -30,13 +26,30 @@ export async function PATCH(
     return NextResponse.json({ error: "Sin permisos sobre esta solicitud" }, { status: 403 })
   }
 
+  // Guardar comentario en solicitud ya expirada
+  if (!estado && comentario !== undefined) {
+    if (solicitud.estado !== "EXPIRADA_SIN_ACEPTACION") {
+      return NextResponse.json({ error: "Solo se puede comentar una solicitud expirada" }, { status: 409 })
+    }
+    await prisma.solicitudDeViaje.update({
+      where: { id: id_solicitud },
+      data: { comentarioExpiracion: comentario },
+    })
+    return NextResponse.json({ id_solicitud: solicitud.id, estado: solicitud.estado })
+  }
+
+  // Cambiar estado (cancelación o expiración)
+  if (estado !== "CANCELADA_POR_PASAJERO" && estado !== "EXPIRADA_SIN_ACEPTACION") {
+    return NextResponse.json({ error: "Estado inválido" }, { status: 400 })
+  }
+
   if (solicitud.estado !== "BUSCANDO_CONDUCTOR") {
-    return NextResponse.json({ error: "La solicitud ya no puede cancelarse" }, { status: 409 })
+    return NextResponse.json({ error: "La solicitud ya no puede modificarse" }, { status: 409 })
   }
 
   const actualizada = await prisma.solicitudDeViaje.update({
     where: { id: id_solicitud },
-    data: { estado: "CANCELADA_POR_PASAJERO" },
+    data: { estado },
   })
 
   return NextResponse.json({

@@ -89,6 +89,9 @@ export default function ViajeActivoCliente({
   const [comentarioCancelacion, setComentarioCancelacion] = useState("")
   const [cancelFeedbackLoading, setCancelFeedbackLoading] = useState(false)
 
+  // feedback post-EXPIRADA
+  const [comentarioExpiracion, setComentarioExpiracion] = useState("")
+
   // modal motivos post-cancelación del pasajero
   const [showCancelMotivo, setShowCancelMotivo] = useState(false)
 
@@ -143,6 +146,7 @@ export default function ViajeActivoCliente({
       ? (ESTADO_LABEL[viajeEstado] ?? viajeEstado)
       : (ESTADO_LABEL[estado] ?? estado)
 
+  const EXPIRY_SECONDS = 120
   const [elapsed, setElapsed] = useState(0)
   useEffect(() => {
     if (!esBuscando) return
@@ -152,6 +156,17 @@ export default function ViajeActivoCliente({
     const id = setInterval(tick, 1000)
     return () => clearInterval(id)
   }, [esBuscando, creadaEn])
+
+  const isExpired = esBuscando && elapsed >= EXPIRY_SECONDS
+
+  useEffect(() => {
+    if (!isExpired) return
+    fetch(`/api/solicitudes/${solicitudId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ estado: "EXPIRADA_SIN_ACEPTACION" }),
+    }).catch(() => {})
+  }, [isExpired, solicitudId])
 
   useEffect(() => {
     let mounted = true
@@ -590,6 +605,73 @@ export default function ViajeActivoCliente({
                 </button>
               ))}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal solicitud expirada */}
+      {isExpired && mounted && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+          <div className="relative holo-border rounded-xl p-6 w-full max-w-sm space-y-5 bg-card scan-lines">
+            <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-yellow-500/50 rounded-tl-xl" />
+            <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-yellow-500/50 rounded-tr-xl" />
+            <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-yellow-500/50 rounded-bl-xl" />
+            <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-yellow-500/50 rounded-br-xl" />
+
+            <div className="text-center space-y-2">
+              <div className="w-14 h-14 mx-auto rounded-full bg-yellow-500/20 flex items-center justify-center text-2xl text-yellow-400">
+                ⏱
+              </div>
+              <p className="text-xs text-yellow-400/80 tracking-widest" style={{ fontFamily: "var(--font-orbitron)" }}>
+                SOLICITUD EXPIRADA
+              </p>
+              <p className="text-sm text-muted-foreground">
+                No encontramos ningún conductor en 2 minutos. ¿Querés volver a intentarlo?
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <textarea
+                rows={3}
+                value={comentarioExpiracion}
+                onChange={(e) => setComentarioExpiracion(e.target.value)}
+                placeholder="¿Querés dejarnos algún comentario? (opcional)"
+                className="w-full rounded-xl border border-yellow-500/20 bg-input/50 px-4 py-3 text-sm text-foreground outline-none transition placeholder:text-muted-foreground/60 focus:border-yellow-500/40 resize-none"
+              />
+              {comentarioExpiracion.trim() && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await fetch(`/api/solicitudes/${solicitudId}`, {
+                      method: "PATCH",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ comentario: comentarioExpiracion.trim() }),
+                    }).catch(() => {})
+                    router.push("/pedir-viaje")
+                  }}
+                  className="w-full h-10 rounded-xl border border-yellow-500/40 bg-yellow-500/10 text-yellow-200 text-sm font-medium transition hover:bg-yellow-500/20"
+                >
+                  Enviar comentario y pedir viaje
+                </button>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => router.push("/pedir-viaje")}
+              className="inline-flex w-full h-11 items-center justify-center rounded-xl bg-glow-red text-white text-xs font-semibold glow-red transition hover:brightness-110"
+              style={{ fontFamily: "var(--font-orbitron)", letterSpacing: "0.05em" }}
+            >
+              PEDIR NUEVO VIAJE
+            </button>
+            <button
+              type="button"
+              onClick={() => router.push("/inicio")}
+              className="inline-flex w-full h-10 items-center justify-center rounded-xl border border-zinc-700 text-sm text-zinc-400 transition hover:border-zinc-500 hover:text-zinc-200"
+            >
+              Volver al inicio
+            </button>
           </div>
         </div>
       )}

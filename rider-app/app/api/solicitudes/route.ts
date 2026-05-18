@@ -45,6 +45,15 @@ export async function GET(req: NextRequest) {
     return R * c
   }
 
+  // Expirar solicitudes viejas antes de responder (lazy expiration global)
+  await prisma.solicitudDeViaje.updateMany({
+    where: {
+      estado: "BUSCANDO_CONDUCTOR",
+      creadaEn: { lt: new Date(Date.now() - 2 * 60 * 1000) },
+    },
+    data: { estado: "EXPIRADA_SIN_ACEPTACION" },
+  })
+
   let solicitudes = await prisma.solicitudDeViaje.findMany({
     where: { estado: estado as never },
     include: { pasajero: { select: { id: true, publicId: true, nombre: true, ratingPromedio: true } } },
