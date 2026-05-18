@@ -13,8 +13,9 @@ model Pasajero {
   nombre         String
   email          String               @unique
   telefono       String?
-  ratingPromedio Decimal              @default(0) @db.Decimal(3,2)
-  solicitudes    SolicitudDeViaje[]
+  ratingPromedio     Decimal              @default(0) @db.Decimal(3,2)
+  comentarioPromedio String?
+  solicitudes        SolicitudDeViaje[]
   direcciones    DireccionFrecuente[]
   createdAt      DateTime             @default(now())
   updatedAt      DateTime             @updatedAt
@@ -43,6 +44,7 @@ model SolicitudDeViaje {
 model Viaje {
   id                String           @id @default(uuid())
   solicitudId       String           @unique
+  idViajeDriver     String?          @unique
   idConductor       String?
   idVehiculo        String?
   latitudActual     Float?

@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
   if (authError) return authError
 
   const body = await req.json()
-  let { id_pasajero, puntaje } = body
+  let { id_pasajero, puntaje, comentario_promedio } = body
 
   if (!id_pasajero || puntaje === undefined) {
     return NextResponse.json({ error: "Faltan campos requeridos" }, { status: 400 })
@@ -28,7 +28,10 @@ export async function POST(req: NextRequest) {
 
   await prisma.pasajero.update({
     where: { id: id_pasajero },
-    data: { ratingPromedio: puntaje },
+    data: {
+      ratingPromedio: puntaje,
+      comentarioPromedio: comentario_promedio ?? null,
+    },
   })
 
   return NextResponse.json({ ok: true })

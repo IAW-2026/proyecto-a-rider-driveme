@@ -10,8 +10,14 @@ export async function PATCH(
   if ("error" in auth) return auth.error
 
   const { id_solicitud } = await params
+  const MOTIVOS_VALIDOS = ["DESISTIO", "TIEMPO_EXCEDIDO", "ERROR_ORIGEN_DESTINO"]
+
   const body = await req.json()
-  const { estado, motivo: _motivo, comentario } = body
+  const { estado, motivo, comentario } = body
+
+  if (motivo && !MOTIVOS_VALIDOS.includes(motivo)) {
+    return NextResponse.json({ error: "Motivo inválido" }, { status: 400 })
+  }
 
   const solicitud = await prisma.solicitudDeViaje.findUnique({
     where: { id: id_solicitud },
