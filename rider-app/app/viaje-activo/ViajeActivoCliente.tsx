@@ -92,6 +92,10 @@ export default function ViajeActivoCliente({
   // feedback post-EXPIRADA
   const [comentarioExpiracion, setComentarioExpiracion] = useState("")
 
+  // auto-aceptación a los 15 segundos
+  const [autoAceptar, setAutoAceptar] = useState(true)
+  const [autoAceptarFired, setAutoAceptarFired] = useState(false)
+
   // modal motivos post-cancelación del pasajero
   const [showCancelMotivo, setShowCancelMotivo] = useState(false)
 
@@ -167,6 +171,14 @@ export default function ViajeActivoCliente({
       body: JSON.stringify({ estado: "EXPIRADA_SIN_ACEPTACION" }),
     }).catch(() => {})
   }, [isExpired, solicitudId])
+
+  useEffect(() => {
+    if (!esBuscando || !autoAceptar || elapsed < 15 || autoAceptarFired) return
+    setAutoAceptarFired(true)
+    fetch(`/api/solicitudes/${solicitudId}/simular-aceptacion`, { method: "POST" })
+      .then(res => { if (res.ok) router.refresh() })
+      .catch(() => {})
+  }, [esBuscando, autoAceptar, elapsed, autoAceptarFired, solicitudId, router])
 
   useEffect(() => {
     let mounted = true
@@ -535,14 +547,46 @@ export default function ViajeActivoCliente({
                 <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-primary/40 rounded-br-xl" />
 
                 {esBuscando && (
-                  <button
-                    type="button"
-                    onClick={cancelar}
-                    disabled={cancelando}
-                    className="w-full inline-flex h-12 items-center justify-center rounded-xl border border-destructive/30 bg-destructive/10 text-sm font-medium text-destructive-foreground transition hover:bg-destructive/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {cancelando ? "Cancelando…" : "Cancelar solicitud"}
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      onClick={cancelar}
+                      disabled={cancelando}
+                      className="w-full inline-flex h-12 items-center justify-center rounded-xl border border-destructive/30 bg-destructive/10 text-sm font-medium text-destructive-foreground transition hover:bg-destructive/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {cancelando ? "Cancelando…" : "Cancelar solicitud"}
+                    </button>
+
+                    <div className="text-center space-y-1 pt-1">
+                      {autoAceptar ? (
+                        <>
+                          <p className="text-xs text-muted-foreground/70">
+                            En {Math.max(0, 15 - elapsed)}s se acepta automáticamente.
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => setAutoAceptar(false)}
+                            className="text-xs text-muted-foreground/40 underline underline-offset-2 hover:text-muted-foreground/60 transition"
+                          >
+                            Desactivar para probar expiración
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-xs text-muted-foreground/50">
+                            Auto-aceptación desactivada. Expira a los 2 min.
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => { setAutoAceptar(true); setAutoAceptarFired(false) }}
+                            className="text-xs text-muted-foreground/40 underline underline-offset-2 hover:text-muted-foreground/60 transition"
+                          >
+                            Activar auto-aceptación
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </>
                 )}
 
                 {error && (

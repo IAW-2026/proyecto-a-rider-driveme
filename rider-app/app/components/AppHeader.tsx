@@ -1,7 +1,7 @@
 "use client"
 
 import { useUser, UserButton } from "@clerk/nextjs"
-import { Rocket, Clock, Navigation, Home, Shield } from "lucide-react"
+import { Rocket, Clock, Navigation, Home, Shield, UserCircle } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -11,6 +11,7 @@ const navItems = [
   { href: "/pedir-viaje", label: "Pedir Viaje", icon: Rocket },
   { href: "/viaje-activo", label: "Activo", icon: Navigation },
   { href: "/historial", label: "Historial", icon: Clock },
+  { href: "/perfil", label: "Perfil", icon: UserCircle },
 ]
 
 export function AppHeader() {

@@ -75,6 +75,7 @@ model DireccionFrecuente {
   id         String   @id @default(uuid())
   pasajeroId String
   nombre     String
+  direccion  String?
   latitud    Float
   longitud   Float
   pasajero   Pasajero @relation(fields: [pasajeroId], references: [id])
