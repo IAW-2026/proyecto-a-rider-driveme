@@ -1,16 +1,14 @@
-import { auth } from "@clerk/nextjs/server"
-import { redirect } from "next/navigation"
 import { Suspense } from "react"
 import Link from "next/link"
 import PedirViajeForm from "./PedirViajeForm"
 import { getActiveSolicitudByClerkId } from "@/lib/activeSolicitud"
 import { AppHeader } from "../components/AppHeader"
+import { requirePasajeroActivo } from "@/lib/requirePasajeroActivo"
 
 export default async function PedirViajePage() {
-  const { userId } = await auth()
-  if (!userId) redirect("/sign-in")
+  const pasajero = await requirePasajeroActivo()
 
-  const solicitudActiva = await getActiveSolicitudByClerkId(userId)
+  const solicitudActiva = await getActiveSolicitudByClerkId(pasajero.clerkId)
 
   if (!solicitudActiva) {
     return (

@@ -15,6 +15,7 @@ model Pasajero {
   telefono       String?
   ratingPromedio     Decimal              @default(0) @db.Decimal(3,2)
   comentarioPromedio String?
+  activo             Boolean              @default(true)
   solicitudes        SolicitudDeViaje[]
   direcciones    DireccionFrecuente[]
   createdAt      DateTime             @default(now())

@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma"
 import { Suspense } from "react"
 import AdminFilters from "@/app/components/AdminFilters"
 import AdminPagination from "@/app/components/AdminPagination"
+import ToggleActivoPasajero from "@/app/components/ToggleActivoPasajero"
 
 const LIMIT = 10
 
@@ -35,6 +36,7 @@ export default async function AdminPasajerosPage({
         email: true,
         telefono: true,
         ratingPromedio: true,
+        activo: true,
         createdAt: true,
         _count: { select: { solicitudes: true } },
       },
@@ -77,6 +79,7 @@ export default async function AdminPasajerosPage({
                   <th className="px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500 text-right">Rating</th>
                   <th className="px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500 text-right">Viajes</th>
                   <th className="px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Registrado</th>
+                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Estado</th>
                 </tr>
               </thead>
               <tbody>
@@ -95,6 +98,9 @@ export default async function AdminPasajerosPage({
                     <td className="px-6 py-4 text-right text-zinc-300">{p._count.solicitudes}</td>
                     <td className="px-6 py-4 text-zinc-500">
                       {new Date(p.createdAt).toLocaleDateString("es-AR")}
+                    </td>
+                    <td className="px-6 py-4">
+                      <ToggleActivoPasajero id={p.id} activo={p.activo} />
                     </td>
                   </tr>
                 ))}

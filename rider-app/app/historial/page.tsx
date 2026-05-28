@@ -1,8 +1,7 @@
-import { auth } from "@clerk/nextjs/server"
-import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import { AppHeader } from "../components/AppHeader"
+import { requirePasajeroActivo } from "@/lib/requirePasajeroActivo"
 
 function getEstadoBadge(estado: string, viajeEstado: string | null | undefined) {
   if (estado === "CANCELADA_POR_PASAJERO")
@@ -22,13 +21,7 @@ function getEstadoBadge(estado: string, viajeEstado: string | null | undefined) 
 }
 
 export default async function HistorialPage() {
-  const { userId } = await auth()
-  if (!userId) redirect("/sign-in")
-
-  const pasajero = await prisma.pasajero.findUnique({
-    where: { clerkId: userId },
-  })
-  if (!pasajero) redirect("/inicio")
+  const pasajero = await requirePasajeroActivo()
 
   const solicitudes = await prisma.solicitudDeViaje.findMany({
     where: {

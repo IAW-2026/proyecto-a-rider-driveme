@@ -207,6 +207,8 @@ export default function ViajeActivoCliente({
         body: JSON.stringify({ estado: "CANCELADA_POR_PASAJERO" }),
       })
       if (res.ok) {
+        setAutoAceptar(false)
+        setAutoAceptarFired(true)
         setShowCancelMotivo(true)
       } else {
         const data = await res.json()

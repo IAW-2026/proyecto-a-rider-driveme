@@ -1,14 +1,13 @@
-import { auth } from "@clerk/nextjs/server"
 import { redirect } from "next/navigation"
 import { Mail, Star } from "lucide-react"
 import { AppHeader } from "@/app/components/AppHeader"
 import { prisma } from "@/lib/prisma"
+import { requirePasajeroActivo } from "@/lib/requirePasajeroActivo"
 import PerfilForm from "./PerfilForm"
 import DireccionesManager from "./DireccionesManager"
 
 export default async function PerfilPage() {
-  const { userId } = await auth()
-  if (!userId) redirect("/sign-in")
+  const { clerkId: userId } = await requirePasajeroActivo()
 
   const pasajero = await prisma.pasajero.findUnique({
     where: { clerkId: userId },

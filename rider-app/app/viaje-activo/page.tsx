@@ -1,18 +1,15 @@
-import { auth } from "@clerk/nextjs/server"
-import { redirect } from "next/navigation"
 import Link from "next/link"
-import { prisma } from "@/lib/prisma"
 import { getActiveSolicitudByClerkId, getRecentlyFinishedSolicitudByClerkId } from "@/lib/activeSolicitud"
 import ViajeActivoCliente from "./ViajeActivoCliente"
 import { AppHeader } from "../components/AppHeader"
+import { requirePasajeroActivo } from "@/lib/requirePasajeroActivo"
 
 export default async function ViajeActivoPage() {
-  const { userId } = await auth()
-  if (!userId) redirect("/sign-in")
+  const pasajero = await requirePasajeroActivo()
 
   const solicitud =
-    (await getActiveSolicitudByClerkId(userId)) ??
-    (await getRecentlyFinishedSolicitudByClerkId(userId))
+    (await getActiveSolicitudByClerkId(pasajero.clerkId)) ??
+    (await getRecentlyFinishedSolicitudByClerkId(pasajero.clerkId))
 
   if (!solicitud) {
     return (
@@ -65,11 +62,6 @@ export default async function ViajeActivoPage() {
     )
   }
 
-  const pasajero = await prisma.pasajero.findUnique({
-    where: { clerkId: userId },
-    select: { nombre: true },
-  })
-
   return (
     <ViajeActivoCliente
       solicitudId={solicitud.id}
@@ -86,7 +78,7 @@ export default async function ViajeActivoPage() {
       viajeId={solicitud.viaje?.id ?? null}
       idConductor={solicitud.viaje?.idConductor ?? null}
       creadaEn={solicitud.creadaEn.toISOString()}
-      nombrePasajero={pasajero?.nombre ?? "Pasajero"}
+      nombrePasajero={pasajero.nombre}
     />
   )
 }

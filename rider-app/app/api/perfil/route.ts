@@ -2,10 +2,13 @@ import { NextResponse } from "next/server"
 import { auth } from "@clerk/nextjs/server"
 import { z } from "zod"
 import { prisma } from "@/lib/prisma"
+import { getOrCreatePasajero } from "@/lib/getOrCreatePasajero"
 
 export async function GET() {
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: "No autenticado" }, { status: 401 })
+
+  await getOrCreatePasajero()
 
   const pasajero = await prisma.pasajero.findUnique({
     where: { clerkId: userId },

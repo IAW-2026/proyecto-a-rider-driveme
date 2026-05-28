@@ -1,5 +1,3 @@
-import { auth } from "@clerk/nextjs/server"
-import { redirect } from "next/navigation"
 import Link from "next/link"
 import { TrendingUp } from "lucide-react"
 import { AppHeader } from "../components/AppHeader"
@@ -7,6 +5,7 @@ import GalaxyCard from "../components/GalaxyCard"
 import QuickTripForm from "./QuickTripForm"
 import SavedPlaces from "./SavedPlaces"
 import { getActiveSolicitudByClerkId } from "@/lib/activeSolicitud"
+import { requirePasajeroActivo } from "@/lib/requirePasajeroActivo"
 
 const galaxies = [
   { name: "Andrómeda", visits: 128, emoji: "🌌", description: "La más distante", color: "from-primary/20 to-glow-magenta/10" },
@@ -18,10 +17,9 @@ const galaxies = [
 ]
 
 export default async function InicioPage() {
-  const { userId } = await auth()
-  if (!userId) redirect("/sign-in")
+  const pasajero = await requirePasajeroActivo()
 
-  const solicitudActiva = await getActiveSolicitudByClerkId(userId)
+  const solicitudActiva = await getActiveSolicitudByClerkId(pasajero.clerkId)
 
   return (
     <div className="min-h-screen bg-background stars-bg relative">
