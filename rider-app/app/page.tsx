@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { useUser } from '@clerk/nextjs';
 import clerkAppearance from '../lib/clerkAppearance';
+import styles from './neonBlobs.module.css';
 
 const SignIn = dynamic(() => import('@clerk/nextjs').then((m) => ({ default: m.SignIn })), { ssr: false });
 const UserButton = dynamic(() => import('@clerk/nextjs').then((m) => ({ default: m.UserButton })), { ssr: false });
@@ -33,20 +34,20 @@ export default function Home() {
       {/* Neon blobs */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         {/* Violet */}
-        <div className="absolute h-[28rem] w-[28rem] rounded-full blur-[90px]"
-          style={{ left: '22%', top: '38%', translate: '-50% -50%', background: 'radial-gradient(circle, rgba(120,40,255,0.55), transparent 70%)', animation: 'neonDrift1 18s ease-in-out infinite' }} />
+        <div className={`absolute h-[28rem] w-[28rem] rounded-full blur-[90px] ${styles.b1}`}
+          style={{ left: '22%', top: '38%', translate: '-50% -50%', background: 'radial-gradient(circle, rgba(120,40,255,0.55), transparent 70%)' }} />
         {/* Pink */}
-        <div className="absolute h-[24rem] w-[24rem] rounded-full blur-[85px]"
-          style={{ left: '68%', top: '52%', translate: '-50% -50%', background: 'radial-gradient(circle, rgba(255,50,180,0.5), transparent 70%)', animation: 'neonDrift2 23s ease-in-out infinite' }} />
+        <div className={`absolute h-[24rem] w-[24rem] rounded-full blur-[85px] ${styles.b2}`}
+          style={{ left: '68%', top: '52%', translate: '-50% -50%', background: 'radial-gradient(circle, rgba(255,50,180,0.5), transparent 70%)' }} />
         {/* Red */}
-        <div className="absolute h-[22rem] w-[22rem] rounded-full blur-[80px]"
-          style={{ left: '48%', top: '72%', translate: '-50% -50%', background: 'radial-gradient(circle, rgba(255,20,20,0.5), transparent 70%)', animation: 'neonDrift3 16s ease-in-out infinite' }} />
+        <div className={`absolute h-[22rem] w-[22rem] rounded-full blur-[80px] ${styles.b3}`}
+          style={{ left: '48%', top: '72%', translate: '-50% -50%', background: 'radial-gradient(circle, rgba(255,20,20,0.5), transparent 70%)' }} />
         {/* Green */}
-        <div className="absolute h-[20rem] w-[20rem] rounded-full blur-[80px]"
-          style={{ left: '14%', top: '22%', translate: '-50% -50%', background: 'radial-gradient(circle, rgba(30,220,100,0.45), transparent 70%)', animation: 'neonDrift4 26s ease-in-out infinite' }} />
+        <div className={`absolute h-[20rem] w-[20rem] rounded-full blur-[80px] ${styles.b4}`}
+          style={{ left: '14%', top: '22%', translate: '-50% -50%', background: 'radial-gradient(circle, rgba(30,220,100,0.45), transparent 70%)' }} />
         {/* Blue */}
-        <div className="absolute h-[26rem] w-[26rem] rounded-full blur-[90px]"
-          style={{ left: '82%', top: '28%', translate: '-50% -50%', background: 'radial-gradient(circle, rgba(30,100,255,0.5), transparent 70%)', animation: 'neonDrift5 21s ease-in-out infinite' }} />
+        <div className={`absolute h-[26rem] w-[26rem] rounded-full blur-[90px] ${styles.b5}`}
+          style={{ left: '82%', top: '28%', translate: '-50% -50%', background: 'radial-gradient(circle, rgba(30,100,255,0.5), transparent 70%)' }} />
       </div>
 
       <div className="relative z-10 flex min-h-screen w-full items-center justify-center px-6 py-10">
