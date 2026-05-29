@@ -3,7 +3,7 @@ import { ShieldX, RefreshCw, MessageSquare } from "lucide-react"
 import { SignOutBtn } from "./SignOutBtn"
 
 export default function CuentaBloqueadaPage() {
-  const feedbackUrl = process.env.FEEDBACK_APP_URL ?? null
+  const feedbackUrl = process.env.FEEDBACK_APP_URL ?? "#"
 
   return (
     <div className="min-h-screen bg-background stars-bg relative flex items-center justify-center">
@@ -49,18 +49,16 @@ export default function CuentaBloqueadaPage() {
               Intentar de nuevo
             </Link>
 
-            {feedbackUrl && (
-              <a
-                href={feedbackUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-glow-red text-white text-sm font-semibold glow-red transition hover:brightness-110"
-                style={{ fontFamily: "var(--font-orbitron)", letterSpacing: "0.05em" }}
-              >
-                <MessageSquare className="w-4 h-4" />
-                CONTACTAR SOPORTE
-              </a>
-            )}
+            <a
+              href={feedbackUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-glow-red text-white text-sm font-semibold glow-red transition hover:brightness-110"
+              style={{ fontFamily: "var(--font-orbitron)", letterSpacing: "0.05em" }}
+            >
+              <MessageSquare className="w-4 h-4" />
+              CONTACTAR SOPORTE
+            </a>
 
             <SignOutBtn />
           </div>

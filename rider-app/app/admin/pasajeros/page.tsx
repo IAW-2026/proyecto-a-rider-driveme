@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/prisma"
 import { Suspense } from "react"
+import Link from "next/link"
 import AdminFilters from "@/app/components/AdminFilters"
 import AdminPagination from "@/app/components/AdminPagination"
-import ToggleActivoPasajero from "@/app/components/ToggleActivoPasajero"
 
 const LIMIT = 10
 
@@ -34,7 +34,6 @@ export default async function AdminPasajerosPage({
         id: true,
         nombre: true,
         email: true,
-        telefono: true,
         ratingPromedio: true,
         activo: true,
         createdAt: true,
@@ -75,11 +74,11 @@ export default async function AdminPasajerosPage({
                 <tr className="border-b border-zinc-800 text-left">
                   <th className="px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Nombre</th>
                   <th className="px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Email</th>
-                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Teléfono</th>
                   <th className="px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500 text-right">Rating</th>
                   <th className="px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500 text-right">Viajes</th>
-                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Registrado</th>
                   <th className="px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Estado</th>
+                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Registrado</th>
+                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500"></th>
                 </tr>
               </thead>
               <tbody>
@@ -90,17 +89,32 @@ export default async function AdminPasajerosPage({
                   >
                     <td className="px-6 py-4 font-medium text-white">{p.nombre || "—"}</td>
                     <td className="px-6 py-4 text-zinc-400">{p.email}</td>
-                    <td className="px-6 py-4 text-zinc-400">{p.telefono ?? "—"}</td>
                     <td className="px-6 py-4 text-right">
                       <span className="text-zinc-300">{Number(p.ratingPromedio).toFixed(1)}</span>
                       <span className="ml-1 text-zinc-600">★</span>
                     </td>
                     <td className="px-6 py-4 text-right text-zinc-300">{p._count.solicitudes}</td>
-                    <td className="px-6 py-4 text-zinc-500">
+                    <td className="px-6 py-4">
+                      <span
+                        className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${
+                          p.activo
+                            ? "border-green-500/30 bg-green-500/10 text-green-300"
+                            : "border-red-500/30 bg-red-500/10 text-red-300"
+                        }`}
+                      >
+                        {p.activo ? "Activo" : "Inactivo"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-zinc-500 whitespace-nowrap">
                       {new Date(p.createdAt).toLocaleDateString("es-AR")}
                     </td>
                     <td className="px-6 py-4">
-                      <ToggleActivoPasajero id={p.id} activo={p.activo} />
+                      <Link
+                        href={`/admin/pasajeros/${p.id}`}
+                        className="inline-flex h-7 items-center rounded-full border border-zinc-700 px-3 text-xs text-zinc-400 transition hover:border-zinc-500 hover:text-zinc-200 whitespace-nowrap"
+                      >
+                        Ver detalles
+                      </Link>
                     </td>
                   </tr>
                 ))}

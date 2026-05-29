@@ -66,7 +66,7 @@ export default async function PerfilPage() {
                 <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
                 <span className="text-lg font-bold text-foreground">{rating > 0 ? rating.toFixed(1) : "—"}</span>
               </div>
-              <p className="text-[10px] text-muted-foreground tracking-widest">RATING</p>
+              <p className="text-[10px] text-muted-foreground tracking-widest">RATING PROMEDIO</p>
             </div>
           </div>
 

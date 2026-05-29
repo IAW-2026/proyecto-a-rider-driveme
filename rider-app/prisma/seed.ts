@@ -33,8 +33,8 @@ async function main() {
 
   console.log("BD limpia. Creando seed...")
 
-  // --- 5 Pasajeros ---
-  const [valentina, matias, lucia, nicolas, camila] = await prisma.$transaction([
+  // --- 6 Pasajeros (5 seed + 1 demo con cuenta real) ---
+  const [valentina, matias, lucia, nicolas, camila, probandoRider] = await prisma.$transaction([
     prisma.pasajero.create({
       data: {
         clerkId: "seed_clerk_valentina",
@@ -85,11 +85,25 @@ async function main() {
         comentarioPromedio: "Excelente pasajera, 10 puntos.",
       },
     }),
+    prisma.pasajero.create({
+      data: {
+        clerkId: "user_3EP4z2GxSfFCouHWRqXbTUm4WrK",
+        nombre: "Prueba Rider",
+        email: "pruebarider@gmail.com",
+        telefono: "+54 11 9999-0000",
+        ratingPromedio: 4.6,
+        comentarioPromedio: "Buen pasajero, siempre puntual.",
+      },
+    }),
   ])
 
   // --- Direcciones frecuentes ---
   await prisma.direccionFrecuente.createMany({
     data: [
+      // Prueba Rider (cuenta real de demo)
+      { pasajeroId: probandoRider.id, nombre: "Casa", direccion: LUGARES.palermo.dir, latitud: LUGARES.palermo.lat, longitud: LUGARES.palermo.lng },
+      { pasajeroId: probandoRider.id, nombre: "Trabajo", direccion: LUGARES.microcentro.dir, latitud: LUGARES.microcentro.lat, longitud: LUGARES.microcentro.lng },
+      { pasajeroId: probandoRider.id, nombre: "Gym", direccion: LUGARES.recoleta.dir, latitud: LUGARES.recoleta.lat, longitud: LUGARES.recoleta.lng },
       // Valentina
       { pasajeroId: valentina.id, nombre: "Casa", direccion: LUGARES.palermo.dir, latitud: LUGARES.palermo.lat, longitud: LUGARES.palermo.lng },
       { pasajeroId: valentina.id, nombre: "Trabajo", direccion: LUGARES.microcentro.dir, latitud: LUGARES.microcentro.lat, longitud: LUGARES.microcentro.lng },
@@ -276,11 +290,88 @@ async function main() {
     },
   })
 
+  // --- Prueba Rider: 13 viajes para demostrar paginación (LIMIT=8 → 2 páginas) ---
+
+  // 5 estrellas + comentario
+  const prSol1 = await prisma.solicitudDeViaje.create({
+    data: { pasajeroId: probandoRider.id, origenLat: LUGARES.palermo.lat, origenLng: LUGARES.palermo.lng, origenDireccion: LUGARES.palermo.dir, destinoLat: LUGARES.microcentro.lat, destinoLng: LUGARES.microcentro.lng, destinoDireccion: LUGARES.microcentro.dir, precioEstimadoCents: 1800, metodoPago: "TARJETA", estado: "ACEPTADA" },
+  })
+  await prisma.viaje.create({ data: { solicitudId: prSol1.id, idConductor: "conductor-mock-001", estadoActual: "FINALIZADO", puntajeCalificacion: 5, idCalificacion: "cal_pr_001", comentarioCalificacion: "Excelente conductor, muy puntual." } })
+
+  // 4 estrellas
+  const prSol2 = await prisma.solicitudDeViaje.create({
+    data: { pasajeroId: probandoRider.id, origenLat: LUGARES.recoleta.lat, origenLng: LUGARES.recoleta.lng, origenDireccion: LUGARES.recoleta.dir, destinoLat: LUGARES.puertoMadero.lat, destinoLng: LUGARES.puertoMadero.lng, destinoDireccion: LUGARES.puertoMadero.dir, precioEstimadoCents: 2200, metodoPago: "EFECTIVO", estado: "ACEPTADA" },
+  })
+  await prisma.viaje.create({ data: { solicitudId: prSol2.id, idConductor: "conductor-mock-002", estadoActual: "FINALIZADO", puntajeCalificacion: 4, idCalificacion: "cal_pr_002", comentarioCalificacion: "Buen viaje, todo en orden." } })
+
+  // Cancelada por pasajero
+  await prisma.solicitudDeViaje.create({
+    data: { pasajeroId: probandoRider.id, origenLat: LUGARES.belgrano.lat, origenLng: LUGARES.belgrano.lng, origenDireccion: LUGARES.belgrano.dir, destinoLat: LUGARES.sanTelmo.lat, destinoLng: LUGARES.sanTelmo.lng, destinoDireccion: LUGARES.sanTelmo.dir, precioEstimadoCents: 3100, metodoPago: "EFECTIVO", estado: "CANCELADA_POR_PASAJERO" },
+  })
+
+  // Expirada
+  await prisma.solicitudDeViaje.create({
+    data: { pasajeroId: probandoRider.id, origenLat: LUGARES.caballito.lat, origenLng: LUGARES.caballito.lng, origenDireccion: LUGARES.caballito.dir, destinoLat: LUGARES.nunez.lat, destinoLng: LUGARES.nunez.lng, destinoDireccion: LUGARES.nunez.dir, precioEstimadoCents: 2700, metodoPago: "TARJETA", estado: "EXPIRADA_SIN_ACEPTACION", comentarioExpiracion: "No hubo conductores disponibles." },
+  })
+
+  // 3 estrellas sin comentario
+  const prSol5 = await prisma.solicitudDeViaje.create({
+    data: { pasajeroId: probandoRider.id, origenLat: LUGARES.microcentro.lat, origenLng: LUGARES.microcentro.lng, origenDireccion: LUGARES.microcentro.dir, destinoLat: LUGARES.almagro.lat, destinoLng: LUGARES.almagro.lng, destinoDireccion: LUGARES.almagro.dir, precioEstimadoCents: 1500, metodoPago: "TARJETA", estado: "ACEPTADA" },
+  })
+  await prisma.viaje.create({ data: { solicitudId: prSol5.id, idConductor: "conductor-mock-003", estadoActual: "FINALIZADO", puntajeCalificacion: 3, idCalificacion: "cal_pr_003" } })
+
+  // Cancelado por conductor
+  const prSol6 = await prisma.solicitudDeViaje.create({
+    data: { pasajeroId: probandoRider.id, origenLat: LUGARES.nunez.lat, origenLng: LUGARES.nunez.lng, origenDireccion: LUGARES.nunez.dir, destinoLat: LUGARES.caballito.lat, destinoLng: LUGARES.caballito.lng, destinoDireccion: LUGARES.caballito.dir, precioEstimadoCents: 3400, metodoPago: "EFECTIVO", estado: "ACEPTADA" },
+  })
+  await prisma.viaje.create({ data: { solicitudId: prSol6.id, idConductor: "conductor-mock-001", estadoActual: "CANCELADO_POR_CONDUCTOR" } })
+
+  // 5 estrellas
+  const prSol7 = await prisma.solicitudDeViaje.create({
+    data: { pasajeroId: probandoRider.id, origenLat: LUGARES.sanTelmo.lat, origenLng: LUGARES.sanTelmo.lng, origenDireccion: LUGARES.sanTelmo.dir, destinoLat: LUGARES.belgrano.lat, destinoLng: LUGARES.belgrano.lng, destinoDireccion: LUGARES.belgrano.dir, precioEstimadoCents: 4200, metodoPago: "TARJETA", estado: "ACEPTADA" },
+  })
+  await prisma.viaje.create({ data: { solicitudId: prSol7.id, idConductor: "conductor-mock-002", estadoActual: "FINALIZADO", puntajeCalificacion: 5, idCalificacion: "cal_pr_004", comentarioCalificacion: "Perfecto, muy buena experiencia." } })
+
+  // Finalizado sin calificación
+  const prSol8 = await prisma.solicitudDeViaje.create({
+    data: { pasajeroId: probandoRider.id, origenLat: LUGARES.villa_crespo.lat, origenLng: LUGARES.villa_crespo.lng, origenDireccion: LUGARES.villa_crespo.dir, destinoLat: LUGARES.puertoMadero.lat, destinoLng: LUGARES.puertoMadero.lng, destinoDireccion: LUGARES.puertoMadero.dir, precioEstimadoCents: 2900, metodoPago: "EFECTIVO", estado: "ACEPTADA" },
+  })
+  await prisma.viaje.create({ data: { solicitudId: prSol8.id, idConductor: "conductor-mock-003", estadoActual: "FINALIZADO" } })
+
+  // 2 estrellas + comentario negativo
+  const prSol9 = await prisma.solicitudDeViaje.create({
+    data: { pasajeroId: probandoRider.id, origenLat: LUGARES.almagro.lat, origenLng: LUGARES.almagro.lng, origenDireccion: LUGARES.almagro.dir, destinoLat: LUGARES.recoleta.lat, destinoLng: LUGARES.recoleta.lng, destinoDireccion: LUGARES.recoleta.dir, precioEstimadoCents: 1900, metodoPago: "TARJETA", estado: "ACEPTADA" },
+  })
+  await prisma.viaje.create({ data: { solicitudId: prSol9.id, idConductor: "conductor-mock-001", estadoActual: "FINALIZADO", puntajeCalificacion: 2, idCalificacion: "cal_pr_005", comentarioCalificacion: "Tardó mucho en llegar." } })
+
+  // Segunda cancelada por pasajero
+  await prisma.solicitudDeViaje.create({
+    data: { pasajeroId: probandoRider.id, origenLat: LUGARES.palermo.lat, origenLng: LUGARES.palermo.lng, origenDireccion: LUGARES.palermo.dir, destinoLat: LUGARES.caballito.lat, destinoLng: LUGARES.caballito.lng, destinoDireccion: LUGARES.caballito.dir, precioEstimadoCents: 2100, metodoPago: "EFECTIVO", estado: "CANCELADA_POR_PASAJERO" },
+  })
+
+  // Finalizado sin calificación
+  const prSol11 = await prisma.solicitudDeViaje.create({
+    data: { pasajeroId: probandoRider.id, origenLat: LUGARES.microcentro.lat, origenLng: LUGARES.microcentro.lng, origenDireccion: LUGARES.microcentro.dir, destinoLat: LUGARES.nunez.lat, destinoLng: LUGARES.nunez.lng, destinoDireccion: LUGARES.nunez.dir, precioEstimadoCents: 3600, metodoPago: "TARJETA", estado: "ACEPTADA" },
+  })
+  await prisma.viaje.create({ data: { solicitudId: prSol11.id, idConductor: "conductor-mock-002", estadoActual: "FINALIZADO" } })
+
+  // 4 estrellas
+  const prSol12 = await prisma.solicitudDeViaje.create({
+    data: { pasajeroId: probandoRider.id, origenLat: LUGARES.belgrano.lat, origenLng: LUGARES.belgrano.lng, origenDireccion: LUGARES.belgrano.dir, destinoLat: LUGARES.villa_crespo.lat, destinoLng: LUGARES.villa_crespo.lng, destinoDireccion: LUGARES.villa_crespo.dir, precioEstimadoCents: 2400, metodoPago: "EFECTIVO", estado: "ACEPTADA" },
+  })
+  await prisma.viaje.create({ data: { solicitudId: prSol12.id, idConductor: "conductor-mock-003", estadoActual: "FINALIZADO", puntajeCalificacion: 4, idCalificacion: "cal_pr_006", comentarioCalificacion: "Buen conductor, auto limpio." } })
+
+  // Viaje activo (EN_CURSO) — no aparece en historial, aparece en el viaje activo
+  const prSol13 = await prisma.solicitudDeViaje.create({
+    data: { pasajeroId: probandoRider.id, origenLat: LUGARES.sanTelmo.lat, origenLng: LUGARES.sanTelmo.lng, origenDireccion: LUGARES.sanTelmo.dir, destinoLat: LUGARES.palermo.lat, destinoLng: LUGARES.palermo.lng, destinoDireccion: LUGARES.palermo.dir, precioEstimadoCents: 2000, metodoPago: "TARJETA", estado: "ACEPTADA" },
+  })
+  await prisma.viaje.create({ data: { solicitudId: prSol13.id, idConductor: "conductor-mock-demo", latitudActual: -34.6200, longitudActual: -58.3750, estadoActual: "EN_CURSO" } })
+
   console.log("\nSeed completado:")
-  console.log("  5 pasajeros: valentina, matias, lucia, nicolas, camila")
-  console.log("  12 direcciones frecuentes (2-3 por pasajero)")
-  console.log("  12 solicitudes en todos los estados")
-  console.log("  8 viajes (ACEPTADO, EN_CURSO, CANCELADO, FINALIZADO x5)")
+  console.log("  6 pasajeros: valentina, matias, lucia, nicolas, camila + probandoRider (cuenta real)")
+  console.log("  15 direcciones frecuentes")
+  console.log("  25 solicitudes en todos los estados")
+  console.log("  probandoRider: 13 viajes → paginación visible en /historial (página 1: 8, página 2: 5)")
 }
 
 main()
