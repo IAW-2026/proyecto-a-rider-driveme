@@ -60,7 +60,7 @@ export default function Home() {
             }`}
           >
             <Image
-              src="/vader.png"
+              src="/vader1.png"
               alt="Vader"
               width={960}
               height={960}

@@ -5,6 +5,10 @@ const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === "true",
 });
 
-const nextConfig: NextConfig = {};
+const nextConfig: NextConfig = {
+  experimental: {
+    inlineCss: true,
+  },
+};
 
 export default withBundleAnalyzer(nextConfig);

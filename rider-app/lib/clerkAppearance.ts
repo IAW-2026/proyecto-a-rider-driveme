@@ -1,27 +1,60 @@
-import { dark } from '@clerk/themes';
-
 const clerkAppearance = {
-  baseTheme: dark,
   variables: {
     colorPrimary: '#b91c1c',
     colorDanger: '#ef4444',
+    colorBackground: '#2a1f3d',
+    colorText: '#ffffff',
+    colorTextSecondary: '#a0a0a0',
+    colorInputBackground: '#3d2d55',
+    colorInputText: '#ffffff',
+    colorNeutral: '#ffffff',
     fontFamily: 'var(--font-geist-sans), sans-serif',
+    borderRadius: '0.5rem',
   },
   elements: {
-    card: {
-      background: 'transparent',
-      boxShadow: 'none',
-      border: 'none',
-      padding: 0,
-    },
     rootBox: { width: '100%' },
+    card: {
+      background: '#2a1f3d',
+      boxShadow: '0 4px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(185,28,28,0.2)',
+      border: '1px solid rgba(255,255,255,0.1)',
+      borderRadius: '0.75rem',
+    },
+    headerTitle: { color: '#ffffff' },
+    headerSubtitle: { color: '#b8aad4' },
+    formFieldLabel: { color: '#e2d9f3' },
+    formFieldInput: {
+      background: '#3d2d55',
+      color: '#ffffff',
+      border: '1px solid rgba(255,255,255,0.2)',
+      '::placeholder': { color: '#b0a0cc' },
+    },
     formButtonPrimary: {
       background: 'linear-gradient(135deg, #991b1b, #b91c1c)',
       boxShadow: '0 0 20px rgba(185,28,28,0.4)',
+      color: '#ffffff',
     },
+    footerActionText: { color: '#b8aad4' },
     footerActionLink: { color: '#fca5a5' },
+    identityPreviewText: { color: '#ffffff' },
     identityPreviewEditButton: { color: '#fca5a5' },
     formFieldAction: { color: '#fca5a5' },
+    badge: { color: '#e2d9f3', background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.15)' },
+    footer: { color: '#b8aad4' },
+    footerPages: { color: '#b8aad4' },
+    footerPagesLink: { color: '#b8aad4' },
+    socialButtonsBlockButton: {
+      background: '#1e1530',
+      color: '#ffffff',
+      border: '1px solid rgba(255,255,255,0.12)',
+    },
+    socialButtonsBlockButtonText: { color: '#ffffff' },
+    dividerLine: { background: 'rgba(255,255,255,0.12)' },
+    dividerText: { color: '#b8aad4' },
+    alternativeMethodsBlockButton: {
+      background: '#1e1530',
+      color: '#ffffff',
+      border: '1px solid rgba(255,255,255,0.12)',
+    },
   },
 };
 
