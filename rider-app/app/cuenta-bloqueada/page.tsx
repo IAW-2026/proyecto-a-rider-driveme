@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { ShieldX, RefreshCw, MessageSquare } from "lucide-react"
-import { SignOutButton } from "@clerk/nextjs"
+import { SignOutBtn } from "./SignOutBtn"
 
 export default function CuentaBloqueadaPage() {
   const feedbackUrl = process.env.FEEDBACK_APP_URL ?? null
@@ -62,13 +62,7 @@ export default function CuentaBloqueadaPage() {
               </a>
             )}
 
-            <SignOutButton redirectUrl="/sign-in">
-              <button
-                className="inline-flex h-12 w-full items-center justify-center rounded-full border border-border/40 text-muted-foreground text-sm font-medium transition hover:bg-muted/20 cursor-pointer"
-              >
-                Cerrar sesión
-              </button>
-            </SignOutButton>
+            <SignOutBtn />
           </div>
         </div>
       </div>

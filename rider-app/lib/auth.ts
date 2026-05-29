@@ -20,13 +20,17 @@ export async function requireRole(requiredRole: Role | Role[]) {
 }
 
 export function requireM2MToken(req: Request) {
-  const apiKey = req.headers.get("x-api-key")
-  const authHeader = req.headers.get("authorization")?.replace(/^Bearer\s+/i, "")
+  const token =
+    req.headers.get("x-api-key") ??
+    req.headers.get("authorization")?.replace(/^Bearer\s+/i, "")
 
-  // Accept either x-api-key or Authorization: Bearer <token>
-  // Valid tokens: INTERNAL_API_KEY (recommended) and optional FEEDBACK_APP_TOKEN
-  if (apiKey && apiKey === process.env.INTERNAL_API_KEY) return null
-  if (authHeader && (authHeader === process.env.INTERNAL_API_KEY || authHeader === process.env.FEEDBACK_APP_TOKEN)) return null
+  const validTokens = [
+    process.env.DRIVER_APP_TOKEN,
+    process.env.PAYMENTS_APP_TOKEN,
+    process.env.FEEDBACK_APP_TOKEN,
+  ].filter(Boolean)
+
+  if (token && validTokens.includes(token)) return null
 
   return NextResponse.json({ error: "No autorizado" }, { status: 401 })
 }

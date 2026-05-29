@@ -142,10 +142,11 @@ export default function DireccionesManager({ inicial }: Props) {
           </div>
 
           <div>
-            <label className="mb-1.5 block text-xs text-muted-foreground">
+            <label htmlFor="dir-direccion" className="mb-1.5 block text-xs text-muted-foreground">
               Dirección
             </label>
             <AutocompleteAddress
+              id="dir-direccion"
               placeholder="Buscá la dirección..."
               onSelect={(item) => {
                 setDraftDireccion(item.direccion)

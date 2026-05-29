@@ -19,13 +19,14 @@ export default function SearchBar({ placeholder = "Próximo salto intergaláctic
 
   return (
     <div className="w-full">
-      <label className="sr-only">Buscar galaxias</label>
+      <label htmlFor="searchbar-input" className="sr-only">Buscar galaxias</label>
       <div className="relative flex w-full items-center gap-3">
         <div className="relative flex-1">
           <div className="absolute left-4 top-1/2 -translate-y-1/2">
             <Search className="w-4 h-4 text-muted-foreground" />
           </div>
           <input
+            id="searchbar-input"
             value={q}
             onChange={handleChange}
             placeholder={placeholder}

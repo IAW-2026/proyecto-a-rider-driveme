@@ -2,6 +2,7 @@
 import { useEffect, useState, useRef } from "react"
 
 export default function AutocompleteAddress({
+  id,
   label,
   placeholder,
   onSelect,
@@ -10,6 +11,7 @@ export default function AutocompleteAddress({
   required = false,
   hasError = false,
 }: {
+  id?: string
   label?: string
   placeholder?: string
   initial?: string
@@ -55,12 +57,13 @@ export default function AutocompleteAddress({
   return (
     <div className="relative">
       {label && (
-        <label className="mb-2 block text-sm font-medium text-foreground">
+        <label htmlFor={id} className="mb-2 block text-sm font-medium text-foreground">
           {label}
           {required && <span className="ml-1 text-destructive">*</span>}
         </label>
       )}
       <input
+        id={id}
         value={q}
         onChange={(e) => { setQ(e.target.value); onChange?.(e.target.value) }}
         placeholder={placeholder}
