@@ -30,6 +30,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             >
               Solicitudes
             </Link>
+            <Link
+              href="/admin/viajes"
+              className="text-sm text-zinc-400 transition hover:text-white"
+            >
+              Viajes
+            </Link>
           </div>
           <Link
             href="/inicio"
