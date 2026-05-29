@@ -9,6 +9,19 @@ const nextConfig: NextConfig = {
   experimental: {
     inlineCss: true,
   },
+  async headers() {
+    return [
+      {
+        source: "/inicio",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "private, no-cache",
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default withBundleAnalyzer(nextConfig);

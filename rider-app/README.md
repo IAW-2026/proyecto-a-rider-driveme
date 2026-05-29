@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DriveMe — Rider App
 
-## Getting Started
+Aplicación web para pasajeros de DriveMe, una plataforma de viajes compartidos con temática de `Star Wars`. Permite solicitar viajes, seguir el estado en tiempo real, consultar el historial y gestionar el perfil. Incluye un panel de administración para gestionar pasajeros y solicitudes.
 
-First, run the development server:
+## Deploy
+
+[https://proyecto-a-rider-driveme.vercel.app](https://proyecto-a-rider-driveme.vercel.app)
+
+## Acceso
+
+### Pasajero (usuario final)
+
+| Campo | Valor |
+|-------|-------|
+| Usuario | `probandoRider` |
+| Contraseña | `IAW2026rider` |
+
+### Administrador
+
+| Campo | Valor |
+|-------|-------|
+| Usuario | `accesoAdmin` |
+| Contraseña | `IAW2026admin` |
+
+El panel de administración está disponible en `/admin` — solo accesible con la cuenta de administrador.
+
+## Correr localmente
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Requiere las variables de entorno de `.env.local` (Clerk, base de datos PostgreSQL).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Nota sobre hallazgos de Lighthouse
 
-## Learn More
+Dejo registro de errores que me marcaba Lighthouse a la hora de correr las pruebas. Estas advertencias quedan fuera de mi alcance ya que son "problemas" que se generan al integrar Clerk.
 
-To learn more about Next.js, take a look at the following resources:
+**Clerk (proveedor de autenticación)**
+- *Reduce unused JavaScript* — los bundles `clerk.browser.js`, `ui.browser.js`, `vendors_ui_*.js` (~290 KiB) los sirve Clerk desde su CDN. No se puede modificar su tamaño ni estructura.
+- *Third-party cookies* — `__cf_bm` y `_cfuvid` son cookies de Cloudflare inyectadas automáticamente por la infraestructura de Clerk (bot management y rate limiting).
+- *Imagen de avatar en JPEG/PNG* — el avatar lo sirve `img.clerk.com` sin soporte WebP/AVIF. No se puede cambiar el formato del CDN de Clerk.
+- *Cache TTL bajo en img.clerk.com* — Clerk fija el TTL en 1 día. No se puede modificar el `Cache-Control` de un servidor externo.
+- *Animaciones no compuestas* — Clerk anima `max-height` en sus componentes internos (`cl-internal-*`). Es código de Clerk, no del proyecto.
+- *Back/forward cache (razones 2 y 3)* — los bundles JS de Clerk se sirven con `Cache-Control: no-store`, lo que impide el bfcache independientemente de nuestra configuración.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Next.js internals**
+- *Legacy JavaScript polyfill* — el chunk `@next/polyfill-nomodule` (~13.8 KiB) lo incluye Next.js para compatibilidad con browsers muy viejos. Los browsers modernos lo descargan pero no lo ejecutan (`nomodule`). No se puede eliminar sin eyectar el build system.
+- *Unused JavaScript en chunks propios* — el porcentaje "sin usar" en chunks de Next.js corresponde a event handlers que solo corren en interacción, no al cargar la página. Es comportamiento normal de React.
