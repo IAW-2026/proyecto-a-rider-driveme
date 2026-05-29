@@ -4,8 +4,12 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { SignIn, UserButton, useUser } from '@clerk/nextjs';
+import dynamic from 'next/dynamic';
+import { useUser } from '@clerk/nextjs';
 import clerkAppearance from '../lib/clerkAppearance';
+
+const SignIn = dynamic(() => import('@clerk/nextjs').then((m) => ({ default: m.SignIn })), { ssr: false });
+const UserButton = dynamic(() => import('@clerk/nextjs').then((m) => ({ default: m.UserButton })), { ssr: false });
 
 export default function Home() {
   const [started, setStarted] = useState(false);

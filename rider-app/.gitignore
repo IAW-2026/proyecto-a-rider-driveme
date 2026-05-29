@@ -42,5 +42,6 @@ next-env.d.ts
 
 # notas personales
 notas.txt
+lighthouse-notas.txt
 .claude
 .REQUISITOS.md

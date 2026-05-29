@@ -17,7 +17,8 @@ const geistMono = Geist_Mono({
 const orbitron = Orbitron({
   variable: "--font-orbitron",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
+  weight: ["400", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -36,6 +37,10 @@ export default function RootLayout({
         lang="es"
         className={`${geistSans.variable} ${geistMono.variable} ${orbitron.variable} h-full antialiased`}
       >
+        <head>
+          <link rel="preconnect" href="https://accounts.dev" crossOrigin="anonymous" />
+          <link rel="dns-prefetch" href="https://accounts.dev" />
+        </head>
         <body className="min-h-full flex flex-col">
           {children}
         </body>
