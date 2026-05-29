@@ -38,8 +38,10 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${orbitron.variable} h-full antialiased`}
       >
         <head>
-          <link rel="preconnect" href="https://accounts.dev" crossOrigin="anonymous" />
-          <link rel="dns-prefetch" href="https://accounts.dev" />
+          <link rel="preconnect" href="https://causal-grizzly-17.clerk.accounts.dev" crossOrigin="anonymous" />
+          <link rel="dns-prefetch" href="https://causal-grizzly-17.clerk.accounts.dev" />
+          <link rel="preconnect" href="https://img.clerk.com" crossOrigin="anonymous" />
+          <link rel="dns-prefetch" href="https://img.clerk.com" />
         </head>
         <body className="min-h-full flex flex-col">
           {children}

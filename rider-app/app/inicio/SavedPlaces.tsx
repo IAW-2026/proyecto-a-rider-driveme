@@ -1,6 +1,5 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { MapPin } from "lucide-react"
 import Link from "next/link"
@@ -8,25 +7,13 @@ import Link from "next/link"
 type Direccion = {
   id: string
   nombre: string
-  direccion: string
+  direccion: string | null
   latitud: number
   longitud: number
 }
 
-export default function SavedPlaces() {
+export default function SavedPlaces({ lugares }: { lugares: Direccion[] }) {
   const router = useRouter()
-  const [lugares, setLugares] = useState<Direccion[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    fetch("/api/perfil/direcciones")
-      .then((res) => res.json())
-      .then((data) => { if (Array.isArray(data)) setLugares(data) })
-      .catch(() => {})
-      .finally(() => setLoading(false))
-  }, [])
-
-  if (loading) return null
 
   if (lugares.length === 0) {
     return (
@@ -74,7 +61,7 @@ export default function SavedPlaces() {
             type="button"
             onClick={() =>
               router.push(
-                `/pedir-viaje?destino=${encodeURIComponent(lugar.direccion)}&destino_lat=${lugar.latitud}&destino_lng=${lugar.longitud}`
+                `/pedir-viaje?destino=${encodeURIComponent(lugar.direccion ?? "")}&destino_lat=${lugar.latitud}&destino_lng=${lugar.longitud}`
               )
             }
             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl holo-border hover:bg-primary/5 transition-colors text-left cursor-pointer"

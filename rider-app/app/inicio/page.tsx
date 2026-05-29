@@ -6,6 +6,7 @@ import QuickTripForm from "./QuickTripForm"
 import SavedPlaces from "./SavedPlaces"
 import { getActiveSolicitudByClerkId } from "@/lib/activeSolicitud"
 import { requirePasajeroActivo } from "@/lib/requirePasajeroActivo"
+import { prisma } from "@/lib/prisma"
 
 const galaxies = [
   { name: "Andrómeda", visits: 128, emoji: "🌌", description: "La más distante", color: "from-primary/20 to-glow-magenta/10" },
@@ -19,7 +20,13 @@ const galaxies = [
 export default async function InicioPage() {
   const pasajero = await requirePasajeroActivo()
 
-  const solicitudActiva = await getActiveSolicitudByClerkId(pasajero.clerkId)
+  const [solicitudActiva, direcciones] = await Promise.all([
+    getActiveSolicitudByClerkId(pasajero.clerkId),
+    prisma.direccionFrecuente.findMany({
+      where: { pasajeroId: pasajero.id },
+      orderBy: { nombre: "asc" },
+    }),
+  ])
 
   return (
     <div className="min-h-screen bg-background stars-bg relative">
@@ -62,7 +69,7 @@ export default async function InicioPage() {
               ) : (
                 <>
                   <QuickTripForm />
-                  <SavedPlaces />
+                  <SavedPlaces lugares={direcciones} />
                 </>
               )}
             </div>
