@@ -62,7 +62,7 @@ export async function PATCH(
     return NextResponse.json({ error: "Solicitud no encontrada" }, { status: 404 })
   }
 
-  if (solicitud.pasajero.clerkId !== auth.userId) {
+  if (auth.role !== "admin" && solicitud.pasajero.clerkId !== auth.userId) {
     return NextResponse.json({ error: "Sin permisos sobre esta solicitud" }, { status: 403 })
   }
 
