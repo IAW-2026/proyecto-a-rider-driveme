@@ -20,10 +20,11 @@ const navItems = [
   { href: "/perfil", label: "Perfil", icon: UserCircle },
 ]
 
-export function AppHeader() {
+export function AppHeader({ defaultName }: { defaultName?: string } = {}) {
   const pathname = usePathname()
   const { user } = useUser()
   const firstName =
+    defaultName ??
     user?.firstName ??
     user?.emailAddresses[0]?.emailAddress?.split("@")[0] ??
     "Piloto"

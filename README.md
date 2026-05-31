@@ -63,7 +63,7 @@ Dejo registro de errores que me marcaba Lighthouse a la hora de correr las prueb
 - *Imagen de avatar en JPEG/PNG* — el avatar lo sirve `img.clerk.com` sin soporte WebP/AVIF. No se puede cambiar el formato del CDN de Clerk.
 - *Cache TTL bajo en img.clerk.com* — Clerk fija el TTL en 1 día. No se puede modificar el `Cache-Control` de un servidor externo.
 - *Animaciones no compuestas* — Clerk anima `max-height` en sus componentes internos (`cl-internal-*`). Es código de Clerk, no del proyecto.
-- *Back/forward cache (razones 2 y 3)* — los bundles JS de Clerk se sirven con `Cache-Control: no-store`, lo que impide el bfcache independientemente de nuestra configuración.
+- *Back/forward cache (4 motivos)* — el bfcache queda bloqueado por razones fuera del alcance del proyecto: los bundles JS de Clerk se sirven con `Cache-Control: no-store` (razones 2 y 3), un error interno del navegador (razón 4), y la propia página `/inicio` recibe `no-store` de Next.js/Vercel al ser dinámica (razón 1), lo cual tampoco es modificable sin afectar la correcta actualización de datos de sesión.
 
 **Next.js internals**
 - *Legacy JavaScript polyfill* — el chunk `@next/polyfill-nomodule` (~13.8 KiB) lo incluye Next.js para compatibilidad con browsers muy viejos. Los browsers modernos lo descargan pero no lo ejecutan (`nomodule`). No se puede eliminar sin eyectar el build system.

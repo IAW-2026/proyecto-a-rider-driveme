@@ -33,7 +33,7 @@ export default async function InicioPage() {
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/30 to-background pointer-events-none" />
 
       <div className="relative z-10 flex flex-col min-h-screen">
-        <AppHeader />
+        <AppHeader defaultName={pasajero.nombre.split(" ")[0]} />
 
         <main className="flex-1 px-4 py-6 max-w-6xl mx-auto w-full">
           <div className="flex flex-col lg:flex-row gap-6">
