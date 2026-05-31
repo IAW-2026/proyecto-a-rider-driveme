@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { currentUser } from "@clerk/nextjs/server"
+import { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
 import { requireRole, requireM2MToken } from "@/lib/auth"
 import { getActiveSolicitudByPasajeroId } from "@/lib/activeSolicitud"
@@ -16,10 +17,71 @@ const solicitudSchema = z.object({
   precio_estimado: z.number().positive().nullable().optional(),
 })
 
-// Driver App consulta solicitudes disponibles
+// Driver App consulta solicitudes disponibles; riders ven las propias; admin ve todas
 export async function GET(req: NextRequest) {
   const m2mError = requireM2MToken(req)
-  if (m2mError) return m2mError
+
+  // Path para riders y admins (Clerk auth)
+  if (m2mError) {
+    const auth = await requireRole(["rider", "admin"])
+    if ("error" in auth) return auth.error
+
+    const { searchParams } = new URL(req.url)
+    const estado = searchParams.get("estado") ?? ""
+    const page = Math.max(1, parseInt(searchParams.get("page") ?? "1"))
+    const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") ?? "10")))
+    const skip = (page - 1) * limit
+
+    const where: Prisma.SolicitudDeViajeWhereInput = {}
+    if (estado) where.estado = estado as Prisma.EnumEstadoSolicitudFilter["equals"]
+
+    if (auth.role === "rider") {
+      const pasajero = await prisma.pasajero.findUnique({
+        where: { clerkId: auth.userId },
+        select: { id: true },
+      })
+      if (!pasajero) return NextResponse.json({ data: [], pagination: { page, limit, total: 0 } })
+      where.pasajeroId = pasajero.id
+    }
+
+    const [solicitudes, total] = await Promise.all([
+      prisma.solicitudDeViaje.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { creadaEn: "desc" },
+        select: {
+          id: true,
+          estado: true,
+          metodoPago: true,
+          precioEstimadoCents: true,
+          origenDireccion: true,
+          origenLat: true,
+          origenLng: true,
+          destinoDireccion: true,
+          destinoLat: true,
+          destinoLng: true,
+          creadaEn: true,
+        },
+      }),
+      prisma.solicitudDeViaje.count({ where }),
+    ])
+
+    return NextResponse.json({
+      data: solicitudes.map((s) => ({
+        id_solicitud: s.id,
+        estado: s.estado,
+        metodo_pago: s.metodoPago,
+        precio_estimado: s.precioEstimadoCents != null ? s.precioEstimadoCents / 100 : null,
+        origen: { direccion: s.origenDireccion, lat: s.origenLat, lng: s.origenLng },
+        destino: { direccion: s.destinoDireccion, lat: s.destinoLat, lng: s.destinoLng },
+        creada_en: s.creadaEn,
+      })),
+      pagination: { page, limit, total },
+    })
+  }
+
+  // Path M2M — Driver App
 
   const { searchParams } = new URL(req.url)
   const estado = searchParams.get("estado") ?? "BUSCANDO_CONDUCTOR"

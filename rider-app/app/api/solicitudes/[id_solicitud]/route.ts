@@ -2,6 +2,40 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { requireRole } from "@/lib/auth"
 
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id_solicitud: string }> }
+) {
+  const auth = await requireRole(["rider", "admin"])
+  if ("error" in auth) return auth.error
+
+  const { id_solicitud } = await params
+
+  const solicitud = await prisma.solicitudDeViaje.findUnique({
+    where: { id: id_solicitud },
+    include: { pasajero: { select: { id: true, publicId: true, clerkId: true } } },
+  })
+
+  if (!solicitud) {
+    return NextResponse.json({ error: "Solicitud no encontrada" }, { status: 404 })
+  }
+
+  if (auth.role !== "admin" && solicitud.pasajero.clerkId !== auth.userId) {
+    return NextResponse.json({ error: "Sin permisos sobre esta solicitud" }, { status: 403 })
+  }
+
+  return NextResponse.json({
+    id_solicitud: solicitud.id,
+    estado: solicitud.estado,
+    id_pasajero: solicitud.pasajero.publicId ?? solicitud.pasajero.id,
+    origen: { direccion: solicitud.origenDireccion, lat: solicitud.origenLat, lng: solicitud.origenLng },
+    destino: { direccion: solicitud.destinoDireccion, lat: solicitud.destinoLat, lng: solicitud.destinoLng },
+    precio_estimado: solicitud.precioEstimadoCents != null ? solicitud.precioEstimadoCents / 100 : null,
+    metodo_pago: solicitud.metodoPago,
+    creada_en: solicitud.creadaEn,
+  })
+}
+
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id_solicitud: string }> }
