@@ -17,7 +17,7 @@ export async function POST(
     return NextResponse.json({ error: "Faltan campos requeridos" }, { status: 400 })
   }
 
-  if (!["CAPTURED", "FAILED"].includes(estado)) {
+  if (!["CONFIRMADO", "FALLIDO"].includes(estado)) {
     return NextResponse.json({ error: "Estado de transacción inválido" }, { status: 400 })
   }
 
@@ -27,15 +27,17 @@ export async function POST(
     return NextResponse.json({ error: "Viaje no encontrado" }, { status: 404 })
   }
 
-  // Registrar la transacción de pago
+  // Mapear estados del contrato a valores internos de DB
+  const estadoInterno = estado === "CONFIRMADO" ? "CAPTURED" : "FAILED"
+
   await prisma.transaccion.create({
     data: {
       viajeId: id_viaje,
       idTransaccion: id_transaccion,
-      estado: estado,
-      monto: Math.round(monto * 100), // convertir a cents
+      estado: estadoInterno,
+      monto: Math.round(monto * 100),
     },
   })
 
-  return NextResponse.json({ ok: true })
+  return NextResponse.json({ id_viaje, pago: estado })
 }

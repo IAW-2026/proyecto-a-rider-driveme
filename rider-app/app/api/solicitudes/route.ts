@@ -23,8 +23,9 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url)
   const estado = searchParams.get("estado") ?? "BUSCANDO_CONDUCTOR"
+  const page = Math.max(1, parseInt(searchParams.get("page") ?? "1"))
   const limit = Math.min(parseInt(searchParams.get("limit") ?? "20"), 100)
-  const offset = parseInt(searchParams.get("offset") ?? "0")
+  const offset = (page - 1) * limit
   const latitud = searchParams.get("latitud") ? parseFloat(searchParams.get("latitud")!) : null
   const longitud = searchParams.get("longitud") ? parseFloat(searchParams.get("longitud")!) : null
   const radius = searchParams.get("radius") ? parseInt(searchParams.get("radius")!) : null
@@ -79,8 +80,8 @@ export async function GET(req: NextRequest) {
         id_pasajero_public: s.pasajero.publicId ?? null,
         rating_promedio: s.pasajero.ratingPromedio ?? null,
       },
-      origen: { direccion: s.origenDireccion, latitud: s.origenLat, longitud: s.origenLng },
-      destino: { direccion: s.destinoDireccion, latitud: s.destinoLat, longitud: s.destinoLng },
+      origen: { direccion: s.origenDireccion, lat: s.origenLat, lng: s.origenLng },
+      destino: { direccion: s.destinoDireccion, lat: s.destinoLat, lng: s.destinoLng },
       precio_estimado: s.precioEstimadoCents != null ? s.precioEstimadoCents / 100 : null,
       metodo_pago: s.metodoPago,
       created_at: s.creadaEn,
@@ -100,10 +101,8 @@ export async function GET(req: NextRequest) {
   const paginated = solicitudesFormateadas.slice(offset, offset + limit)
 
   return NextResponse.json({
-    total,
-    limit,
-    offset,
-    solicitudes: paginated,
+    data: paginated,
+    pagination: { page, limit, total },
   })
 }
 
