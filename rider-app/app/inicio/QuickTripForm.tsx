@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Navigation, MapPin, Banknote, CreditCard, ChevronDown, Rocket } from "lucide-react"
 import AutocompleteAddress from "@/components/AutocompleteAddress"
 import { geocodeAddress } from "@/lib/geocoding"
-import { cn } from "@/lib/utils"
+import { clsx } from "clsx"
 
 type MetodoPago = "EFECTIVO" | "TARJETA"
 type Coords = { lat: number; lng: number }
@@ -141,15 +141,15 @@ export default function QuickTripForm() {
         </div>
 
         {/* Destino — se desbloquea cuando el usuario empieza a escribir en origen */}
-        <div className={cn(
+        <div className={clsx(
           "flex items-start gap-2.5 transition-opacity duration-300",
           !origenHasText && "opacity-40 pointer-events-none"
         )}>
-          <div className={cn(
+          <div className={clsx(
             "mt-7 w-7 h-7 shrink-0 rounded-full flex items-center justify-center",
             origenHasText ? "bg-accent/20" : "bg-muted"
           )}>
-            <MapPin className={cn("w-3.5 h-3.5", origenHasText ? "text-accent" : "text-muted-foreground")} />
+            <MapPin className={clsx("w-3.5 h-3.5", origenHasText ? "text-accent" : "text-muted-foreground")} />
           </div>
           <div className="flex-1">
             <AutocompleteAddress
@@ -192,7 +192,7 @@ export default function QuickTripForm() {
               </span>
             </div>
             <ChevronDown
-              className={cn("w-3.5 h-3.5 text-muted-foreground transition-transform", showPaymentOptions && "rotate-180")}
+              className={clsx("w-3.5 h-3.5 text-muted-foreground transition-transform", showPaymentOptions && "rotate-180")}
             />
           </button>
 
@@ -201,7 +201,7 @@ export default function QuickTripForm() {
               <button
                 type="button"
                 onClick={() => { setMetodoPago("EFECTIVO"); setShowPaymentOptions(false) }}
-                className={cn("w-full flex items-center gap-2 px-3 py-2.5 hover:bg-primary/10 transition-colors text-sm", metodoPago === "EFECTIVO" && "bg-primary/5")}
+                className={clsx("w-full flex items-center gap-2 px-3 py-2.5 hover:bg-primary/10 transition-colors text-sm", metodoPago === "EFECTIVO" && "bg-primary/5")}
               >
                 <Banknote className="w-4 h-4 text-accent" />
                 <span>Efectivo</span>
@@ -209,7 +209,7 @@ export default function QuickTripForm() {
               <button
                 type="button"
                 onClick={() => { setMetodoPago("TARJETA"); setShowPaymentOptions(false) }}
-                className={cn("w-full flex items-center gap-2 px-3 py-2.5 hover:bg-primary/10 transition-colors text-sm", metodoPago === "TARJETA" && "bg-primary/5")}
+                className={clsx("w-full flex items-center gap-2 px-3 py-2.5 hover:bg-primary/10 transition-colors text-sm", metodoPago === "TARJETA" && "bg-primary/5")}
               >
                 <CreditCard className="w-4 h-4 text-primary" />
                 <span>Mercado Pago</span>

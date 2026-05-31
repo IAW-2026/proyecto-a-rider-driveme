@@ -64,6 +64,7 @@ export default function Home() {
               alt="Vader"
               width={960}
               height={960}
+              priority
               className="h-auto w-[clamp(22rem,min(52vw,calc(100vh-7rem)),60rem)] object-contain drop-shadow-[0_0_55px_rgba(140,0,0,0.8)] drop-shadow-[0_8px_40px_rgba(0,0,0,0.9)]"
             />
           </div>

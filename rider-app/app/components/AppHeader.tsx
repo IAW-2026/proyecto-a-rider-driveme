@@ -5,7 +5,7 @@ import dynamic from "next/dynamic"
 import { Rocket, Clock, Navigation, Home, Shield, UserCircle } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
+import { clsx } from "clsx"
 
 const UserButton = dynamic(
   () => import("@clerk/nextjs").then((m) => ({ default: m.UserButton })),
@@ -69,7 +69,7 @@ export function AppHeader() {
                 key={item.href}
                 href={item.href}
                 aria-label={item.label}
-                className={cn(
+                className={clsx(
                   "flex flex-col sm:flex-row items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs tracking-wide px-2 sm:px-3 py-2 rounded-lg transition-colors relative",
                   isActive
                     ? "text-glow-red bg-glow-red/10"
@@ -77,7 +77,7 @@ export function AppHeader() {
                 )}
                 style={isActive ? { fontFamily: "var(--font-orbitron)" } : undefined}
               >
-                <item.icon aria-hidden="true" className={cn("w-4 h-4", isActive && "drop-shadow-[0_0_6px_currentColor]")} />
+                <item.icon aria-hidden="true" className={clsx("w-4 h-4", isActive && "drop-shadow-[0_0_6px_currentColor]")} />
                 <span className="hidden xs:inline sm:inline">{item.label}</span>
                 {isActive && (
                   <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-glow-red sm:hidden" />
