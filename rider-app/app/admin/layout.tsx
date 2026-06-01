@@ -13,7 +13,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div className="min-h-screen bg-black text-white overflow-x-hidden">
       <nav className="sticky top-0 z-40 border-b border-zinc-800 bg-black/80 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 py-3 sm:py-4">
+        <div className="flex items-center justify-between gap-4 px-4 sm:px-6 py-3 sm:py-4">
           <div className="flex items-center gap-3 sm:gap-6 overflow-x-auto scrollbar-none">
             <span className="text-xs font-semibold uppercase tracking-[0.3em] text-red-400 shrink-0">
               Panel admin
@@ -46,7 +46,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </Link>
         </div>
       </nav>
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 py-8 sm:py-10">{children}</main>
+      <main className="px-4 sm:px-6 py-8 sm:py-10">{children}</main>
     </div>
   )
 }
