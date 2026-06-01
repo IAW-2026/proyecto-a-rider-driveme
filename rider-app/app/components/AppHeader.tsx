@@ -22,12 +22,12 @@ const navItems = [
 
 export function AppHeader({ defaultName }: { defaultName?: string } = {}) {
   const pathname = usePathname()
-  const { user } = useUser()
+  const { user, isLoaded } = useUser()
   const firstName =
     defaultName ??
-    user?.firstName ??
-    user?.emailAddresses[0]?.emailAddress?.split("@")[0] ??
-    "Piloto"
+    (isLoaded
+      ? (user?.firstName ?? user?.emailAddresses[0]?.emailAddress?.split("@")[0] ?? "Piloto")
+      : null)
   const isAdmin = (user?.publicMetadata?.role as string) === "admin"
 
   return (
@@ -53,12 +53,16 @@ export function AppHeader({ defaultName }: { defaultName?: string } = {}) {
           </div>
           <div className="hidden sm:block">
             <p className="text-xs text-muted-foreground leading-none">Bienvenido de vuelta</p>
-            <h1
-              className="text-sm font-bold text-glow-red glow-text-red tracking-wider"
-              style={{ fontFamily: "var(--font-orbitron)" }}
-            >
-              {firstName.toUpperCase()}
-            </h1>
+            {firstName ? (
+              <h1
+                className="text-sm font-bold text-glow-red glow-text-red tracking-wider"
+                style={{ fontFamily: "var(--font-orbitron)" }}
+              >
+                {firstName.toUpperCase()}
+              </h1>
+            ) : (
+              <div className="h-4 w-16 rounded bg-glow-red/10 animate-pulse mt-0.5" />
+            )}
           </div>
         </Link>
 

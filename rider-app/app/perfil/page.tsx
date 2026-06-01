@@ -3,6 +3,7 @@ import { Mail, Star } from "lucide-react"
 import { AppHeader } from "@/app/components/AppHeader"
 import { prisma } from "@/lib/prisma"
 import { requirePasajeroActivo } from "@/lib/requirePasajeroActivo"
+import { obtenerCalificacionesUsuario } from "@/lib/feedback"
 import PerfilForm from "./PerfilForm"
 import DireccionesManager from "./DireccionesManager"
 
@@ -27,6 +28,8 @@ export default async function PerfilPage() {
 
   if (!pasajero) redirect("/sign-in")
 
+  const calificaciones = await obtenerCalificacionesUsuario(pasajero.id).catch(() => null)
+
   const rating = Number(pasajero.ratingPromedio)
 
   return (
@@ -48,25 +51,27 @@ export default async function PerfilPage() {
           </div>
 
           {/* Rating card */}
-          <div className="holo-border rounded-2xl p-5 flex items-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-glow-red/20 flex items-center justify-center glow-red shrink-0">
-              <span className="text-2xl font-bold text-glow-red" style={{ fontFamily: "var(--font-orbitron)" }}>
-                {pasajero.nombre.charAt(0).toUpperCase()}
-              </span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-base font-semibold text-foreground truncate">{pasajero.nombre}</p>
-              <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
-                <Mail className="w-3.5 h-3.5 shrink-0" />
-                <span className="truncate">{pasajero.email}</span>
+          <div className="holo-border rounded-2xl p-5 space-y-3">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-full bg-glow-red/20 flex items-center justify-center glow-red shrink-0">
+                <span className="text-2xl font-bold text-glow-red" style={{ fontFamily: "var(--font-orbitron)" }}>
+                  {pasajero.nombre.charAt(0).toUpperCase()}
+                </span>
               </div>
-            </div>
-            <div className="shrink-0 text-center">
-              <div className="flex items-center gap-1">
-                <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                <span className="text-lg font-bold text-foreground">{rating > 0 ? rating.toFixed(1) : "—"}</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-base font-semibold text-foreground truncate">{pasajero.nombre}</p>
+                <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
+                  <Mail className="w-3.5 h-3.5 shrink-0" />
+                  <span className="truncate">{pasajero.email}</span>
+                </div>
               </div>
-              <p className="text-[10px] text-muted-foreground tracking-widest">RATING PROMEDIO</p>
+              <div className="shrink-0 text-center">
+                <div className="flex items-center gap-1">
+                  <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                  <span className="text-lg font-bold text-foreground">{rating > 0 ? rating.toFixed(1) : "—"}</span>
+                </div>
+                <p className="text-[10px] text-muted-foreground tracking-widest">RATING PROMEDIO</p>
+              </div>
             </div>
           </div>
 
@@ -92,21 +97,63 @@ export default async function PerfilPage() {
             </div>
           </div>
 
-          {/* Calificaciones — etapa 3 */}
-          <div className="holo-border rounded-2xl p-6 space-y-3 opacity-60">
-            <h2
-              className="text-sm font-bold text-foreground tracking-widest"
-              style={{ fontFamily: "var(--font-orbitron)" }}
-            >
-              CALIFICACIONES
-            </h2>
-            <p className="text-xs text-muted-foreground">
-              Integración con Feedback App disponible en Etapa 3.
-            </p>
-            <div className="rounded-xl border border-dashed border-primary/20 px-4 py-3 text-xs text-muted-foreground/60">
-              • Calificaciones recibidas y enviadas
-            </div>
-          </div>
+          {/* Calificaciones */}
+          {(() => {
+            const feedbackData = calificaciones && calificaciones.total_calificaciones > 0 ? calificaciones : null
+            const fallbackRating = rating > 0 ? rating : null
+            const hasData = feedbackData !== null || fallbackRating !== null
+            return (
+              <div className={`holo-border rounded-2xl p-6 space-y-3${!hasData ? " opacity-60" : ""}`}>
+                <h2
+                  className="text-sm font-bold text-foreground tracking-widest"
+                  style={{ fontFamily: "var(--font-orbitron)" }}
+                >
+                  CALIFICACIONES
+                </h2>
+                {feedbackData ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Promedio recibido</span>
+                      <div className="flex items-center gap-1">
+                        <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                        <span className="text-sm font-bold text-foreground">
+                          {feedbackData.calificacion_promedio.toFixed(1)}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Total calificaciones</span>
+                      <span className="text-sm text-foreground">{feedbackData.total_calificaciones}</span>
+                    </div>
+                  </div>
+                ) : fallbackRating !== null ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Rating promedio</span>
+                      <div className="flex items-center gap-1">
+                        <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                        <span className="text-sm font-bold text-foreground">{fallbackRating.toFixed(1)}</span>
+                      </div>
+                    </div>
+                    {pasajero.comentarioPromedio && (
+                      <p className="text-xs text-muted-foreground italic border-t border-primary/10 pt-3">
+                        &ldquo;{pasajero.comentarioPromedio}&rdquo;
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-xs text-muted-foreground">
+                      Integración con Feedback App disponible en Etapa 3.
+                    </p>
+                    <div className="rounded-xl border border-dashed border-primary/20 px-4 py-3 text-xs text-muted-foreground/60">
+                      • Calificaciones recibidas y enviadas
+                    </div>
+                  </>
+                )}
+              </div>
+            )
+          })()}
         </main>
       </div>
     </div>

@@ -42,6 +42,8 @@ Esta cuenta tiene datos de prueba precargados para facilitar la evaluación:
 
 El panel de administración está disponible en `/admin` — solo accesible con la cuenta de administrador. Desde ahí se puede buscar y paginar pasajeros, ver el detalle completo de cada uno (direcciones, historial de solicitudes, rating promedio), sumular los viajes y activar o desactivar cuentas. Al desactivar `probandoRider` e intentar ingresar con esa cuenta, se muestra la pantalla de cuenta suspendida.
 
+> **Nota sobre mobile:** el panel de administración está pensado para uso en desktop. Las tablas de pasajeros, solicitudes y viajes tienen scroll horizontal en mobile (se puede deslizar), pero el layout general no está optimizado para pantallas pequeñas. No encontré una forma satisfactoria de reorganizar la información densa de las tablas en mobile sin perder legibilidad, por lo que se dejó con scroll como solución funcional.
+
 ## Correr localmente
 
 ```bash
@@ -68,3 +70,18 @@ Dejo registro de errores que me marcaba Lighthouse a la hora de correr las prueb
 **Next.js internals**
 - *Legacy JavaScript polyfill* — el chunk `@next/polyfill-nomodule` (~13.8 KiB) lo incluye Next.js para compatibilidad con browsers muy viejos. Los browsers modernos lo descargan pero no lo ejecutan (`nomodule`). No se puede eliminar sin eyectar el build system.
 - *Unused JavaScript en chunks propios* — el porcentaje "sin usar" en chunks de Next.js corresponde a event handlers que solo corren en interacción, no al cargar la página. Es comportamiento normal de React.
+- *Reduce JavaScript / Unused JS en modo dev* — los chunks `next-devtools_index` (~213 KiB) y similares solo existen en `npm run dev`. En el build de producción (Vercel) no se incluyen.
+
+**Leaflet / OpenStreetMap (página `/viaje-activo`)**
+- *Cache TTL bajo en tiles de OSM* — los tiles de `*.tile.openstreetmap.org` se sirven con TTL de 3–11 horas. Es un límite impuesto por los servidores de OpenStreetMap; no es configurable desde el proyecto.
+- *Imágenes en formato PNG (no WebP/AVIF)* — OSM solo sirve tiles en PNG. Cambiar el formato requeriría usar un tile server propio o de pago que transponga a WebP, lo cual está fuera del alcance del proyecto.
+- *Tiles de baja resolución en pantallas retina* — OSM sirve tiles de 256×256 px. En dispositivos con DPR > 1 Lighthouse espera 384×384 px. El CDN gratuito de OSM no ofrece tiles `@2x`; sería necesario un tile server de pago (Mapbox, etc.) para resolverlo.
+- *Marker shadow de baja resolución* — el asset `marker-shadow.png` viene del bundle de Leaflet empaquetado por Next.js. No tiene versión retina; habría que reemplazar los íconos por defecto de Leaflet con assets propios.
+- *LCP es un tile de Leaflet* — Leaflet carga los tiles del mapa vía JavaScript (`dynamic` con `ssr: false`), por lo que Lighthouse detecta un tile como elemento LCP con alto "resource load delay". Esto es inherente al funcionamiento de Leaflet en el client: los tiles no se pueden pre-cargar desde el HTML sin un servidor de tiles propio.
+- *Back/forward cache bloqueado por WebSocket* — la página `/viaje-activo` usa WebSocket (a través de Clerk o Next.js internals), lo que inhabilita el bfcache por política del browser. No es modificable sin eliminar la funcionalidad de autenticación en tiempo real.
+
+**Modo desarrollo (solo afecta auditorías corridas en `localhost`)**
+- *Source maps sin campo `mappings`* — los chunks generados por Turbopack en dev (`node_modules_next_dist_*`, `turbopack-*`, etc.) producen mapas de orígenes incompletos. En el build de producción (`next build`) los source maps son correctos o se omiten según la configuración. No afecta al deploy en Vercel.
+- *Extensiones de Chrome en el reporte* — Lighthouse puede capturar actividad de extensiones instaladas (`chrome-extension://...`). Estos recursos no forman parte de la app y no aparecen en producción.
+- *CSS de bloqueo de renderización* — Turbopack emite un bundle CSS único (`[root-of...]__*.css`, ~18 KiB) que bloquea la renderización inicial (~300 ms). En el build de producción Next.js divide e inyecta el CSS crítico de forma distinta, por lo que este bloqueo desaparece.
+- *LCP con alto "retraso en la renderización"* — en dev, el elemento LCP suele ser un `<h1>` de texto con un delay de ~3 segundos causado principalmente por el CSS de bloqueo mencionado arriba. En producción el LCP de la página `/viaje-activo` es un tile de Leaflet (documentado en la sección anterior), no un elemento de texto.

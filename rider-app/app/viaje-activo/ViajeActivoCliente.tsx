@@ -79,7 +79,7 @@ export default function ViajeActivoCliente({
   const [error, setError] = useState<string | null>(null)
   const [driver, setDriver] = useState<Driver | null>(null)
   const [loadingDriver, setLoadingDriver] = useState(false)
-  const [mapReady, setMapReady] = useState(false)
+  const [mapReady, setMapReady] = useState(true)
 
   // feedback post-FINALIZADO
   const [puntaje, setPuntaje] = useState(0)
@@ -93,10 +93,6 @@ export default function ViajeActivoCliente({
   // mounted guard para evitar flash de hidratación en el modal
   const mounted = useIsClient()
 
-  useEffect(() => {
-    const timeoutId = window.setTimeout(() => setMapReady(true), 600)
-    return () => window.clearTimeout(timeoutId)
-  }, [])
 
   // feedback post-CANCELADO_POR_CONDUCTOR
   const [comentarioCancelacion, setComentarioCancelacion] = useState("")

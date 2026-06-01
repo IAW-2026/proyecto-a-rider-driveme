@@ -57,7 +57,7 @@ export default async function AdminViajesPage({
   return (
     <section>
       <div className="mb-8 flex flex-col gap-2">
-        <p className="text-xs uppercase tracking-[0.4em] text-red-400/70">Administración</p>
+        <p className="text-xs uppercase tracking-[0.4em] text-red-400">Administración</p>
         <h1 className="text-3xl font-bold">Viajes</h1>
         <p className="text-sm text-zinc-400">
           {total} viaje{total !== 1 ? "s" : ""}
@@ -80,7 +80,7 @@ export default async function AdminViajesPage({
               <p className={`text-2xl font-bold ${estado === e ? "" : "text-white"}`}>
                 {statsMap[e] ?? 0}
               </p>
-              <p className={`mt-1 text-xs ${estado === e ? "" : "text-zinc-500"}`}>{info.label}</p>
+              <p className={`mt-1 text-xs ${estado === e ? "" : "text-zinc-400"}`}>{info.label}</p>
             </a>
           )
         })}
@@ -91,7 +91,7 @@ export default async function AdminViajesPage({
         <div className="mb-4">
           <a
             href="/admin/viajes"
-            className="inline-flex items-center gap-2 text-xs text-zinc-500 hover:text-zinc-300 transition"
+            className="inline-flex items-center gap-2 text-xs text-zinc-400 hover:text-zinc-300 transition"
           >
             ✕ Limpiar filtro
           </a>
@@ -99,21 +99,21 @@ export default async function AdminViajesPage({
       )}
 
       {viajes.length === 0 ? (
-        <p className="text-zinc-500 py-8">No hay viajes{estado ? " en este estado" : ""}.</p>
+        <p className="text-zinc-400 py-8">No hay viajes{estado ? " en este estado" : ""}.</p>
       ) : (
         <>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+          <div className="scroll-table-wrap">
+          <div className="scroll-table">
+            <table className="w-full text-sm min-w-[640px]">
               <thead>
                 <tr className="border-b border-zinc-800 text-left">
-                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">ID</th>
-                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Estado</th>
-                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Pasajero</th>
-                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Origen → Destino</th>
-                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500 text-right">Precio</th>
-                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500 text-right">Rating</th>
-                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Fecha</th>
-                  <th className="pb-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500"></th>
+                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400">Estado</th>
+                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400">Pasajero</th>
+                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400">Origen → Destino</th>
+                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400 text-right">Precio</th>
+                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400 text-right">Rating</th>
+                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400">Fecha</th>
+                  <th className="pb-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400"></th>
                 </tr>
               </thead>
               <tbody>
@@ -124,28 +124,27 @@ export default async function AdminViajesPage({
                       key={v.id}
                       className={`transition hover:bg-white/[0.02] ${i < viajes.length - 1 ? "border-b border-zinc-800/40" : ""}`}
                     >
-                      <td className="py-4 pr-6 font-mono text-xs text-zinc-500">{v.id.slice(0, 8)}…</td>
                       <td className="py-4 pr-6">
                         <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${info.color}`}>
                           {info.label}
                         </span>
                       </td>
-                      <td className="py-4 pr-6 text-zinc-300">{v.solicitud.pasajero.nombre || "—"}</td>
-                      <td className="py-4 pr-6 text-zinc-400 max-w-xs">
+                      <td className="py-4 pr-6 text-zinc-300 whitespace-nowrap">{v.solicitud.pasajero.nombre || "—"}</td>
+                      <td className="py-4 pr-6 text-zinc-400 max-w-[180px]">
                         <p className="truncate text-xs">{v.solicitud.origenDireccion ?? "—"}</p>
-                        <p className="truncate text-xs text-zinc-600">{v.solicitud.destinoDireccion ?? "—"}</p>
+                        <p className="truncate text-xs text-zinc-500">{v.solicitud.destinoDireccion ?? "—"}</p>
                       </td>
-                      <td className="py-4 pr-6 text-right text-zinc-300">
+                      <td className="py-4 pr-6 text-right text-zinc-300 whitespace-nowrap">
                         ${((v.solicitud.precioEstimadoCents ?? 0) / 100).toFixed(2)}
                       </td>
                       <td className="py-4 pr-6 text-right">
                         {v.puntajeCalificacion != null ? (
                           <span className="text-zinc-300">{v.puntajeCalificacion} <span className="text-zinc-600">★</span></span>
                         ) : (
-                          <span className="text-zinc-700">—</span>
+                          <span className="text-zinc-500">—</span>
                         )}
                       </td>
-                      <td className="py-4 pr-6 text-zinc-500 text-xs">
+                      <td className="py-4 pr-6 text-zinc-400 text-xs whitespace-nowrap">
                         {new Date(v.createdAt).toLocaleDateString("es-AR")}
                       </td>
                       <td className="py-4">
@@ -156,6 +155,7 @@ export default async function AdminViajesPage({
                 })}
               </tbody>
             </table>
+          </div>
           </div>
 
           <div className="mt-6">

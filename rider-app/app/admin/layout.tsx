@@ -13,39 +13,40 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div className="min-h-screen bg-black text-white overflow-x-hidden">
       <nav className="sticky top-0 z-40 border-b border-zinc-800 bg-black/80 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-6">
-            <span className="text-xs font-semibold uppercase tracking-[0.3em] text-red-400/70">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 py-3 sm:py-4">
+          <div className="flex items-center gap-3 sm:gap-6 overflow-x-auto scrollbar-none">
+            <span className="text-xs font-semibold uppercase tracking-[0.3em] text-red-400 shrink-0">
               Panel admin
             </span>
             <Link
               href="/admin/pasajeros"
-              className="text-sm text-zinc-400 transition hover:text-white"
+              className="text-xs sm:text-sm text-zinc-400 transition hover:text-white shrink-0 whitespace-nowrap"
             >
               Pasajeros
             </Link>
             <Link
               href="/admin/solicitudes"
-              className="text-sm text-zinc-400 transition hover:text-white"
+              className="text-xs sm:text-sm text-zinc-400 transition hover:text-white shrink-0 whitespace-nowrap"
             >
               Solicitudes
             </Link>
             <Link
               href="/admin/viajes"
-              className="text-sm text-zinc-400 transition hover:text-white"
+              className="text-xs sm:text-sm text-zinc-400 transition hover:text-white shrink-0 whitespace-nowrap"
             >
               Viajes
             </Link>
           </div>
           <Link
             href="/inicio"
-            className="text-sm text-zinc-500 transition hover:text-zinc-300"
+            className="text-xs sm:text-sm text-zinc-400 transition hover:text-zinc-300 shrink-0 whitespace-nowrap"
           >
-            Volver a la app
+            <span className="sm:hidden">← App</span>
+            <span className="hidden sm:inline">Volver a la app</span>
           </Link>
         </div>
       </nav>
-      <main className="mx-auto max-w-7xl px-6 py-10">{children}</main>
+      <main className="mx-auto max-w-7xl px-4 sm:px-6 py-8 sm:py-10">{children}</main>
     </div>
   )
 }

@@ -48,7 +48,7 @@ export default async function AdminPasajerosPage({
   return (
     <section>
       <div className="mb-8 flex flex-col gap-2">
-        <p className="text-xs uppercase tracking-[0.4em] text-red-400/70">Administración</p>
+        <p className="text-xs uppercase tracking-[0.4em] text-red-400">Administración</p>
         <h1 className="text-3xl font-bold">Pasajeros</h1>
         <p className="text-sm text-zinc-400">
           {total} pasajero{total !== 1 ? "s" : ""} registrado{total !== 1 ? "s" : ""}
@@ -63,20 +63,21 @@ export default async function AdminPasajerosPage({
       </div>
 
       {pasajeros.length === 0 ? (
-        <p className="text-zinc-500 py-8">No se encontraron pasajeros.</p>
+        <p className="text-zinc-400 py-8">No se encontraron pasajeros.</p>
       ) : (
         <>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+          <div className="scroll-table-wrap">
+          <div className="scroll-table">
+            <table className="w-full text-sm min-w-[580px]">
               <thead>
                 <tr className="border-b border-zinc-800 text-left">
-                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Nombre</th>
-                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Email</th>
-                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500 text-right">Rating</th>
-                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500 text-right">Viajes</th>
-                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Estado</th>
-                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Registrado</th>
-                  <th className="pb-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500"></th>
+                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400">Nombre</th>
+                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400">Email</th>
+                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400 text-right">Rating</th>
+                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400 text-right">Viajes</th>
+                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400">Estado</th>
+                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400">Registrado</th>
+                  <th className="pb-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400"></th>
                 </tr>
               </thead>
               <tbody>
@@ -85,8 +86,8 @@ export default async function AdminPasajerosPage({
                     key={p.id}
                     className={`transition hover:bg-white/[0.02] ${i < pasajeros.length - 1 ? "border-b border-zinc-800/40" : ""}`}
                   >
-                    <td className="py-4 pr-6 font-medium text-white">{p.nombre || "—"}</td>
-                    <td className="py-4 pr-6 text-zinc-400">{p.email}</td>
+                    <td className="py-4 pr-6 font-medium text-white whitespace-nowrap">{p.nombre || "—"}</td>
+                    <td className="py-4 pr-6 text-zinc-400 text-xs">{p.email}</td>
                     <td className="py-4 pr-6 text-right">
                       <span className="text-zinc-300">{Number(p.ratingPromedio).toFixed(1)}</span>
                       <span className="ml-1 text-zinc-600">★</span>
@@ -103,7 +104,7 @@ export default async function AdminPasajerosPage({
                         {p.activo ? "Activo" : "Inactivo"}
                       </span>
                     </td>
-                    <td className="py-4 pr-6 text-zinc-500 whitespace-nowrap">
+                    <td className="py-4 pr-6 text-zinc-400 whitespace-nowrap">
                       {new Date(p.createdAt).toLocaleDateString("es-AR")}
                     </td>
                     <td className="py-4">
@@ -118,6 +119,7 @@ export default async function AdminPasajerosPage({
                 ))}
               </tbody>
             </table>
+          </div>
           </div>
 
           <div className="mt-6">

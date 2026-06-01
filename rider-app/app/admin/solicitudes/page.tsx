@@ -69,7 +69,7 @@ export default async function AdminSolicitudesPage({
   return (
     <section>
       <div className="mb-8 flex flex-col gap-2">
-        <p className="text-xs uppercase tracking-[0.4em] text-red-400/70">Administración</p>
+        <p className="text-xs uppercase tracking-[0.4em] text-red-400">Administración</p>
         <h1 className="text-3xl font-bold">Solicitudes</h1>
         <p className="text-sm text-zinc-400">
           {total} solicitud{total !== 1 ? "es" : ""}
@@ -87,23 +87,23 @@ export default async function AdminSolicitudesPage({
       </div>
 
       {solicitudes.length === 0 ? (
-        <p className="text-zinc-500 py-8">No se encontraron solicitudes.</p>
+        <p className="text-zinc-400 py-8">No se encontraron solicitudes.</p>
       ) : (
         <>
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[900px] text-sm">
+          <div className="scroll-table-wrap">
+          <div className="scroll-table">
+            <table className="w-full text-sm min-w-[720px]">
               <thead>
                 <tr className="border-b border-zinc-800 text-left">
-                  <th className="pb-3 pr-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">ID</th>
-                  <th className="pb-3 pr-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Pasajero</th>
-                  <th className="pb-3 pr-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Origen</th>
-                  <th className="pb-3 pr-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Destino</th>
-                  <th className="pb-3 pr-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Estado</th>
-                  <th className="pb-3 pr-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500 text-right">Precio</th>
-                  <th className="pb-3 pr-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Pago</th>
-                  <th className="pb-3 pr-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Fecha</th>
-                  <th className="pb-3 pr-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Acción</th>
-                  <th className="pb-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Feedback</th>
+                  <th className="pb-3 pr-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400">Pasajero</th>
+                  <th className="pb-3 pr-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400">Origen</th>
+                  <th className="pb-3 pr-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400">Destino</th>
+                  <th className="pb-3 pr-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400">Estado</th>
+                  <th className="pb-3 pr-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400 text-right">Precio</th>
+                  <th className="pb-3 pr-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400">Pago</th>
+                  <th className="pb-3 pr-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400">Fecha</th>
+                  <th className="pb-3 pr-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400">Acción</th>
+                  <th className="pb-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400">Feedback</th>
                 </tr>
               </thead>
               <tbody>
@@ -114,17 +114,14 @@ export default async function AdminSolicitudesPage({
                       key={s.id}
                       className={`transition hover:bg-white/[0.02] ${i < solicitudes.length - 1 ? "border-b border-zinc-800/40" : ""}`}
                     >
-                      <td className="py-3 pr-3 font-mono text-xs text-zinc-500 whitespace-nowrap">
-                        {s.id.slice(0, 8)}…
-                      </td>
-                      <td className="py-3 pr-3 max-w-[160px]">
+                      <td className="py-3 pr-3 max-w-[140px]">
                         <p className="font-medium text-white truncate">{s.pasajero.nombre || "—"}</p>
-                        <p className="text-xs text-zinc-500 truncate">{s.pasajero.email}</p>
+                        <p className="text-xs text-zinc-400 truncate">{s.pasajero.email}</p>
                       </td>
-                      <td className="py-3 pr-3 text-xs text-zinc-400 max-w-[160px]">
+                      <td className="py-3 pr-3 text-xs text-zinc-400 max-w-[140px]">
                         <span className="truncate block">{s.origenDireccion ?? `${s.origenLat.toFixed(4)}, ${s.origenLng.toFixed(4)}`}</span>
                       </td>
-                      <td className="py-3 pr-3 text-xs text-zinc-400 max-w-[160px]">
+                      <td className="py-3 pr-3 text-xs text-zinc-400 max-w-[140px]">
                         <span className="truncate block">
                           {s.destinoDireccion ?? (s.destinoLat != null ? `${s.destinoLat.toFixed(4)}, ${s.destinoLng?.toFixed(4)}` : "—")}
                         </span>
@@ -140,7 +137,7 @@ export default async function AdminSolicitudesPage({
                           : "—"}
                       </td>
                       <td className="py-3 pr-3 text-zinc-400 whitespace-nowrap">{s.metodoPago}</td>
-                      <td className="py-3 pr-3 text-zinc-500 whitespace-nowrap">
+                      <td className="py-3 pr-3 text-zinc-400 whitespace-nowrap">
                         {new Date(s.creadaEn).toLocaleDateString("es-AR")}
                       </td>
                       <td className="py-3 pr-3 whitespace-nowrap">
@@ -163,6 +160,7 @@ export default async function AdminSolicitudesPage({
                 })}
               </tbody>
             </table>
+          </div>
           </div>
 
           <div className="mt-6">
