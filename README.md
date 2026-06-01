@@ -15,8 +15,9 @@
 | Campo | Valor |
 |-------|-------|
 | Usuario | `riderdemo` |
-| Email | `rider+clerktest@iaw.com` |
+| Email | `rider+clerk_test@example.com` |
 | Contraseña | `iawuser#` |
+| Código de verificación | `424242` |
 
 La cuenta tiene datos precargados para facilitar la evaluación:
 
@@ -31,8 +32,9 @@ La cuenta tiene datos precargados para facilitar la evaluación:
 | Campo | Valor |
 |-------|-------|
 | Usuario | `admindemo` |
-| Email | `admin+clerktest@iaw.com` |
+| Email | `admin+clerk_test@example.com` |
 | Contraseña | `iawuser#` |
+| Código de verificación | `424242` |
 
 El panel de administración está disponible en `/admin` — solo accesible con la cuenta de administrador.
 

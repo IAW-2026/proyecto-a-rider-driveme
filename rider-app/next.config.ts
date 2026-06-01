@@ -13,9 +13,6 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: projectRoot,
   },
-  experimental: {
-    inlineCss: true,
-  },
   async headers() {
     return [
       {
