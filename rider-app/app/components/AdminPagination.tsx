@@ -17,7 +17,7 @@ export default function AdminPagination({ page, totalPages, basePath, searchPara
 
   return (
     <nav aria-label="Paginación" className="flex items-center justify-between pt-6 border-t border-zinc-800">
-      <p className="text-sm text-zinc-500">
+      <p className="text-sm text-zinc-400">
         Página <span className="text-zinc-300">{page}</span> de <span className="text-zinc-300">{totalPages}</span>
       </p>
       <div className="flex gap-2">
@@ -29,7 +29,7 @@ export default function AdminPagination({ page, totalPages, basePath, searchPara
             ← Anterior
           </Link>
         ) : (
-          <span className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-600 cursor-not-allowed">
+          <span className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-400 cursor-not-allowed">
             ← Anterior
           </span>
         )}
@@ -41,7 +41,7 @@ export default function AdminPagination({ page, totalPages, basePath, searchPara
             Siguiente →
           </Link>
         ) : (
-          <span className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-600 cursor-not-allowed">
+          <span className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-400 cursor-not-allowed">
             Siguiente →
           </span>
         )}

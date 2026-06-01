@@ -90,14 +90,14 @@ export default async function AdminPasajeroDetallePage({
             className="rounded-2xl border border-zinc-800 bg-zinc-950/60 px-5 py-4 text-center"
           >
             <p className="text-2xl font-bold text-white">{value}</p>
-            <p className="mt-1 text-xs text-zinc-500">{label}</p>
+            <p className="mt-1 text-xs text-zinc-400">{label}</p>
           </div>
         ))}
       </div>
 
       {/* Info personal */}
       <div className="mb-8 border-b border-zinc-800/60 pb-8">
-        <h2 className="mb-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">
+        <h2 className="mb-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400">
           Información personal
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -125,12 +125,12 @@ export default async function AdminPasajeroDetallePage({
 
       {/* Direcciones frecuentes */}
       <div className="mb-8 border-b border-zinc-800/60 pb-8">
-        <h2 className="mb-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">
+        <h2 className="mb-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400">
           Direcciones frecuentes{" "}
-          <span className="ml-1 text-zinc-600">({pasajero._count.direcciones})</span>
+          <span className="ml-1 text-zinc-400">({pasajero._count.direcciones})</span>
         </h2>
         {pasajero.direcciones.length === 0 ? (
-          <p className="text-sm text-zinc-600">Sin direcciones guardadas.</p>
+          <p className="text-sm text-zinc-400">Sin direcciones guardadas.</p>
         ) : (
           <div className="space-y-2">
             {pasajero.direcciones.map((d) => (
@@ -142,7 +142,7 @@ export default async function AdminPasajeroDetallePage({
                   <p className="text-sm font-medium text-white">{d.nombre}</p>
                   <p className="text-xs text-zinc-400">{d.direccion ?? "Sin dirección legible"}</p>
                 </div>
-                <p className="text-xs text-zinc-600 font-mono whitespace-nowrap">
+                <p className="text-xs text-zinc-400 font-mono whitespace-nowrap">
                   {d.latitud.toFixed(5)}, {d.longitud.toFixed(5)}
                 </p>
               </div>
@@ -153,22 +153,22 @@ export default async function AdminPasajeroDetallePage({
 
       {/* Últimas solicitudes */}
       <div>
-        <h2 className="mb-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">
+        <h2 className="mb-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400">
           Últimas solicitudes
         </h2>
         {pasajero.solicitudes.length === 0 ? (
-          <p className="text-sm text-zinc-600">Sin solicitudes.</p>
+          <p className="text-sm text-zinc-400">Sin solicitudes.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[600px] text-sm">
               <thead>
                 <tr className="border-b border-zinc-800 text-left">
-                  <th className="pb-3 pr-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">ID</th>
-                  <th className="pb-3 pr-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Origen</th>
-                  <th className="pb-3 pr-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Destino</th>
-                  <th className="pb-3 pr-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Estado</th>
-                  <th className="pb-3 pr-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500 text-right">Precio</th>
-                  <th className="pb-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Fecha</th>
+                  <th className="pb-3 pr-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400">ID</th>
+                  <th className="pb-3 pr-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400">Origen</th>
+                  <th className="pb-3 pr-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400">Destino</th>
+                  <th className="pb-3 pr-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400">Estado</th>
+                  <th className="pb-3 pr-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400 text-right">Precio</th>
+                  <th className="pb-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400">Fecha</th>
                 </tr>
               </thead>
               <tbody>
@@ -179,7 +179,7 @@ export default async function AdminPasajeroDetallePage({
                       key={s.id}
                       className={`transition hover:bg-white/[0.02] ${i < pasajero.solicitudes.length - 1 ? "border-b border-zinc-800/40" : ""}`}
                     >
-                      <td className="py-3 pr-4 font-mono text-xs text-zinc-500 whitespace-nowrap">
+                      <td className="py-3 pr-4 font-mono text-xs text-zinc-400 whitespace-nowrap">
                         {s.id.slice(0, 8)}…
                       </td>
                       <td className="py-3 pr-4 text-xs text-zinc-400 max-w-[160px]">
@@ -202,7 +202,7 @@ export default async function AdminPasajeroDetallePage({
                           ? `$${(s.precioEstimadoCents / 100).toFixed(2)}`
                           : "—"}
                       </td>
-                      <td className="py-3 text-zinc-500 whitespace-nowrap">
+                      <td className="py-3 text-zinc-400 whitespace-nowrap">
                         {new Date(s.creadaEn).toLocaleDateString("es-AR")}
                       </td>
                     </tr>
@@ -228,7 +228,7 @@ function Row({
 }) {
   return (
     <div className={full ? "sm:col-span-2" : ""}>
-      <p className="text-xs text-zinc-500 mb-0.5">{label}</p>
+      <p className="text-xs text-zinc-400 mb-0.5">{label}</p>
       <p className="text-sm text-zinc-200">{value}</p>
     </div>
   )

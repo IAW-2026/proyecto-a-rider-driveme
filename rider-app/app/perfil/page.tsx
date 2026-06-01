@@ -125,6 +125,11 @@ export default async function PerfilPage() {
                       <span className="text-sm text-muted-foreground">Total calificaciones</span>
                       <span className="text-sm text-foreground">{feedbackData.total_calificaciones}</span>
                     </div>
+                    {pasajero.comentarioPromedio && (
+                      <p className="text-xs text-muted-foreground italic border-t border-primary/10 pt-3">
+                        &ldquo;{pasajero.comentarioPromedio}&rdquo;
+                      </p>
+                    )}
                   </div>
                 ) : fallbackRating !== null ? (
                   <div className="space-y-2">

@@ -132,16 +132,16 @@ export default async function AdminViajesPage({
                       <td className="py-4 pr-6 text-zinc-300 whitespace-nowrap">{v.solicitud.pasajero.nombre || "—"}</td>
                       <td className="py-4 pr-6 text-zinc-400 max-w-[180px]">
                         <p className="truncate text-xs">{v.solicitud.origenDireccion ?? "—"}</p>
-                        <p className="truncate text-xs text-zinc-500">{v.solicitud.destinoDireccion ?? "—"}</p>
+                        <p className="truncate text-xs text-zinc-400">{v.solicitud.destinoDireccion ?? "—"}</p>
                       </td>
                       <td className="py-4 pr-6 text-right text-zinc-300 whitespace-nowrap">
                         ${((v.solicitud.precioEstimadoCents ?? 0) / 100).toFixed(2)}
                       </td>
                       <td className="py-4 pr-6 text-right">
                         {v.puntajeCalificacion != null ? (
-                          <span className="text-zinc-300">{v.puntajeCalificacion} <span className="text-zinc-600">★</span></span>
+                          <span className="text-zinc-300">{v.puntajeCalificacion} <span className="text-zinc-400">★</span></span>
                         ) : (
-                          <span className="text-zinc-500">—</span>
+                          <span className="text-zinc-400">—</span>
                         )}
                       </td>
                       <td className="py-4 pr-6 text-zinc-400 text-xs whitespace-nowrap">

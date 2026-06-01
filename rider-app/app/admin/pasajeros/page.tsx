@@ -90,7 +90,7 @@ export default async function AdminPasajerosPage({
                     <td className="py-4 pr-6 text-zinc-400 text-xs">{p.email}</td>
                     <td className="py-4 pr-6 text-right">
                       <span className="text-zinc-300">{Number(p.ratingPromedio).toFixed(1)}</span>
-                      <span className="ml-1 text-zinc-600">★</span>
+                      <span className="ml-1 text-zinc-400">★</span>
                     </td>
                     <td className="py-4 pr-6 text-right text-zinc-300">{p._count.solicitudes}</td>
                     <td className="py-4 pr-6">
