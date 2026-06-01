@@ -3,6 +3,7 @@ import { redirect } from "next/navigation"
 import Link from "next/link"
 import { prisma } from "@/lib/prisma"
 import { getConductorById } from "@/lib/conductores"
+import { obtenerTransaccionViaje } from "@/lib/payments"
 import FeedbackActions from "./FeedbackActions"
 import MapDetalle from "./MapDetalle"
 import { AppHeader } from "../../components/AppHeader"
@@ -76,12 +77,7 @@ export default async function HistorialDetallePage({
   }
 
   const conductor = solicitud.viaje?.idConductor ? await getConductorById(solicitud.viaje.idConductor) : null
-  const transaccion = solicitud.viaje
-    ? await prisma.transaccion.findFirst({
-        where: { viajeId: solicitud.viaje.id },
-        orderBy: { createdAt: "desc" },
-      })
-    : null
+  const transaccion = solicitud.viaje ? await obtenerTransaccionViaje(solicitud.viaje.id) : null
   const idVehiculo = solicitud.viaje?.idVehiculo ?? null
   const idViajeDriver = solicitud.viaje?.idViajeDriver ?? null
   const badge = getBadge(solicitud.estado, solicitud.viaje?.estadoActual)
@@ -280,38 +276,6 @@ export default async function HistorialDetallePage({
             </div>
 
             <aside className="space-y-4">
-              {transaccion && (
-                <div className="holo-border rounded-xl p-5 space-y-3 relative overflow-hidden scan-lines">
-                  <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-glow-cyan/40 rounded-tl-xl" />
-                  <p
-                    className="text-xs text-glow-cyan/70 tracking-widest"
-                    style={{ fontFamily: "var(--font-orbitron)" }}
-                  >
-                    PAGO
-                  </p>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Estado</span>
-                      <span className={`text-sm font-medium ${transaccion.estado === "CAPTURED" ? "text-accent" : "text-destructive-foreground"}`}>
-                        {transaccion.estado === "CAPTURED" ? "Pago confirmado" : transaccion.estado === "FAILED" ? "Pago fallido" : transaccion.estado}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Monto</span>
-                      <span className="text-sm font-medium text-foreground">
-                        $ {(transaccion.monto / 100).toLocaleString("es-AR")}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">ID</span>
-                      <span className="font-mono text-xs text-muted-foreground/60">
-                        {transaccion.idTransaccion.slice(0, 8)}…
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
               {esExpirada ? (
                 <div className="holo-border rounded-xl p-5 space-y-3 relative overflow-hidden scan-lines">
                   <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-yellow-500/30 rounded-tl-xl" />
@@ -336,6 +300,72 @@ export default async function HistorialDetallePage({
                   sinEstrellas={esCanceladoPorConductor}
                 />
               ) : null}
+
+              {(esViajeFinalizado || esCanceladoPorConductor) && (
+                <div className="holo-border rounded-xl p-5 space-y-3 relative overflow-hidden scan-lines">
+                  <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-glow-cyan/40 rounded-tl-xl" />
+                  <p
+                    className="text-xs text-glow-cyan/70 tracking-widest"
+                    style={{ fontFamily: "var(--font-orbitron)" }}
+                  >
+                    PAGO
+                  </p>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Método</span>
+                      <span className="text-sm text-foreground">{solicitud.metodoPago}</span>
+                    </div>
+                    {solicitud.precioEstimadoCents != null && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">Precio estimado</span>
+                        <span className="text-sm text-foreground">
+                          $ {(solicitud.precioEstimadoCents / 100).toLocaleString("es-AR")}
+                        </span>
+                      </div>
+                    )}
+                    {transaccion && (
+                      <>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">Estado</span>
+                          <span
+                            className={`text-sm font-medium ${
+                              transaccion.estado === "CAPTURED"
+                                ? "text-accent"
+                                : transaccion.estado === "FAILED"
+                                  ? "text-destructive-foreground"
+                                  : "text-foreground"
+                            }`}
+                          >
+                            {transaccion.estado === "CAPTURED"
+                              ? "Pago confirmado"
+                              : transaccion.estado === "FAILED"
+                                ? "Pago fallido"
+                                : transaccion.estado}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">Monto cobrado</span>
+                          <span className="text-sm font-medium text-foreground">
+                            $ {transaccion.monto.toLocaleString("es-AR")}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">ID transacción</span>
+                          <span className="font-mono text-xs text-muted-foreground/60">
+                            {transaccion.idTransaccion.slice(0, 8)}…
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">Fecha</span>
+                          <span className="text-xs text-muted-foreground/70">
+                            {new Date(transaccion.fechaCreacion).toLocaleString("es-AR")}
+                          </span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
             </aside>
           </section>
         </main>

@@ -87,85 +87,85 @@ export default async function AdminSolicitudesPage({
       </div>
 
       {solicitudes.length === 0 ? (
-        <div className="rounded-3xl border border-zinc-800 bg-zinc-950/50 px-6 py-16 text-center">
-          <p className="text-zinc-500">No se encontraron solicitudes.</p>
-        </div>
+        <p className="text-zinc-500 py-8">No se encontraron solicitudes.</p>
       ) : (
-        <div className="rounded-3xl border border-zinc-800 bg-gradient-to-b from-zinc-950/90 to-black/70 overflow-x-auto shadow-[0_20px_80px_rgba(0,0,0,0.55)]">
-          <table className="w-full min-w-[900px] text-sm">
-            <thead>
-              <tr className="border-b border-zinc-800 text-left">
-                <th className="px-3 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">ID</th>
-                <th className="px-3 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Pasajero</th>
-                <th className="px-3 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Origen</th>
-                <th className="px-3 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Destino</th>
-                <th className="px-3 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Estado</th>
-                <th className="px-3 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500 text-right">Precio</th>
-                <th className="px-3 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Pago</th>
-                <th className="px-3 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Fecha</th>
-                <th className="px-3 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Acción</th>
-                <th className="px-3 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Feedback</th>
-              </tr>
-            </thead>
-            <tbody>
-              {solicitudes.map((s, i) => {
-                const badge = getBadge(s.estado, s.viaje?.estadoActual)
-                return (
-                  <tr
-                    key={s.id}
-                    className={`transition hover:bg-white/[0.02] ${i < solicitudes.length - 1 ? "border-b border-zinc-800/60" : ""}`}
-                  >
-                    <td className="px-3 py-3 font-mono text-xs text-zinc-500 whitespace-nowrap">
-                      {s.id.slice(0, 8)}…
-                    </td>
-                    <td className="px-3 py-3 max-w-[160px]">
-                      <p className="font-medium text-white truncate">{s.pasajero.nombre || "—"}</p>
-                      <p className="text-xs text-zinc-500 truncate">{s.pasajero.email}</p>
-                    </td>
-                    <td className="px-3 py-3 text-xs text-zinc-400 max-w-[160px]">
-                      <span className="truncate block">{s.origenDireccion ?? `${s.origenLat.toFixed(4)}, ${s.origenLng.toFixed(4)}`}</span>
-                    </td>
-                    <td className="px-3 py-3 text-xs text-zinc-400 max-w-[160px]">
-                      <span className="truncate block">
-                        {s.destinoDireccion ?? (s.destinoLat != null ? `${s.destinoLat.toFixed(4)}, ${s.destinoLng?.toFixed(4)}` : "—")}
-                      </span>
-                    </td>
-                    <td className="px-3 py-3 whitespace-nowrap">
-                      <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${badge.className}`}>
-                        {badge.label}
-                      </span>
-                    </td>
-                    <td className="px-3 py-3 text-right text-zinc-300 whitespace-nowrap">
-                      {s.precioEstimadoCents != null
-                        ? `$${(s.precioEstimadoCents / 100).toFixed(2)}`
-                        : "—"}
-                    </td>
-                    <td className="px-3 py-3 text-zinc-400 whitespace-nowrap">{s.metodoPago}</td>
-                    <td className="px-3 py-3 text-zinc-500 whitespace-nowrap">
-                      {new Date(s.creadaEn).toLocaleDateString("es-AR")}
-                    </td>
-                    <td className="px-3 py-3 whitespace-nowrap">
-                      <AdminSimularAccion
-                        solicitudId={s.id}
-                        estado={s.estado}
-                        viajeEstado={s.viaje?.estadoActual ?? null}
-                      />
-                    </td>
-                    <td className="px-3 py-3 whitespace-nowrap">
-                      <Link
-                        href={`/admin/solicitudes/${s.id}`}
-                        className="inline-flex h-7 items-center rounded-full border border-zinc-700 px-3 text-xs text-zinc-400 transition hover:border-zinc-500 hover:text-zinc-200"
-                      >
-                        Detalles
-                      </Link>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+        <>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[900px] text-sm">
+              <thead>
+                <tr className="border-b border-zinc-800 text-left">
+                  <th className="pb-3 pr-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">ID</th>
+                  <th className="pb-3 pr-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Pasajero</th>
+                  <th className="pb-3 pr-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Origen</th>
+                  <th className="pb-3 pr-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Destino</th>
+                  <th className="pb-3 pr-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Estado</th>
+                  <th className="pb-3 pr-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500 text-right">Precio</th>
+                  <th className="pb-3 pr-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Pago</th>
+                  <th className="pb-3 pr-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Fecha</th>
+                  <th className="pb-3 pr-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Acción</th>
+                  <th className="pb-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Feedback</th>
+                </tr>
+              </thead>
+              <tbody>
+                {solicitudes.map((s, i) => {
+                  const badge = getBadge(s.estado, s.viaje?.estadoActual)
+                  return (
+                    <tr
+                      key={s.id}
+                      className={`transition hover:bg-white/[0.02] ${i < solicitudes.length - 1 ? "border-b border-zinc-800/40" : ""}`}
+                    >
+                      <td className="py-3 pr-3 font-mono text-xs text-zinc-500 whitespace-nowrap">
+                        {s.id.slice(0, 8)}…
+                      </td>
+                      <td className="py-3 pr-3 max-w-[160px]">
+                        <p className="font-medium text-white truncate">{s.pasajero.nombre || "—"}</p>
+                        <p className="text-xs text-zinc-500 truncate">{s.pasajero.email}</p>
+                      </td>
+                      <td className="py-3 pr-3 text-xs text-zinc-400 max-w-[160px]">
+                        <span className="truncate block">{s.origenDireccion ?? `${s.origenLat.toFixed(4)}, ${s.origenLng.toFixed(4)}`}</span>
+                      </td>
+                      <td className="py-3 pr-3 text-xs text-zinc-400 max-w-[160px]">
+                        <span className="truncate block">
+                          {s.destinoDireccion ?? (s.destinoLat != null ? `${s.destinoLat.toFixed(4)}, ${s.destinoLng?.toFixed(4)}` : "—")}
+                        </span>
+                      </td>
+                      <td className="py-3 pr-3 whitespace-nowrap">
+                        <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${badge.className}`}>
+                          {badge.label}
+                        </span>
+                      </td>
+                      <td className="py-3 pr-3 text-right text-zinc-300 whitespace-nowrap">
+                        {s.precioEstimadoCents != null
+                          ? `$${(s.precioEstimadoCents / 100).toFixed(2)}`
+                          : "—"}
+                      </td>
+                      <td className="py-3 pr-3 text-zinc-400 whitespace-nowrap">{s.metodoPago}</td>
+                      <td className="py-3 pr-3 text-zinc-500 whitespace-nowrap">
+                        {new Date(s.creadaEn).toLocaleDateString("es-AR")}
+                      </td>
+                      <td className="py-3 pr-3 whitespace-nowrap">
+                        <AdminSimularAccion
+                          solicitudId={s.id}
+                          estado={s.estado}
+                          viajeEstado={s.viaje?.estadoActual ?? null}
+                        />
+                      </td>
+                      <td className="py-3 whitespace-nowrap">
+                        <Link
+                          href={`/admin/solicitudes/${s.id}`}
+                          className="inline-flex h-7 items-center rounded-full border border-zinc-700 px-3 text-xs text-zinc-400 transition hover:border-zinc-500 hover:text-zinc-200"
+                        >
+                          Detalles
+                        </Link>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
 
-          <div className="px-4 pb-6 pt-2">
+          <div className="mt-6">
             <AdminPagination
               page={pageNum}
               totalPages={totalPages}
@@ -173,7 +173,7 @@ export default async function AdminSolicitudesPage({
               searchParams={paginationParams}
             />
           </div>
-        </div>
+        </>
       )}
     </section>
   )

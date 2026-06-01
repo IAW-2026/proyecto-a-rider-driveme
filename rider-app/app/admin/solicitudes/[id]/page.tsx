@@ -52,10 +52,10 @@ export default async function AdminSolicitudDetallePage({
         </p>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-6">
         {/* Pasajero */}
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5 space-y-2">
-          <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">Pasajero</p>
+        <div className="space-y-1 border-b border-zinc-800/60 pb-6">
+          <p className="text-xs uppercase tracking-[0.3em] text-zinc-500 mb-3">Pasajero</p>
           <p className="font-medium text-white">{solicitud.pasajero.nombre || "—"}</p>
           <p className="text-sm text-zinc-400">{solicitud.pasajero.email}</p>
           {solicitud.pasajero.telefono && (
@@ -64,7 +64,7 @@ export default async function AdminSolicitudDetallePage({
         </div>
 
         {/* Viaje */}
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5 space-y-3">
+        <div className="space-y-3 border-b border-zinc-800/60 pb-6">
           <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">Viaje</p>
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
@@ -105,15 +105,13 @@ export default async function AdminSolicitudDetallePage({
         </div>
 
         {/* Feedback */}
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5 space-y-3">
+        <div className="space-y-3">
           <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">Feedback del pasajero</p>
           {tieneFeedback ? (
             <>
               <EstrellasFeedback puntaje={solicitud.viaje!.puntajeCalificacion!} />
               {solicitud.viaje?.comentarioCalificacion ? (
-                <p className="text-zinc-200 text-sm leading-relaxed bg-zinc-900/60 rounded-xl px-4 py-3 border border-zinc-800">
-                  &ldquo;{solicitud.viaje.comentarioCalificacion}&rdquo;
-                </p>
+                <p className="text-zinc-200 text-sm leading-relaxed">&ldquo;{solicitud.viaje.comentarioCalificacion}&rdquo;</p>
               ) : (
                 <p className="text-zinc-500 text-sm">Sin comentario.</p>
               )}

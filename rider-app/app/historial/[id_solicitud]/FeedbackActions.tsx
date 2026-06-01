@@ -200,7 +200,7 @@ export default function FeedbackActions({ viajeId, conductorId, idCalificacion: 
 
   if (!viajeId || !conductorId) return null
 
-  if (feedbackYaDado || enviado) {
+  if (feedbackYaDado || enviado || puntajeGuardado != null) {
     return (
       <div className="space-y-3">
         <div className="rounded-xl border border-accent/30 bg-accent/10 p-5 space-y-3">

@@ -63,38 +63,36 @@ export default async function AdminPasajerosPage({
       </div>
 
       {pasajeros.length === 0 ? (
-        <div className="rounded-3xl border border-zinc-800 bg-zinc-950/50 px-6 py-16 text-center">
-          <p className="text-zinc-500">No se encontraron pasajeros.</p>
-        </div>
+        <p className="text-zinc-500 py-8">No se encontraron pasajeros.</p>
       ) : (
-        <div className="rounded-3xl border border-zinc-800 bg-gradient-to-b from-zinc-950/90 to-black/70 overflow-hidden shadow-[0_20px_80px_rgba(0,0,0,0.55)]">
+        <>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-zinc-800 text-left">
-                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Nombre</th>
-                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Email</th>
-                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500 text-right">Rating</th>
-                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500 text-right">Viajes</th>
-                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Estado</th>
-                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Registrado</th>
-                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500"></th>
+                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Nombre</th>
+                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Email</th>
+                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500 text-right">Rating</th>
+                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500 text-right">Viajes</th>
+                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Estado</th>
+                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Registrado</th>
+                  <th className="pb-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500"></th>
                 </tr>
               </thead>
               <tbody>
                 {pasajeros.map((p, i) => (
                   <tr
                     key={p.id}
-                    className={`transition hover:bg-white/[0.02] ${i < pasajeros.length - 1 ? "border-b border-zinc-800/60" : ""}`}
+                    className={`transition hover:bg-white/[0.02] ${i < pasajeros.length - 1 ? "border-b border-zinc-800/40" : ""}`}
                   >
-                    <td className="px-6 py-4 font-medium text-white">{p.nombre || "—"}</td>
-                    <td className="px-6 py-4 text-zinc-400">{p.email}</td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="py-4 pr-6 font-medium text-white">{p.nombre || "—"}</td>
+                    <td className="py-4 pr-6 text-zinc-400">{p.email}</td>
+                    <td className="py-4 pr-6 text-right">
                       <span className="text-zinc-300">{Number(p.ratingPromedio).toFixed(1)}</span>
                       <span className="ml-1 text-zinc-600">★</span>
                     </td>
-                    <td className="px-6 py-4 text-right text-zinc-300">{p._count.solicitudes}</td>
-                    <td className="px-6 py-4">
+                    <td className="py-4 pr-6 text-right text-zinc-300">{p._count.solicitudes}</td>
+                    <td className="py-4 pr-6">
                       <span
                         className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${
                           p.activo
@@ -105,10 +103,10 @@ export default async function AdminPasajerosPage({
                         {p.activo ? "Activo" : "Inactivo"}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-zinc-500 whitespace-nowrap">
+                    <td className="py-4 pr-6 text-zinc-500 whitespace-nowrap">
                       {new Date(p.createdAt).toLocaleDateString("es-AR")}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="py-4">
                       <Link
                         href={`/admin/pasajeros/${p.id}`}
                         className="inline-flex h-7 items-center rounded-full border border-zinc-700 px-3 text-xs text-zinc-400 transition hover:border-zinc-500 hover:text-zinc-200 whitespace-nowrap"
@@ -122,7 +120,7 @@ export default async function AdminPasajerosPage({
             </table>
           </div>
 
-          <div className="px-6 pb-6">
+          <div className="mt-6">
             <AdminPagination
               page={pageNum}
               totalPages={totalPages}
@@ -130,7 +128,7 @@ export default async function AdminPasajerosPage({
               searchParams={q ? { q } : {}}
             />
           </div>
-        </div>
+        </>
       )}
     </section>
   )

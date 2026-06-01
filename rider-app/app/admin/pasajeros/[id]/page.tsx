@@ -96,7 +96,7 @@ export default async function AdminPasajeroDetallePage({
       </div>
 
       {/* Info personal */}
-      <div className="mb-6 rounded-3xl border border-zinc-800 bg-gradient-to-b from-zinc-950/90 to-black/70 p-6 shadow-[0_20px_80px_rgba(0,0,0,0.55)]">
+      <div className="mb-8 border-b border-zinc-800/60 pb-8">
         <h2 className="mb-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">
           Información personal
         </h2>
@@ -124,7 +124,7 @@ export default async function AdminPasajeroDetallePage({
       </div>
 
       {/* Direcciones frecuentes */}
-      <div className="mb-6 rounded-3xl border border-zinc-800 bg-gradient-to-b from-zinc-950/90 to-black/70 p-6 shadow-[0_20px_80px_rgba(0,0,0,0.55)]">
+      <div className="mb-8 border-b border-zinc-800/60 pb-8">
         <h2 className="mb-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">
           Direcciones frecuentes{" "}
           <span className="ml-1 text-zinc-600">({pasajero._count.direcciones})</span>
@@ -136,7 +136,7 @@ export default async function AdminPasajeroDetallePage({
             {pasajero.direcciones.map((d) => (
               <div
                 key={d.id}
-                className="flex flex-col gap-0.5 rounded-xl border border-zinc-800 bg-zinc-900/40 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+                className="flex flex-col gap-0.5 sm:flex-row sm:items-center sm:justify-between border-b border-zinc-800/40 py-2 last:border-0"
               >
                 <div>
                   <p className="text-sm font-medium text-white">{d.nombre}</p>
@@ -152,25 +152,23 @@ export default async function AdminPasajeroDetallePage({
       </div>
 
       {/* Últimas solicitudes */}
-      <div className="rounded-3xl border border-zinc-800 bg-gradient-to-b from-zinc-950/90 to-black/70 overflow-hidden shadow-[0_20px_80px_rgba(0,0,0,0.55)]">
-        <div className="px-6 py-4 border-b border-zinc-800">
-          <h2 className="text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">
-            Últimas solicitudes
-          </h2>
-        </div>
+      <div>
+        <h2 className="mb-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">
+          Últimas solicitudes
+        </h2>
         {pasajero.solicitudes.length === 0 ? (
-          <p className="px-6 py-8 text-sm text-zinc-600">Sin solicitudes.</p>
+          <p className="text-sm text-zinc-600">Sin solicitudes.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[600px] text-sm">
               <thead>
                 <tr className="border-b border-zinc-800 text-left">
-                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">ID</th>
-                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Origen</th>
-                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Destino</th>
-                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Estado</th>
-                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500 text-right">Precio</th>
-                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Fecha</th>
+                  <th className="pb-3 pr-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">ID</th>
+                  <th className="pb-3 pr-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Origen</th>
+                  <th className="pb-3 pr-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Destino</th>
+                  <th className="pb-3 pr-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Estado</th>
+                  <th className="pb-3 pr-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500 text-right">Precio</th>
+                  <th className="pb-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Fecha</th>
                 </tr>
               </thead>
               <tbody>
@@ -179,32 +177,32 @@ export default async function AdminPasajeroDetallePage({
                   return (
                     <tr
                       key={s.id}
-                      className={`transition hover:bg-white/[0.02] ${i < pasajero.solicitudes.length - 1 ? "border-b border-zinc-800/60" : ""}`}
+                      className={`transition hover:bg-white/[0.02] ${i < pasajero.solicitudes.length - 1 ? "border-b border-zinc-800/40" : ""}`}
                     >
-                      <td className="px-4 py-3 font-mono text-xs text-zinc-500 whitespace-nowrap">
+                      <td className="py-3 pr-4 font-mono text-xs text-zinc-500 whitespace-nowrap">
                         {s.id.slice(0, 8)}…
                       </td>
-                      <td className="px-4 py-3 text-xs text-zinc-400 max-w-[160px]">
+                      <td className="py-3 pr-4 text-xs text-zinc-400 max-w-[160px]">
                         <span className="truncate block">
                           {s.origenDireccion ?? `${s.origenLat.toFixed(4)}, ${s.origenLng.toFixed(4)}`}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-xs text-zinc-400 max-w-[160px]">
+                      <td className="py-3 pr-4 text-xs text-zinc-400 max-w-[160px]">
                         <span className="truncate block">
                           {s.destinoDireccion ?? (s.destinoLat != null ? `${s.destinoLat.toFixed(4)}, ${s.destinoLng?.toFixed(4)}` : "—")}
                         </span>
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
+                      <td className="py-3 pr-4 whitespace-nowrap">
                         <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${badge.className}`}>
                           {badge.label}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-right text-zinc-300 whitespace-nowrap">
+                      <td className="py-3 pr-4 text-right text-zinc-300 whitespace-nowrap">
                         {s.precioEstimadoCents != null
                           ? `$${(s.precioEstimadoCents / 100).toFixed(2)}`
                           : "—"}
                       </td>
-                      <td className="px-4 py-3 text-zinc-500 whitespace-nowrap">
+                      <td className="py-3 text-zinc-500 whitespace-nowrap">
                         {new Date(s.creadaEn).toLocaleDateString("es-AR")}
                       </td>
                     </tr>

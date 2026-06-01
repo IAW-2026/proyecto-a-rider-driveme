@@ -91,6 +91,22 @@ export default async function PerfilPage() {
               • Efectivo (disponible siempre)
             </div>
           </div>
+
+          {/* Calificaciones — etapa 3 */}
+          <div className="holo-border rounded-2xl p-6 space-y-3 opacity-60">
+            <h2
+              className="text-sm font-bold text-foreground tracking-widest"
+              style={{ fontFamily: "var(--font-orbitron)" }}
+            >
+              CALIFICACIONES
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Integración con Feedback App disponible en Etapa 3.
+            </p>
+            <div className="rounded-xl border border-dashed border-primary/20 px-4 py-3 text-xs text-muted-foreground/60">
+              • Calificaciones recibidas y enviadas
+            </div>
+          </div>
         </main>
       </div>
     </div>

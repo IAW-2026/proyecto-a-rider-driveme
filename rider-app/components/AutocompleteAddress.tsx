@@ -23,14 +23,15 @@ export default function AutocompleteAddress({
   const [q, setQ] = useState(initial)
   const [suggestions, setSuggestions] = useState<Array<{ displayName: string; lat: number; lng: number }>>([])
   const [open, setOpen] = useState(false)
+  const [hasSelection, setHasSelection] = useState(false)
   const timer = useRef<number | null>(null)
 
   useEffect(() => {
     if (timer.current) window.clearTimeout(timer.current)
     if (!q || q.trim().length < 2) {
-      setSuggestions([])
       return
     }
+    if (hasSelection) return
     timer.current = window.setTimeout(async () => {
       try {
         const res = await fetch(`/api/geocoding/suggestions?q=${encodeURIComponent(q)}`)
@@ -46,10 +47,12 @@ export default function AutocompleteAddress({
     return () => {
       if (timer.current) window.clearTimeout(timer.current)
     }
-  }, [q])
+  }, [q, hasSelection])
 
   function handleSelect(item: { displayName: string; lat: number; lng: number }) {
+    setHasSelection(true)
     setQ(item.displayName)
+    setSuggestions([])
     setOpen(false)
     onSelect({ direccion: item.displayName, lat: item.lat, lng: item.lng })
   }
@@ -65,12 +68,16 @@ export default function AutocompleteAddress({
       <input
         id={id}
         value={q}
-        onChange={(e) => { setQ(e.target.value); onChange?.(e.target.value) }}
+        onChange={(e) => {
+          setHasSelection(false)
+          setQ(e.target.value)
+          onChange?.(e.target.value)
+        }}
         placeholder={placeholder}
         className={`w-full rounded-xl border bg-input/50 px-4 py-3 text-sm text-foreground outline-none placeholder:text-muted-foreground/60 focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all ${
           hasError ? "border-destructive/60" : "border-primary/20"
         }`}
-        onFocus={() => { if (suggestions.length) setOpen(true) }}
+        onFocus={() => { if (!hasSelection && suggestions.length) setOpen(true) }}
       />
       {open && suggestions.length > 0 && (
         <ul
@@ -81,6 +88,7 @@ export default function AutocompleteAddress({
             <li
               key={i}
               role="option"
+              aria-selected="false"
               onMouseDown={() => handleSelect(s)}
               className="cursor-pointer rounded-lg px-3 py-2 text-sm text-foreground hover:bg-primary/10 transition-colors"
             >

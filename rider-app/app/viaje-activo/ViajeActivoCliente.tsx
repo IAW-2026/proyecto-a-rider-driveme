@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useSyncExternalStore } from "react"
 import { useLocalStorageValue } from "@/lib/useLocalStorage"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
@@ -37,6 +37,14 @@ type Driver = {
   etaLlegadaMinutos: number
 }
 
+function useIsClient() {
+  return useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  )
+}
+
 const ESTADO_LABEL: Record<string, string> = {
   BUSCANDO_CONDUCTOR: "Buscando conductor…",
   ACEPTADA: "Conductor asignado",
@@ -71,6 +79,7 @@ export default function ViajeActivoCliente({
   const [error, setError] = useState<string | null>(null)
   const [driver, setDriver] = useState<Driver | null>(null)
   const [loadingDriver, setLoadingDriver] = useState(false)
+  const [mapReady, setMapReady] = useState(false)
 
   // feedback post-FINALIZADO
   const [puntaje, setPuntaje] = useState(0)
@@ -82,8 +91,12 @@ export default function ViajeActivoCliente({
   const feedbackYaDado = feedbackGuardado === "1"
 
   // mounted guard para evitar flash de hidratación en el modal
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => { setMounted(true) }, [])
+  const mounted = useIsClient()
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => setMapReady(true), 600)
+    return () => window.clearTimeout(timeoutId)
+  }, [])
 
   // feedback post-CANCELADO_POR_CONDUCTOR
   const [comentarioCancelacion, setComentarioCancelacion] = useState("")
@@ -94,7 +107,7 @@ export default function ViajeActivoCliente({
 
   // auto-aceptación a los 15 segundos
   const [autoAceptar, setAutoAceptar] = useState(true)
-  const [autoAceptarFired, setAutoAceptarFired] = useState(false)
+  const autoAceptarFired = useRef(false)
 
   // modal motivos post-cancelación del pasajero
   const [showCancelMotivo, setShowCancelMotivo] = useState(false)
@@ -173,12 +186,12 @@ export default function ViajeActivoCliente({
   }, [isExpired, solicitudId])
 
   useEffect(() => {
-    if (!esBuscando || !autoAceptar || elapsed < 15 || autoAceptarFired) return
-    setAutoAceptarFired(true)
+    if (!esBuscando || !autoAceptar || elapsed < 15 || autoAceptarFired.current) return
+    autoAceptarFired.current = true
     fetch(`/api/solicitudes/${solicitudId}/simular-aceptacion`, { method: "POST" })
       .then(res => { if (res.ok) router.refresh() })
       .catch(() => {})
-  }, [esBuscando, autoAceptar, elapsed, autoAceptarFired, solicitudId, router])
+  }, [esBuscando, autoAceptar, elapsed, solicitudId, router])
 
   useEffect(() => {
     let mounted = true
@@ -208,7 +221,7 @@ export default function ViajeActivoCliente({
       })
       if (res.ok) {
         setAutoAceptar(false)
-        setAutoAceptarFired(true)
+        autoAceptarFired.current = true
         setShowCancelMotivo(true)
       } else {
         const data = await res.json()
@@ -538,7 +551,18 @@ export default function ViajeActivoCliente({
                 >
                   MAPA
                 </p>
-                <Map origen={origen} destino={destino} />
+                {mapReady ? (
+                  <Map origen={origen} destino={destino} />
+                ) : (
+                  <div className="flex h-[300px] flex-col items-center justify-center rounded-xl border border-border bg-card/50 text-center text-sm text-muted-foreground">
+                    <span className="text-xs uppercase tracking-[0.3em] text-glow-cyan/70" style={{ fontFamily: "var(--font-orbitron)" }}>
+                      CARGANDO MAPA
+                    </span>
+                    <span className="mt-2 max-w-[18rem]">
+                      Estamos preparando el mapa del viaje para mostrarlo enseguida.
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -580,7 +604,7 @@ export default function ViajeActivoCliente({
                           </p>
                           <button
                             type="button"
-                            onClick={() => { setAutoAceptar(true); setAutoAceptarFired(false) }}
+                            onClick={() => { setAutoAceptar(true); autoAceptarFired.current = false }}
                             className="text-xs text-muted-foreground/40 underline underline-offset-2 hover:text-muted-foreground/60 transition"
                           >
                             Activar auto-aceptación

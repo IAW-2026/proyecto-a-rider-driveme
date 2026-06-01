@@ -1,18 +1,26 @@
 "use client"
 
-import { useEffect } from "react"
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
+import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png"
+import markerIcon from "leaflet/dist/images/marker-icon.png"
+import markerShadow from "leaflet/dist/images/marker-shadow.png"
 
-// Fix Leaflet's default icon paths broken by webpack
+// Turbopack returns PNG imports from node_modules as plain URL strings;
+// webpack/image-optimization returns StaticImageData ({ src: string }).
+const asUrl = (m: string | { src: string }): string =>
+  typeof m === "string" ? m : m.src
+
 const iconDefault = L.icon({
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  iconUrl: asUrl(markerIcon as string | { src: string }),
+  iconRetinaUrl: asUrl(markerIcon2x as string | { src: string }),
+  shadowUrl: asUrl(markerShadow as string | { src: string }),
   iconSize: [25, 41],
   iconAnchor: [12, 41],
 })
+
+L.Marker.prototype.options.icon = iconDefault
 
 interface Props {
   origen: { lat: number; lng: number }
@@ -20,10 +28,6 @@ interface Props {
 }
 
 export default function Map({ origen, destino }: Props) {
-  useEffect(() => {
-    L.Marker.prototype.options.icon = iconDefault
-  }, [])
-
   return (
     <MapContainer
       center={[origen.lat, origen.lng]}

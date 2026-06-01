@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import AdminPagination from "@/app/components/AdminPagination"
+import DeleteViajeButton from "@/app/components/DeleteViajeButton"
 
 const LIMIT = 10
 
@@ -98,22 +99,21 @@ export default async function AdminViajesPage({
       )}
 
       {viajes.length === 0 ? (
-        <div className="rounded-3xl border border-zinc-800 bg-zinc-950/50 px-6 py-16 text-center">
-          <p className="text-zinc-500">No hay viajes{estado ? " en este estado" : ""}.</p>
-        </div>
+        <p className="text-zinc-500 py-8">No hay viajes{estado ? " en este estado" : ""}.</p>
       ) : (
-        <div className="rounded-3xl border border-zinc-800 bg-gradient-to-b from-zinc-950/90 to-black/70 overflow-hidden shadow-[0_20px_80px_rgba(0,0,0,0.55)]">
+        <>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-zinc-800 text-left">
-                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">ID</th>
-                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Estado</th>
-                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Pasajero</th>
-                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Origen → Destino</th>
-                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500 text-right">Precio</th>
-                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500 text-right">Rating</th>
-                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Fecha</th>
+                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">ID</th>
+                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Estado</th>
+                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Pasajero</th>
+                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Origen → Destino</th>
+                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500 text-right">Precio</th>
+                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500 text-right">Rating</th>
+                  <th className="pb-3 pr-6 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">Fecha</th>
+                  <th className="pb-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500"></th>
                 </tr>
               </thead>
               <tbody>
@@ -122,31 +122,34 @@ export default async function AdminViajesPage({
                   return (
                     <tr
                       key={v.id}
-                      className={`transition hover:bg-white/[0.02] ${i < viajes.length - 1 ? "border-b border-zinc-800/60" : ""}`}
+                      className={`transition hover:bg-white/[0.02] ${i < viajes.length - 1 ? "border-b border-zinc-800/40" : ""}`}
                     >
-                      <td className="px-6 py-4 font-mono text-xs text-zinc-500">{v.id.slice(0, 8)}…</td>
-                      <td className="px-6 py-4">
+                      <td className="py-4 pr-6 font-mono text-xs text-zinc-500">{v.id.slice(0, 8)}…</td>
+                      <td className="py-4 pr-6">
                         <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${info.color}`}>
                           {info.label}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-zinc-300">{v.solicitud.pasajero.nombre || "—"}</td>
-                      <td className="px-6 py-4 text-zinc-400 max-w-xs">
+                      <td className="py-4 pr-6 text-zinc-300">{v.solicitud.pasajero.nombre || "—"}</td>
+                      <td className="py-4 pr-6 text-zinc-400 max-w-xs">
                         <p className="truncate text-xs">{v.solicitud.origenDireccion ?? "—"}</p>
                         <p className="truncate text-xs text-zinc-600">{v.solicitud.destinoDireccion ?? "—"}</p>
                       </td>
-                      <td className="px-6 py-4 text-right text-zinc-300">
+                      <td className="py-4 pr-6 text-right text-zinc-300">
                         ${((v.solicitud.precioEstimadoCents ?? 0) / 100).toFixed(2)}
                       </td>
-                      <td className="px-6 py-4 text-right">
+                      <td className="py-4 pr-6 text-right">
                         {v.puntajeCalificacion != null ? (
                           <span className="text-zinc-300">{v.puntajeCalificacion} <span className="text-zinc-600">★</span></span>
                         ) : (
                           <span className="text-zinc-700">—</span>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-zinc-500 text-xs">
+                      <td className="py-4 pr-6 text-zinc-500 text-xs">
                         {new Date(v.createdAt).toLocaleDateString("es-AR")}
+                      </td>
+                      <td className="py-4">
+                        <DeleteViajeButton id={v.id} />
                       </td>
                     </tr>
                   )
@@ -155,7 +158,7 @@ export default async function AdminViajesPage({
             </table>
           </div>
 
-          <div className="px-6 pb-6">
+          <div className="mt-6">
             <AdminPagination
               page={pageNum}
               totalPages={totalPages}
@@ -163,7 +166,7 @@ export default async function AdminViajesPage({
               searchParams={estado ? { estado } : {}}
             />
           </div>
-        </div>
+        </>
       )}
     </section>
   )
