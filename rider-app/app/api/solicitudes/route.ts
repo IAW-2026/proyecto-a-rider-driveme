@@ -119,7 +119,7 @@ export async function GET(req: NextRequest) {
 
   let solicitudes = await prisma.solicitudDeViaje.findMany({
     where: { estado: estado as never },
-    include: { pasajero: { select: { id: true, publicId: true, ratingPromedio: true } } },
+    include: { pasajero: { select: { id: true, publicId: true, ratingPromedio: true, comentarioPromedio: true } } },
   })
 
   // Filtrar por distancia si se proporciona ubicación
@@ -141,6 +141,7 @@ export async function GET(req: NextRequest) {
       pasajero: {
         id_pasajero_public: s.pasajero.publicId ?? null,
         rating_promedio: s.pasajero.ratingPromedio ?? null,
+        comentario_promedio: s.pasajero.comentarioPromedio ?? null,
       },
       origen: { direccion: s.origenDireccion, lat: s.origenLat, lng: s.origenLng },
       destino: { direccion: s.destinoDireccion, lat: s.destinoLat, lng: s.destinoLng },

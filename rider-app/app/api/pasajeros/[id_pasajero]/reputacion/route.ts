@@ -17,7 +17,7 @@ export async function PATCH(
   }
 
   const body = await req.json()
-  const { rating_promedio } = body
+  const { rating_promedio, comentario_promedio } = body
 
   if (rating_promedio === undefined) {
     return NextResponse.json({ error: "Falta rating_promedio" }, { status: 400 })
@@ -30,12 +30,16 @@ export async function PATCH(
 
   const actualizado = await prisma.pasajero.update({
     where: { id: id_pasajero },
-    data: { ratingPromedio: rating_promedio },
-    select: { id: true, publicId: true, ratingPromedio: true },
+    data: {
+      ratingPromedio: rating_promedio,
+      ...(comentario_promedio !== undefined && { comentarioPromedio: comentario_promedio }),
+    },
+    select: { id: true, publicId: true, ratingPromedio: true, comentarioPromedio: true },
   })
 
   return NextResponse.json({
     id_pasajero: actualizado.publicId ?? actualizado.id,
     rating_promedio: Number(actualizado.ratingPromedio),
+    comentario_promedio: actualizado.comentarioPromedio ?? null,
   })
 }
