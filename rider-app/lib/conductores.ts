@@ -13,7 +13,7 @@ export async function getConductorById(id: string): Promise<ConductorDetalle | n
   const driverAppUrl = process.env.DRIVER_APP_URL
   if (driverAppUrl) {
     const res = await fetch(`${driverAppUrl}/api/conductores/${id}`, {
-      headers: { "x-api-key": process.env.INTERNAL_API_KEY ?? "" },
+      headers: { "x-api-key": process.env.DRIVER_SERVICE_SECRET ?? "" },
       next: { revalidate: 30 },
     })
     if (res.ok) return res.json()

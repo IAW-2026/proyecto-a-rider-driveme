@@ -14,8 +14,8 @@ function getPaymentsBaseUrl() {
 
 function buildPaymentsHeaders() {
   const headers: Record<string, string> = {}
-  if (process.env.INTERNAL_API_KEY) {
-    headers["x-api-key"] = process.env.INTERNAL_API_KEY
+  if (process.env.PAYMENTS_SERVICE_SECRET) {
+    headers["x-api-key"] = process.env.PAYMENTS_SERVICE_SECRET
   }
   return headers
 }

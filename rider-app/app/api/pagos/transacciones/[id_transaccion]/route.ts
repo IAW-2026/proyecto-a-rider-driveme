@@ -27,11 +27,19 @@ export async function GET(
     })
   }
 
-  // Mock: Payments aún no confirmó el pago
-  return NextResponse.json({
-    id_transaccion,
-    estado: "PENDIENTE",
-    monto: null,
-    created_at: null,
-  })
+  const paymentsUrl = process.env.PAYMENTS_APP_URL?.replace(/\/$/, "")
+  if (paymentsUrl) {
+    const res = await fetch(
+      `${paymentsUrl}/api/pagos/transacciones/${id_transaccion}`,
+      {
+        headers: { "x-api-key": process.env.PAYMENTS_SERVICE_SECRET ?? "" },
+        cache: "no-store",
+      }
+    )
+    if (res.ok) {
+      return NextResponse.json(await res.json())
+    }
+  }
+
+  return NextResponse.json({ error: "Transacción no encontrada" }, { status: 404 })
 }

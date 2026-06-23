@@ -24,13 +24,7 @@ export function requireM2MToken(req: Request) {
     req.headers.get("x-api-key") ??
     req.headers.get("authorization")?.replace(/^Bearer\s+/i, "")
 
-  const validTokens = [
-    process.env.DRIVER_APP_TOKEN,
-    process.env.PAYMENTS_APP_TOKEN,
-    process.env.FEEDBACK_APP_TOKEN,
-  ].filter(Boolean)
-
-  if (token && validTokens.includes(token)) return null
+  if (token && token === process.env.RIDER_SERVICE_SECRET) return null
 
   return NextResponse.json({ error: "No autorizado" }, { status: 401 })
 }

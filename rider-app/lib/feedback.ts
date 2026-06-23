@@ -48,12 +48,8 @@ function getFeedbackBaseUrl() {
 function buildFeedbackHeaders() {
   const headers: Record<string, string> = { "Content-Type": "application/json" }
 
-  if (process.env.INTERNAL_API_KEY) {
-    headers["x-api-key"] = process.env.INTERNAL_API_KEY
-  }
-
-  if (process.env.FEEDBACK_APP_TOKEN) {
-    headers["Authorization"] = `Bearer ${process.env.FEEDBACK_APP_TOKEN}`
+  if (process.env.FEEDBACK_SERVICE_SECRET) {
+    headers["x-api-key"] = process.env.FEEDBACK_SERVICE_SECRET
   }
 
   return headers
