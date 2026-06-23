@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef, useSyncExternalStore } from "react"
+import { useState, useEffect, useSyncExternalStore } from "react"
 import { useLocalStorageValue } from "@/lib/useLocalStorage"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
@@ -101,10 +101,6 @@ export default function ViajeActivoCliente({
   // feedback post-EXPIRADA
   const [comentarioExpiracion, setComentarioExpiracion] = useState("")
 
-  // auto-aceptación a los 15 segundos
-  const [autoAceptar, setAutoAceptar] = useState(true)
-  const autoAceptarFired = useRef(false)
-
   // modal motivos post-cancelación del pasajero
   const [showCancelMotivo, setShowCancelMotivo] = useState(false)
 
@@ -182,14 +178,6 @@ export default function ViajeActivoCliente({
   }, [isExpired, solicitudId])
 
   useEffect(() => {
-    if (!esBuscando || !autoAceptar || elapsed < 15 || autoAceptarFired.current) return
-    autoAceptarFired.current = true
-    fetch(`/api/solicitudes/${solicitudId}/simular-aceptacion`, { method: "POST" })
-      .then(res => { if (res.ok) router.refresh() })
-      .catch(() => {})
-  }, [esBuscando, autoAceptar, elapsed, solicitudId, router])
-
-  useEffect(() => {
     let mounted = true
     async function loadDriver() {
       if (!idConductor) return
@@ -216,8 +204,6 @@ export default function ViajeActivoCliente({
         body: JSON.stringify({ estado: "CANCELADA_POR_PASAJERO" }),
       })
       if (res.ok) {
-        setAutoAceptar(false)
-        autoAceptarFired.current = true
         setShowCancelMotivo(true)
       } else {
         const data = await res.json()
@@ -579,35 +565,6 @@ export default function ViajeActivoCliente({
                       {cancelando ? "Cancelando…" : "Cancelar solicitud"}
                     </button>
 
-                    <div className="text-center space-y-1 pt-1">
-                      {autoAceptar ? (
-                        <>
-                          <p className="text-xs text-muted-foreground/70">
-                            En {Math.max(0, 15 - elapsed)}s se acepta automáticamente.
-                          </p>
-                          <button
-                            type="button"
-                            onClick={() => setAutoAceptar(false)}
-                            className="text-xs text-muted-foreground/40 underline underline-offset-2 hover:text-muted-foreground/60 transition"
-                          >
-                            Desactivar para probar expiración
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <p className="text-xs text-muted-foreground/50">
-                            Auto-aceptación desactivada. Expira a los 2 min.
-                          </p>
-                          <button
-                            type="button"
-                            onClick={() => { setAutoAceptar(true); autoAceptarFired.current = false }}
-                            className="text-xs text-muted-foreground/40 underline underline-offset-2 hover:text-muted-foreground/60 transition"
-                          >
-                            Activar auto-aceptación
-                          </button>
-                        </>
-                      )}
-                    </div>
                   </>
                 )}
 

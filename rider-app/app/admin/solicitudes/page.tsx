@@ -3,7 +3,6 @@ import { Suspense } from "react"
 import { Prisma } from "@prisma/client"
 import AdminFilters from "@/app/components/AdminFilters"
 import AdminPagination from "@/app/components/AdminPagination"
-import AdminSimularAccion from "@/app/components/AdminSimularAccion"
 import DeleteSolicitudButton from "@/app/components/DeleteSolicitudButton"
 import Link from "next/link"
 
@@ -103,7 +102,6 @@ export default async function AdminSolicitudesPage({
                   <th className="pb-3 pr-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400 text-right">Precio</th>
                   <th className="pb-3 pr-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400">Pago</th>
                   <th className="pb-3 pr-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400">Fecha</th>
-                  <th className="pb-3 pr-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400">Acción</th>
                   <th className="pb-3 pr-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400">Feedback</th>
                   <th className="pb-3 text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400"></th>
                 </tr>
@@ -141,13 +139,6 @@ export default async function AdminSolicitudesPage({
                       <td className="py-3 pr-3 text-zinc-400 whitespace-nowrap">{s.metodoPago}</td>
                       <td className="py-3 pr-3 text-zinc-400 whitespace-nowrap">
                         {new Date(s.creadaEn).toLocaleDateString("es-AR")}
-                      </td>
-                      <td className="py-3 pr-3 whitespace-nowrap">
-                        <AdminSimularAccion
-                          solicitudId={s.id}
-                          estado={s.estado}
-                          viajeEstado={s.viaje?.estadoActual ?? null}
-                        />
                       </td>
                       <td className="py-3 pr-3 whitespace-nowrap">
                         <Link

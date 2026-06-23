@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { requireRole } from "@/lib/auth"
+import { requireRole, requireM2MToken } from "@/lib/auth"
 
 export async function GET(req: NextRequest) {
-  const auth = await requireRole("admin")
-  if ("error" in auth) return auth.error
+  const isM2M = requireM2MToken(req) === null
+  if (!isM2M) {
+    const auth = await requireRole("admin")
+    if ("error" in auth) return auth.error
+  }
 
   const { searchParams } = new URL(req.url)
   const q = searchParams.get("q") ?? ""
@@ -33,15 +36,25 @@ export async function GET(req: NextRequest) {
         email: true,
         telefono: true,
         ratingPromedio: true,
+        activo: true,
         createdAt: true,
-        _count: { select: { solicitudes: true } },
       },
     }),
     prisma.pasajero.count({ where }),
   ])
 
+  const mapped = pasajeros.map((p) => ({
+    id_pasajero: p.id,
+    nombre: p.nombre,
+    email: p.email,
+    telefono: p.telefono,
+    rating_promedio: p.ratingPromedio,
+    activo: p.activo,
+    fecha_alta: p.createdAt,
+  }))
+
   return NextResponse.json({
-    pasajeros,
+    pasajeros: mapped,
     total,
     page,
     totalPages: Math.ceil(total / limit),
