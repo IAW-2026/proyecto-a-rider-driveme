@@ -4,17 +4,9 @@ const isPublicRoute = createRouteMatcher([
   "/",
   "/sign-in(.*)",
   "/sign-up(.*)",
-  "/api/webhooks(.*)",
-  // Public API endpoints used by client without auth
-  "/api/geocoding(.*)",
-  "/api/solicitudes(.*)",
-  "/api/viajes(.*)",
-  "/api/notificaciones(.*)",
-  "/api/pasajeros(.*)",
-  "/api/pasajero/reputacion(.*)",
-  "/api/conductores(.*)",
-  "/api/auth/me(.*)",
-  "/api/direcciones(.*)",
+  "/cuenta-bloqueada(.*)",
+  // All API routes handle their own auth (M2M token or Clerk user)
+  "/api/(.*)",
 ]);
 
 export default clerkMiddleware(async (auth, request) => {
