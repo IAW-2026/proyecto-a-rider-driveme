@@ -133,7 +133,12 @@ export default function Home() {
                   </div>
                 </div>
               ) : (
-                <SignIn appearance={clerkAppearance} routing="hash" forceRedirectUrl="/inicio" />
+                <SignIn 
+                  appearance={clerkAppearance} 
+                  routing="hash" 
+                  forceRedirectUrl="/inicio" 
+                  signUpUrl="/sign-up" 
+                />
               )}
             </div>
           </div>

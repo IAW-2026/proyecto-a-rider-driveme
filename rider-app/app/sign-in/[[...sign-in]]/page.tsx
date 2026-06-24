@@ -13,7 +13,7 @@ export default function SignInPage() {
         </div>
 
         <div className="rounded-2xl border border-zinc-800 bg-gradient-to-b from-black/60 to-black/50 p-6">
-          <SignIn appearance={clerkAppearance} routing="path" path="/sign-in" />
+          <SignIn appearance={clerkAppearance} routing="path" path="/sign-in" signUpUrl="/sign-up" />
         </div>
       </div>
     </main>
