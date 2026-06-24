@@ -64,6 +64,9 @@ export async function GET(
     estado_actual: estadoActual,
     id_conductor: viaje.idConductor,
     id_vehiculo: viaje.idVehiculo,
+    patente: viaje.patente ?? null,
+    puntaje_promedio_conductor: viaje.puntajePromedioConductor ? Number(viaje.puntajePromedioConductor) : null,
+    comentario_promedio_conductor: viaje.comentarioPromedioConductor ?? null,
     creado_en: viaje.createdAt,
     solicitud: {
       id_solicitud: viaje.solicitudId,

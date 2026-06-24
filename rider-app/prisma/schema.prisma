@@ -53,6 +53,9 @@ model Viaje {
   latitudActual     Float?
   longitudActual    Float?
   estadoActual      EstadoViaje
+  patente                     String?
+  puntajePromedioConductor    Decimal?
+  comentarioPromedioConductor String?
   idCalificacion         String?
   puntajeCalificacion    Int?
   comentarioCalificacion String?

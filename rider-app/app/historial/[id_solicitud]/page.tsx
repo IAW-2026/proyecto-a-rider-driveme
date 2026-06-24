@@ -2,7 +2,6 @@ import { auth } from "@clerk/nextjs/server"
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import { prisma } from "@/lib/prisma"
-import { getConductorById } from "@/lib/conductores"
 import { obtenerTransaccionViaje } from "@/lib/payments"
 import FeedbackActions from "./FeedbackActions"
 import MapDetalle from "./MapDetalle"
@@ -57,6 +56,9 @@ export default async function HistorialDetallePage({
           idVehiculo: true,
           idViajeDriver: true,
           estadoActual: true,
+          patente: true,
+          puntajePromedioConductor: true,
+          comentarioPromedioConductor: true,
           idCalificacion: true,
           puntajeCalificacion: true,
           comentarioCalificacion: true,
@@ -76,8 +78,9 @@ export default async function HistorialDetallePage({
     redirect("/historial")
   }
 
-  const conductor = solicitud.viaje?.idConductor ? await getConductorById(solicitud.viaje.idConductor) : null
   const transaccion = solicitud.viaje ? await obtenerTransaccionViaje(solicitud.viaje.id) : null
+  const patente = solicitud.viaje?.patente ?? null
+  const puntajeConductor = solicitud.viaje?.puntajePromedioConductor ? Number(solicitud.viaje.puntajePromedioConductor) : null
   const idVehiculo = solicitud.viaje?.idVehiculo ?? null
   const idViajeDriver = solicitud.viaje?.idViajeDriver ?? null
   const badge = getBadge(solicitud.estado, solicitud.viaje?.estadoActual)
@@ -202,7 +205,7 @@ export default async function HistorialDetallePage({
                   </div>
                 )}
 
-                {conductor && (
+                {patente && (
                   <div className="rounded-xl border border-border bg-card/50 p-4">
                     <p
                       className="text-xs text-muted-foreground tracking-widest"
@@ -210,13 +213,9 @@ export default async function HistorialDetallePage({
                     >
                       CONDUCTOR
                     </p>
-                    <div className="mt-2 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-foreground">{conductor.nombre}</p>
-                        <p className="text-xs text-muted-foreground">Patente: {conductor.patente}</p>
-                        <p className="text-xs text-muted-foreground">Calificación: {conductor.calificacionPromedio}</p>
-                      </div>
-                      <p className="text-xs text-muted-foreground">ETA estimada: {conductor.etaLlegadaMinutos} min</p>
+                    <div className="mt-2 space-y-0.5">
+                      <p className="text-xs text-muted-foreground">Patente: {patente}</p>
+                      <p className="text-xs text-muted-foreground">Calificación: {puntajeConductor ?? "—"}</p>
                     </div>
                   </div>
                 )}

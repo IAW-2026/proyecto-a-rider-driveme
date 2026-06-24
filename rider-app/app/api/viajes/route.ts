@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
   if (m2mError) return m2mError
   
   const body = await req.json()
-  const { id_solicitud, id_conductor, id_vehiculo, latitud_actual, longitud_actual, id_pasajero, id_viaje } = body
+  const { id_solicitud, id_conductor, id_vehiculo, latitud_actual, longitud_actual, id_pasajero, id_viaje, patente, puntaje_promedio_conductor, comentario_promedio_conductor } = body
 
   if (!id_solicitud || !id_conductor || !id_vehiculo || latitud_actual === undefined || longitud_actual === undefined) {
     return NextResponse.json({ error: "Faltan campos requeridos" }, { status: 400 })
@@ -48,6 +48,9 @@ export async function POST(req: NextRequest) {
         latitudActual: latitud_actual,
         longitudActual: longitud_actual,
         estadoActual: "ACEPTADO",
+        patente: patente ?? null,
+        puntajePromedioConductor: puntaje_promedio_conductor ?? null,
+        comentarioPromedioConductor: comentario_promedio_conductor ?? null,
       },
     }),
     prisma.solicitudDeViaje.update({

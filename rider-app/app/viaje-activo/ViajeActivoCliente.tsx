@@ -31,10 +31,8 @@ interface Props {
 }
 
 type Driver = {
-  nombre: string
   patente: string
   calificacionPromedio: number | null
-  etaLlegadaMinutos: number
 }
 
 function useIsClient() {
@@ -78,7 +76,6 @@ export default function ViajeActivoCliente({
   const [cancelando, setCancelando] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [driver, setDriver] = useState<Driver | null>(null)
-  const [loadingDriver, setLoadingDriver] = useState(false)
   const [mapReady, setMapReady] = useState(true)
   const [liveViajeEstado, setLiveViajeEstado] = useState<string | null>(viajeEstado)
   const [liveIdConductor, setLiveIdConductor] = useState<string | null>(idConductor)
@@ -179,23 +176,6 @@ export default function ViajeActivoCliente({
     }).catch(() => {})
   }, [isExpired, solicitudId])
 
-  useEffect(() => {
-    let mounted = true
-    async function loadDriver() {
-      if (!idConductor) return
-      setLoadingDriver(true)
-      try {
-        const res = await fetch(`/api/conductores/${idConductor}`)
-        if (!res.ok) return
-        const d = await res.json()
-        if (mounted) setDriver(d)
-      } catch {}
-      setLoadingDriver(false)
-    }
-    loadDriver()
-    return () => { mounted = false }
-  }, [liveIdConductor])
-
   // ─── POLLING AL ESTADO DEL VIAJE (Driver App) ────────────────────────────
   useEffect(() => {
     // Solo hacer polling si hay un viaje activo (no cancelado/finalizado)
@@ -209,6 +189,7 @@ export default function ViajeActivoCliente({
         const data = await res.json()
         if (data.estado_actual) setLiveViajeEstado(data.estado_actual)
         if (data.id_conductor) setLiveIdConductor(data.id_conductor)
+        if (data.patente) setDriver({ patente: data.patente, calificacionPromedio: data.puntaje_promedio_conductor ?? null })
       } catch {}
     }
 
@@ -503,20 +484,12 @@ export default function ViajeActivoCliente({
                     >
                       CONDUCTOR
                     </p>
-                    {loadingDriver ? (
-                      <div className="mt-2 text-sm text-muted-foreground">Cargando datos del conductor…</div>
-                    ) : driver ? (
-                      <div className="mt-2 flex items-center gap-3">
-                        <div>
-                          <p className="text-sm font-medium text-foreground">{driver.nombre}</p>
-                          <p className="text-xs text-muted-foreground">Patente: {driver.patente}</p>
-                          <p className="text-xs text-muted-foreground">
-                            Calificación: {driver.calificacionPromedio ?? "—"}
-                          </p>
-                        </div>
-                        <div className="ml-auto text-sm text-muted-foreground">
-                          Llega en ~{driver.etaLlegadaMinutos} min
-                        </div>
+                    {driver ? (
+                      <div className="mt-2 space-y-0.5">
+                        <p className="text-xs text-muted-foreground">Patente: {driver.patente}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Calificación: {driver.calificacionPromedio ?? "—"}
+                        </p>
                       </div>
                     ) : (
                       <div className="mt-2 text-sm text-muted-foreground">Información no disponible</div>
