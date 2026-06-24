@@ -16,6 +16,7 @@ model Pasajero {
   ratingPromedio     Decimal              @default(0) @db.Decimal(3,2)
   comentarioPromedio String?
   activo             Boolean              @default(true)
+  tieneMercadoPago   Boolean              @default(false)
   solicitudes        SolicitudDeViaje[]
   direcciones    DireccionFrecuente[]
   createdAt      DateTime             @default(now())
@@ -101,5 +102,5 @@ enum EstadoViaje {
 
 enum MetodoPago {
   EFECTIVO
-  TARJETA
+  MERCADO_PAGO
 }

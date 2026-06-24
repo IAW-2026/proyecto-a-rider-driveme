@@ -13,7 +13,7 @@ const solicitudSchema = z.object({
   destino_lat: z.number(),
   destino_lng: z.number(),
   destino_direccion: z.string().min(1),
-  metodo_pago: z.enum(["EFECTIVO", "TARJETA"]),
+  metodo_pago: z.enum(["EFECTIVO", "MERCADO_PAGO"]),
   precio_estimado: z.number().positive().nullable().optional(),
 })
 

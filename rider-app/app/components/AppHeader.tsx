@@ -14,7 +14,6 @@ const UserButton = dynamic(
 
 const navItems = [
   { href: "/inicio", label: "Inicio", icon: Home },
-  { href: "/pedir-viaje", label: "Pedir Viaje", icon: Rocket },
   { href: "/viaje-activo", label: "Activo", icon: Navigation },
   { href: "/historial", label: "Historial", icon: Clock },
   { href: "/perfil", label: "Perfil", icon: UserCircle },

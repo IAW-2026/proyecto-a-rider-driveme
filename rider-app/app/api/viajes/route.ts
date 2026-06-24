@@ -56,6 +56,17 @@ export async function POST(req: NextRequest) {
     }),
   ])
 
+  // Llamar asincronamente a Payments App para notificar la transacción
+  import("@/lib/payments").then(({ crearTransaccionViaje }) => {
+    crearTransaccionViaje({
+      idViaje: viaje.id,
+      idPasajero: solicitud.pasajeroId,
+      idConductor: id_conductor,
+      metodoPago: solicitud.metodoPago,
+      monto: solicitud.precioEstimadoCents ? solicitud.precioEstimadoCents / 100 : 0
+    })
+  }).catch(console.error)
+
   return NextResponse.json({
     id_viaje: viaje.id,
     id_solicitud: solicitud.id,

@@ -2,7 +2,7 @@
 
 import { Navigation, MapPin, Banknote, CreditCard, Car } from "lucide-react"
 
-type MetodoPago = "EFECTIVO" | "TARJETA"
+type MetodoPago = "EFECTIVO" | "MERCADO_PAGO"
 
 interface Props {
   origenAddress: string

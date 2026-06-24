@@ -13,8 +13,6 @@ const galaxies = [
   { name: "Tatooine", visits: 94, emoji: "🏜️", description: "Planeta del desierto", color: "from-glow-red/20 to-accent/10" },
   { name: "Kessel", visits: 72, emoji: "💎", description: "Minas de spice", color: "from-glow-cyan/20 to-primary/10" },
   { name: "Hoth", visits: 68, emoji: "❄️", description: "Planeta de hielo", color: "from-primary/20 to-glow-magenta/10" },
-  { name: "Dagobah", visits: 55, emoji: "🌫️", description: "El pantano místico", color: "from-accent/20 to-glow-green/10" },
-  { name: "Coruscant", visits: 43, emoji: "🏙️", description: "Capital galáctica", color: "from-glow-red/20 to-glow-magenta/10" },
 ]
 
 export default async function InicioPage() {
@@ -68,23 +66,46 @@ export default async function InicioPage() {
                 </div>
               ) : (
                 <>
-                  <QuickTripForm />
+                  <QuickTripForm tieneMercadoPago={pasajero.tieneMercadoPago} />
                   <SavedPlaces lugares={direcciones} />
                 </>
               )}
             </div>
 
-            {/* Right Column - Galaxias más visitadas */}
-            <div className="lg:w-80 xl:w-96 space-y-3">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-accent" />
-                <h3
-                  className="text-xs text-primary/80 tracking-widest"
+            {/* Right Column */}
+            <div className="lg:w-80 xl:w-96 space-y-6">
+              
+              {/* Cómo Funciona */}
+              <div className="holo-border rounded-xl p-5 space-y-3 relative overflow-hidden scan-lines">
+                <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-primary/40 rounded-tl-xl" />
+                <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-primary/40 rounded-br-xl" />
+
+                <p
+                  className="text-xs text-primary/80 tracking-widest flex items-center gap-2"
                   style={{ fontFamily: "var(--font-orbitron)" }}
                 >
-                  PLANETAS MÁS VISITADOS
-                </h3>
+                  <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                  ¿CÓMO FUNCIONA?
+                </p>
+                <div className="space-y-2 text-xs text-muted-foreground/80">
+                  <p>1. Ingresás tus coordenadas de origen y destino en el navicomputador.</p>
+                  <p>2. Transmitimos la señal a la red de transporte intergaláctica.</p>
+                  <p>3. Un piloto de la Alianza acepta la misión y traza rumbo a tu sector.</p>
+                  <p>4. Rastreamos la nave en tiempo real por el holored.</p>
+                </div>
               </div>
+
+              {/* Galaxias más visitadas */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-accent" />
+                  <h3
+                    className="text-xs text-primary/80 tracking-widest"
+                    style={{ fontFamily: "var(--font-orbitron)" }}
+                  >
+                    PLANETAS MÁS VISITADOS
+                  </h3>
+                </div>
 
               <div className="grid grid-cols-2 gap-3">
                 {galaxies.map((galaxy, index) => (
@@ -101,7 +122,8 @@ export default async function InicioPage() {
               </div>
             </div>
           </div>
-        </main>
+        </div>
+      </main>
       </div>
     </div>
   )

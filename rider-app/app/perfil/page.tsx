@@ -6,6 +6,7 @@ import { requirePasajeroActivo } from "@/lib/requirePasajeroActivo"
 import { obtenerCalificacionesUsuario } from "@/lib/feedback"
 import PerfilForm from "./PerfilForm"
 import DireccionesManager from "./DireccionesManager"
+import PaymentMethods from "./PaymentMethods"
 
 export default async function PerfilPage() {
   const { clerkId: userId } = await requirePasajeroActivo()
@@ -17,6 +18,7 @@ export default async function PerfilPage() {
       nombre: true,
       email: true,
       telefono: true,
+      tieneMercadoPago: true,
       ratingPromedio: true,
       comentarioPromedio: true,
       direcciones: {
@@ -81,21 +83,8 @@ export default async function PerfilPage() {
           {/* Direcciones frecuentes */}
           <DireccionesManager inicial={pasajero.direcciones} />
 
-          {/* Métodos de pago — mockeado */}
-          <div className="holo-border rounded-2xl p-6 space-y-3 opacity-60">
-            <h2
-              className="text-sm font-bold text-foreground tracking-widest"
-              style={{ fontFamily: "var(--font-orbitron)" }}
-            >
-              MÉTODOS DE PAGO
-            </h2>
-            <p className="text-xs text-muted-foreground">
-              Integración con Payments App disponible en Etapa 3.
-            </p>
-            <div className="rounded-xl border border-dashed border-primary/20 px-4 py-3 text-xs text-muted-foreground/60">
-              • Efectivo (disponible siempre)
-            </div>
-          </div>
+          {/* Métodos de pago */}
+          <PaymentMethods initialTieneMP={pasajero.tieneMercadoPago} />
 
           {/* Calificaciones */}
           {(() => {
@@ -149,10 +138,10 @@ export default async function PerfilPage() {
                 ) : (
                   <>
                     <p className="text-xs text-muted-foreground">
-                      Integración con Feedback App disponible en Etapa 3.
+                      Todavía no recibiste calificaciones.
                     </p>
-                    <div className="rounded-xl border border-dashed border-primary/20 px-4 py-3 text-xs text-muted-foreground/60">
-                      • Calificaciones recibidas y enviadas
+                    <div className="rounded-xl border border-dashed border-primary/20 px-4 py-3 text-xs text-muted-foreground/60 text-center">
+                      Tus reseñas aparecerán acá cuando finalices viajes
                     </div>
                   </>
                 )}

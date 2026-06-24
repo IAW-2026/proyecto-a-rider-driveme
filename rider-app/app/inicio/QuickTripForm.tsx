@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import dynamic from "next/dynamic"
-import { Navigation, MapPin, Banknote, CreditCard, ChevronDown, Rocket } from "lucide-react"
+import { Navigation, MapPin, Banknote, CreditCard, ChevronDown, Rocket, Plus } from "lucide-react"
 import AutocompleteAddress from "@/components/AutocompleteAddress"
 import { geocodeAddress } from "@/lib/geocoding"
 import { haversineKm, calcularPrecioEstimado } from "@/lib/pricing"
@@ -11,10 +11,10 @@ import { clsx } from "clsx"
 
 const ConfirmTripModal = dynamic(() => import("./ConfirmTripModal"), { ssr: false })
 
-type MetodoPago = "EFECTIVO" | "TARJETA"
+type MetodoPago = "EFECTIVO" | "MERCADO_PAGO"
 type Coords = { lat: number; lng: number }
 
-export default function QuickTripForm() {
+export default function QuickTripForm({ tieneMercadoPago = false }: { tieneMercadoPago?: boolean }) {
   const router = useRouter()
   // Selected (validated) values — only set via onSelect
   const [origenAddress, setOrigenAddress] = useState("")
@@ -242,9 +242,9 @@ export default function QuickTripForm() {
               className={clsx("w-3.5 h-3.5 text-muted-foreground transition-transform", showPaymentOptions && "rotate-180")}
             />
           </button>
-
+          
           {showPaymentOptions && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-primary/20 rounded-lg overflow-hidden z-20 shadow-lg">
+            <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-primary/20 rounded-lg overflow-hidden z-20 shadow-lg flex flex-col">
               <button
                 type="button"
                 onClick={() => { setMetodoPago("EFECTIVO"); setShowPaymentOptions(false) }}
@@ -253,14 +253,26 @@ export default function QuickTripForm() {
                 <Banknote className="w-4 h-4 text-accent" />
                 <span>Efectivo</span>
               </button>
-              <button
-                type="button"
-                onClick={() => { setMetodoPago("TARJETA"); setShowPaymentOptions(false) }}
-                className={clsx("w-full flex items-center gap-2 px-3 py-2.5 hover:bg-primary/10 transition-colors text-sm", metodoPago === "TARJETA" && "bg-primary/5")}
-              >
-                <CreditCard className="w-4 h-4 text-primary" />
-                <span>Mercado Pago</span>
-              </button>
+              
+              {tieneMercadoPago ? (
+                <button
+                  type="button"
+                  onClick={() => { setMetodoPago("MERCADO_PAGO"); setShowPaymentOptions(false) }}
+                  className={clsx("w-full flex items-center gap-2 px-3 py-2.5 hover:bg-primary/10 transition-colors text-sm", metodoPago === "MERCADO_PAGO" && "bg-primary/5")}
+                >
+                  <CreditCard className="w-4 h-4 text-primary" />
+                  <span>Mercado Pago</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => router.push("/perfil")}
+                  className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-primary/10 transition-colors text-sm text-primary"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Agregar método de pago</span>
+                </button>
+              )}
             </div>
           )}
         </div>
