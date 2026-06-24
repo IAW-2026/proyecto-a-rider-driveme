@@ -23,13 +23,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid webhook signature" }, { status: 401 });
   }
 
-  if (event.type !== "user.created") {
+  if (event.type !== "user.created" && event.type !== "user.updated") {
     return NextResponse.json({ received: true }, { status: 200 });
   }
 
-  const userId = event.data?.id ?? event.data?.object?.id;
+  const userData = event.data;
+  const userId = userData?.id;
   if (!userId) {
     return NextResponse.json({ error: "Missing user id in webhook payload" }, { status: 400 });
+  }
+
+  const existingRole = userData?.public_metadata?.role;
+  if (existingRole) {
+    return NextResponse.json({ received: true, skipped: "role already set" }, { status: 200 });
   }
 
   try {

@@ -121,6 +121,7 @@ export default function ViajeActivoCliente({
           if (data.id_calificacion) localStorage.setItem(`feedback_calificacion_${viajeId}`, data.id_calificacion)
         }
         setFeedbackEnviado(true)
+        router.refresh()
         router.push("/inicio")
       } else {
         setFeedbackError(data.error ?? "Error al enviar el feedback.")

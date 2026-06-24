@@ -66,14 +66,19 @@ async function requestFeedbackApp<TResponse>(
     return fallback()
   }
 
-  const response = await fetch(`${baseUrl}${path}`, init)
+  try {
+    const response = await fetch(`${baseUrl}${path}`, init)
 
-  if (!response.ok) {
-    const body = await response.text()
-    throw new Error(body || "No se pudo comunicar con la app de feedback")
+    if (!response.ok) {
+      console.error(`Feedback App error [${response.status}]:`, await response.text())
+      return fallback()
+    }
+
+    return (await response.json()) as TResponse
+  } catch (err) {
+    console.error("Feedback App inalcanzable:", err)
+    return fallback()
   }
-
-  return (await response.json()) as TResponse
 }
 
 export async function crearResena(payload: ResenaPayload): Promise<ResenaResponse> {

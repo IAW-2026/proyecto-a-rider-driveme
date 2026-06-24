@@ -1,13 +1,14 @@
 import { redirect } from "next/navigation"
-import { auth, currentUser } from "@clerk/nextjs/server"
+import { auth } from "@clerk/nextjs/server"
+import { prisma } from "@/lib/prisma"
 import RegistroForm from "./RegistroForm"
 
 export default async function RegistroPage() {
   const { userId } = await auth()
   if (!userId) redirect("/sign-in")
 
-  const user = await currentUser()
-  if (user?.publicMetadata?.role === "rider") redirect("/inicio")
+  const pasajero = await prisma.pasajero.findUnique({ where: { clerkId: userId } })
+  if (pasajero?.telefono) redirect("/inicio")
 
   return (
     <main className="min-h-screen bg-background stars-bg relative flex items-center justify-center px-4 py-10">
