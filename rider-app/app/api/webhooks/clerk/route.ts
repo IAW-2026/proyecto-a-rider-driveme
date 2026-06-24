@@ -1,47 +1,48 @@
-import { Webhook } from "svix"
-import { headers } from "next/headers"
-import { WebhookEvent } from "@clerk/nextjs/server"
-import { clerkClient } from "@clerk/nextjs/server"
+import { NextRequest, NextResponse } from "next/server";
+import { clerkClient } from "@clerk/nextjs/server";
+import { Webhook } from "svix";
 
-export async function POST(req: Request) {
-  const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET
-  if (!WEBHOOK_SECRET) {
-    return new Response("Missing CLERK_WEBHOOK_SECRET", { status: 500 })
+const webhookSecret = process.env.CLERK_WEBHOOK_SECRET ?? "";
+
+export async function POST(request: NextRequest) {
+
+  const payload = await request.text();
+  const headers = Object.fromEntries(request.headers.entries());
+
+  if (!webhookSecret) {
+    return NextResponse.json({ error: "Missing webhook secret" }, { status: 401 });
   }
 
-  const headerPayload = await headers()
-  const svix_id = headerPayload.get("svix-id")
-  const svix_timestamp = headerPayload.get("svix-timestamp")
-  const svix_signature = headerPayload.get("svix-signature")
+  const webhook = new Webhook(webhookSecret);
 
-  if (!svix_id || !svix_timestamp || !svix_signature) {
-    return new Response("Missing svix headers", { status: 400 })
+  let event: any;
+  try {
+    event = webhook.verify(payload, headers);
+  } catch (error) {
+    console.error("Clerk webhook signature verification failed:", error);
+    return NextResponse.json({ error: "Invalid webhook signature" }, { status: 401 });
   }
 
-  const payload = await req.json()
-  const body = JSON.stringify(payload)
+  if (event.type !== "user.created") {
+    return NextResponse.json({ received: true }, { status: 200 });
+  }
 
-  const wh = new Webhook(WEBHOOK_SECRET)
-  let evt: WebhookEvent
+  const userId = event.data?.id ?? event.data?.object?.id;
+  if (!userId) {
+    return NextResponse.json({ error: "Missing user id in webhook payload" }, { status: 400 });
+  }
 
   try {
-    evt = wh.verify(body, {
-      "svix-id": svix_id,
-      "svix-timestamp": svix_timestamp,
-      "svix-signature": svix_signature,
-    }) as WebhookEvent
-  } catch {
-    return new Response("Invalid signature", { status: 400 })
-  }
-
-  if (evt.type === "user.created") {
-    const { id } = evt.data
-    const client = await clerkClient()
-    // Tu app solo necesita riders; el webhook deja ese rol listo al crear la cuenta.
-    await client.users.updateUserMetadata(id, {
+    const client = await clerkClient();
+    await client.users.updateUserMetadata(userId, {
       publicMetadata: { role: "rider" },
-    })
+    });
+    return NextResponse.json({ success: true }, { status: 200 });
+  } catch (error) {
+    console.error("Error updating Clerk user metadata on webhook:", error);
+    return NextResponse.json(
+      { error: "Unable to update user role", details: String(error) },
+      { status: 500 },
+    );
   }
-
-  return new Response(null, { status: 200 })
 }
