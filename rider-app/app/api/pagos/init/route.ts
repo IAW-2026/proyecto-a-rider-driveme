@@ -104,7 +104,7 @@ export async function POST(req: NextRequest) {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${riderSecret}`,
       },
-      body: JSON.stringify({ id_transaccion }),
+      body: JSON.stringify({ id_transaccion, id_solicitud }),
     })
 
     if (!procesarRes.ok) {
