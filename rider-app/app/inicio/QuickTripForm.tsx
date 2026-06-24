@@ -34,6 +34,9 @@ export default function QuickTripForm({ tieneMercadoPago = false }: { tieneMerca
     origen: Coords
     destino: Coords | null
   } | null>(null)
+  // Estado para el overlay de procesando pago MP
+  const [procesandoMP, setProcesandoMP] = useState(false)
+  const [errorMP, setErrorMP] = useState<string | null>(null)
 
   const distanciaKm =
     origenCoords && destinoCoords
@@ -114,6 +117,36 @@ export default function QuickTripForm({ tieneMercadoPago = false }: { tieneMerca
         return
       }
 
+      const data = await res.json()
+
+      // Flujo Mercado Pago: obtener init_point y redirigir al pasajero
+      if (metodoPago === "MERCADO_PAGO") {
+        setShowModal(false)
+        setProcesandoMP(true)
+        setErrorMP(null)
+        setLoading(false)
+
+        try {
+          const initRes = await fetch("/api/pagos/init", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id_solicitud: data.id_solicitud }),
+          })
+          const initData = await initRes.json()
+
+          if (initRes.ok && initData.init_point) {
+            // Redirigir al usuario a Mercado Pago
+            window.location.href = initData.init_point
+          } else {
+            setErrorMP(initData.error ?? "No se pudo iniciar el pago. Intentá de nuevo.")
+          }
+        } catch {
+          setErrorMP("Error de conexión con el servicio de pagos.")
+        }
+        return
+      }
+
+      // Flujo Efectivo: ir directamente a viaje activo
       router.push("/viaje-activo")
     } catch {
       setError("Error de conexión. Revisá tu internet e intentá de nuevo.")
@@ -136,6 +169,79 @@ export default function QuickTripForm({ tieneMercadoPago = false }: { tieneMerca
           onClose={() => setShowModal(false)}
           onConfirm={handleConfirmar}
         />
+      )}
+
+      {/* Overlay — Procesando pago con Mercado Pago */}
+      {procesandoMP && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+          <div className="relative holo-border rounded-xl p-8 w-full max-w-sm text-center space-y-5 bg-card scan-lines">
+            <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-primary/50 rounded-tl-xl" />
+            <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-primary/50 rounded-tr-xl" />
+            <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-primary/50 rounded-bl-xl" />
+            <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-primary/50 rounded-br-xl" />
+
+            {errorMP ? (
+              /* Estado de error */
+              <>
+                <div className="w-14 h-14 mx-auto rounded-full bg-destructive/20 flex items-center justify-center text-3xl text-destructive glow-red">
+                  ✕
+                </div>
+                <div className="space-y-2">
+                  <p
+                    className="text-sm font-bold text-foreground tracking-widest"
+                    style={{ fontFamily: "var(--font-orbitron)" }}
+                  >
+                    ERROR AL PAGAR
+                  </p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{errorMP}</p>
+                </div>
+                <div className="flex flex-col gap-3 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => { setProcesandoMP(false); setErrorMP(null) }}
+                    className="inline-flex w-full h-11 items-center justify-center rounded-xl bg-glow-red text-white text-xs font-semibold glow-red transition hover:brightness-110"
+                    style={{ fontFamily: "var(--font-orbitron)", letterSpacing: "0.05em" }}
+                  >
+                    INTENTAR DE NUEVO
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setProcesandoMP(false); setErrorMP(null) }}
+                    className="inline-flex w-full h-10 items-center justify-center rounded-xl border border-zinc-700 text-sm text-zinc-400 transition hover:border-zinc-500 hover:text-zinc-200"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </>
+            ) : (
+              /* Estado de espera */
+              <>
+                <div className="flex justify-center">
+                  <div className="w-14 h-14 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+                </div>
+                <div className="space-y-2">
+                  <p
+                    className="text-sm font-bold text-foreground tracking-widest"
+                    style={{ fontFamily: "var(--font-orbitron)" }}
+                  >
+                    INICIANDO PAGO
+                  </p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Estamos preparando tu pago con Mercado Pago. Te redirigiremos en un momento.
+                  </p>
+                </div>
+                <div className="flex items-center justify-center gap-2 text-xs text-primary/60">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+                  </span>
+                  Conectando con Mercado Pago…
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       )}
 
       <div className="holo-border rounded-xl p-5 space-y-4 relative overflow-hidden scan-lines">

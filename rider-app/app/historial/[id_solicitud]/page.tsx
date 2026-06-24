@@ -283,7 +283,7 @@ export default async function HistorialDetallePage({
                     No se encontró conductor en el tiempo límite. Podés volver a intentarlo cuando quieras.
                   </p>
                   <Link
-                    href="/pedir-viaje"
+                    href="/inicio"
                     className="inline-flex w-full h-11 items-center justify-center rounded-xl bg-glow-red text-white text-xs font-semibold glow-red transition hover:brightness-110"
                     style={{ fontFamily: "var(--font-orbitron)", letterSpacing: "0.05em" }}
                   >

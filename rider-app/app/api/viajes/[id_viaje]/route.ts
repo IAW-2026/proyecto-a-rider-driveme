@@ -30,9 +30,38 @@ export async function GET(
     return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
   }
 
+  // Intentar obtener el estado más fresco desde la Driver App
+  let estadoActual = viaje.estadoActual
+  const driverAppUrl = process.env.DRIVER_APP_URL?.replace(/\/$/, "")
+  const driverIdViaje = viaje.idViajeDriver ?? viaje.id
+
+  if (driverAppUrl) {
+    try {
+      const res = await fetch(`${driverAppUrl}/api/viajes/${driverIdViaje}/estado`, {
+        headers: { "x-api-key": process.env.RIDER_SERVICE_SECRET ?? "" },
+        next: { revalidate: 0 },
+      })
+      if (res.ok) {
+        const data = await res.json()
+        if (data.estado_actual) {
+          estadoActual = data.estado_actual
+          // Si el estado cambió, actualizarlo en nuestra BD también
+          if (data.estado_actual !== viaje.estadoActual) {
+            await prisma.viaje.update({
+              where: { id: viaje.id },
+              data: { estadoActual: data.estado_actual },
+            }).catch(() => {})
+          }
+        }
+      }
+    } catch {
+      // Si Driver App no responde, usamos el estado local (ya inicializado arriba)
+    }
+  }
+
   return NextResponse.json({
     id_viaje: viaje.id,
-    estado_actual: viaje.estadoActual,
+    estado_actual: estadoActual,
     id_conductor: viaje.idConductor,
     id_vehiculo: viaje.idVehiculo,
     creado_en: viaje.createdAt,
@@ -49,3 +78,4 @@ export async function GET(
     },
   })
 }
+

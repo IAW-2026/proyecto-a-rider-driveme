@@ -133,7 +133,7 @@ export default async function HistorialPage({
               </p>
               {!q && (
                 <Link
-                  href="/pedir-viaje"
+                  href="/inicio"
                   className="inline-flex h-11 items-center justify-center rounded-full bg-glow-red text-white text-sm font-semibold glow-red transition hover:brightness-110"
                   style={{ fontFamily: "var(--font-orbitron)", letterSpacing: "0.05em" }}
                 >
@@ -255,7 +255,7 @@ export default async function HistorialPage({
 
           <div className="mt-8 flex justify-center">
             <Link
-              href="/pedir-viaje"
+              href="/inicio"
               className="inline-flex h-12 items-center justify-center rounded-full bg-glow-red text-white px-8 text-sm font-semibold glow-red transition hover:brightness-110"
               style={{ fontFamily: "var(--font-orbitron)", letterSpacing: "0.05em" }}
             >

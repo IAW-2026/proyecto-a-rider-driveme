@@ -80,6 +80,8 @@ export default function ViajeActivoCliente({
   const [driver, setDriver] = useState<Driver | null>(null)
   const [loadingDriver, setLoadingDriver] = useState(false)
   const [mapReady, setMapReady] = useState(true)
+  const [liveViajeEstado, setLiveViajeEstado] = useState<string | null>(viajeEstado)
+  const [liveIdConductor, setLiveIdConductor] = useState<string | null>(idConductor)
 
   // feedback post-FINALIZADO
   const [puntaje, setPuntaje] = useState(0)
@@ -111,7 +113,7 @@ export default function ViajeActivoCliente({
       const res = await fetch("/api/resenas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id_viaje: viajeId, id_receptor: idConductor, puntaje, comentario }),
+        body: JSON.stringify({ id_viaje: viajeId, id_receptor: liveIdConductor, puntaje, comentario }),
       })
       const data = await res.json()
       if (res.ok) {
@@ -151,8 +153,8 @@ export default function ViajeActivoCliente({
 
   const esBuscando = estado === "BUSCANDO_CONDUCTOR"
   const estadoMostrado =
-    viajeEstado
-      ? (ESTADO_LABEL[viajeEstado] ?? viajeEstado)
+    liveViajeEstado
+      ? (ESTADO_LABEL[liveViajeEstado] ?? liveViajeEstado)
       : (ESTADO_LABEL[estado] ?? estado)
 
   const EXPIRY_SECONDS = 120
@@ -192,7 +194,28 @@ export default function ViajeActivoCliente({
     }
     loadDriver()
     return () => { mounted = false }
-  }, [idConductor])
+  }, [liveIdConductor])
+
+  // ─── POLLING AL ESTADO DEL VIAJE (Driver App) ────────────────────────────
+  useEffect(() => {
+    // Solo hacer polling si hay un viaje activo (no cancelado/finalizado)
+    const estadosTerminales = ["FINALIZADO", "CANCELADO_POR_CONDUCTOR"]
+    if (!viajeId || estadosTerminales.includes(liveViajeEstado ?? "")) return
+
+    async function pollEstado() {
+      try {
+        const res = await fetch(`/api/viajes/${viajeId}`, { cache: "no-store" })
+        if (!res.ok) return
+        const data = await res.json()
+        if (data.estado_actual) setLiveViajeEstado(data.estado_actual)
+        if (data.id_conductor) setLiveIdConductor(data.id_conductor)
+      } catch {}
+    }
+
+    pollEstado() // poll inmediato al montar
+    const interval = setInterval(pollEstado, 5000)
+    return () => clearInterval(interval)
+  }, [viajeId, liveViajeEstado])
 
   async function cancelar() {
     setCancelando(true)
@@ -217,7 +240,7 @@ export default function ViajeActivoCliente({
   }
 
   // ─── CANCELADO POR CONDUCTOR ──────────────────────────────────────────────
-  if (viajeEstado === "CANCELADO_POR_CONDUCTOR") {
+  if (liveViajeEstado === "CANCELADO_POR_CONDUCTOR") {
     return (
       <div className="min-h-screen bg-background stars-bg relative">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/30 to-background pointer-events-none" />
@@ -272,7 +295,7 @@ export default function ViajeActivoCliente({
               </div>
 
               <Link
-                href="/pedir-viaje"
+                href="/inicio"
                 className="inline-flex w-full h-11 items-center justify-center rounded-xl bg-glow-red text-white text-xs font-semibold glow-red transition hover:brightness-110"
                 style={{ fontFamily: "var(--font-orbitron)", letterSpacing: "0.05em" }}
               >
@@ -286,7 +309,7 @@ export default function ViajeActivoCliente({
   }
 
   // ─── FINALIZADO ───────────────────────────────────────────────────────────
-  if (viajeEstado === "FINALIZADO") {
+  if (liveViajeEstado === "FINALIZADO") {
     const showFeedbackModal = mounted && !feedbackYaDado && !feedbackEnviado
 
     return (
@@ -314,7 +337,7 @@ export default function ViajeActivoCliente({
               {(feedbackEnviado || feedbackYaDado) && (
                 <div className="flex flex-col gap-3 pt-2">
                   <Link
-                    href="/pedir-viaje"
+                    href="/inicio"
                     className="inline-flex h-12 items-center justify-center rounded-full bg-glow-red text-white text-sm font-semibold glow-red transition hover:brightness-110"
                     style={{ fontFamily: "var(--font-orbitron)", letterSpacing: "0.05em" }}
                   >
@@ -671,7 +694,7 @@ export default function ViajeActivoCliente({
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({ comentario: comentarioExpiracion.trim() }),
                     }).catch(() => {})
-                    router.push("/pedir-viaje")
+                    router.push("/inicio")
                   }}
                   className="w-full h-10 rounded-xl border border-yellow-500/40 bg-yellow-500/10 text-yellow-200 text-sm font-medium transition hover:bg-yellow-500/20"
                 >
@@ -682,7 +705,7 @@ export default function ViajeActivoCliente({
 
             <button
               type="button"
-              onClick={() => router.push("/pedir-viaje")}
+              onClick={() => router.push("/inicio")}
               className="inline-flex w-full h-11 items-center justify-center rounded-xl bg-glow-red text-white text-xs font-semibold glow-red transition hover:brightness-110"
               style={{ fontFamily: "var(--font-orbitron)", letterSpacing: "0.05em" }}
             >
