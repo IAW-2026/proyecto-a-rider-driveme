@@ -83,20 +83,23 @@ export async function obtenerTransaccionViaje(idViaje: string): Promise<Transacc
     }
   }
 
+  const viaje = await prisma.viaje.findUnique({
+    where: { id: idViaje },
+    select: { solicitudId: true },
+  })
+
+  if (!viaje) return null
+
   const t = await prisma.transaccion.findFirst({
-    where: { viajeId: idViaje },
+    where: { solicitudId: viaje.solicitudId },
     orderBy: { createdAt: "desc" },
     select: {
       idTransaccion: true,
       estado: true,
       monto: true,
       createdAt: true,
-      viaje: {
-        select: {
-          solicitud: {
-            select: { metodoPago: true },
-          },
-        },
+      solicitud: {
+        select: { metodoPago: true },
       },
     },
   })
@@ -107,7 +110,7 @@ export async function obtenerTransaccionViaje(idViaje: string): Promise<Transacc
     idTransaccion: t.idTransaccion,
     estado: t.estado,
     monto: Number(t.monto) / 100,
-    metodoPago: t.viaje.solicitud.metodoPago ?? null,
+    metodoPago: t.solicitud.metodoPago ?? null,
     fechaCreacion: t.createdAt.toISOString(),
   }
 }

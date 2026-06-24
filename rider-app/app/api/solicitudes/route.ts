@@ -224,7 +224,7 @@ export async function POST(req: NextRequest) {
       destinoDireccion: destino_direccion,
       precioEstimadoCents: precio_estimado != null ? Math.round(precio_estimado * 100) : null,
       metodoPago: metodo_pago,
-      estado: "BUSCANDO_CONDUCTOR",
+      estado: metodo_pago === "MERCADO_PAGO" ? "PENDIENTE_PAGO" : "BUSCANDO_CONDUCTOR",
     },
   })
 

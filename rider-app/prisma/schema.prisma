@@ -39,6 +39,7 @@ model SolicitudDeViaje {
   creadaEn                 DateTime        @default(now())
   pasajero             Pasajero        @relation(fields: [pasajeroId], references: [id])
   viaje                Viaje?
+  transacciones        Transaccion[]
 
   @@index([pasajeroId])
 }
@@ -56,21 +57,20 @@ model Viaje {
   puntajeCalificacion    Int?
   comentarioCalificacion String?
   solicitud              SolicitudDeViaje @relation(fields: [solicitudId], references: [id])
-  transacciones     Transaccion[]
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
 }
 
 model Transaccion {
   id            String   @id @default(uuid())
-  viajeId       String
+  solicitudId   String
   idTransaccion String
   estado        String   // "CAPTURED" | "FAILED"
   monto         Int      // en cents
-  viaje         Viaje    @relation(fields: [viajeId], references: [id])
+  solicitud     SolicitudDeViaje @relation(fields: [solicitudId], references: [id])
   createdAt     DateTime @default(now())
 
-  @@index([viajeId])
+  @@index([solicitudId])
 }
 
 model DireccionFrecuente {
@@ -87,10 +87,12 @@ model DireccionFrecuente {
 }
 
 enum EstadoSolicitud {
+  PENDIENTE_PAGO
   BUSCANDO_CONDUCTOR
   ACEPTADA
   CANCELADA_POR_PASAJERO
   EXPIRADA_SIN_ACEPTACION
+  PAGO_RECHAZADO
 }
 
 enum EstadoViaje {

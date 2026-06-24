@@ -29,6 +29,7 @@ export function requireM2MToken(req: Request) {
     process.env.FEEDBACK_SERVICE_SECRET,
     process.env.CONTROL_PLANE_SECRET,
     process.env.ANALYTICS_DASHBOARD_SECRET,
+    process.env.PAYMENTS_SERVICE_SECRET,
   ].filter(Boolean)
 
   if (token && validTokens.includes(token)) return null

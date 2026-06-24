@@ -15,7 +15,6 @@ export async function DELETE(
   if (!viaje) return NextResponse.json({ error: "Viaje no encontrado" }, { status: 404 })
 
   await prisma.$transaction([
-    prisma.transaccion.deleteMany({ where: { viajeId: id } }),
     prisma.viaje.delete({ where: { id } }),
   ])
 

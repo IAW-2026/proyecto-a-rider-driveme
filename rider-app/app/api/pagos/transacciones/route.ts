@@ -17,27 +17,21 @@ export async function GET() {
 
   const transacciones = await prisma.transaccion.findMany({
     where: {
-      viaje: {
-        solicitud: {
-          pasajeroId: pasajero.id,
-        },
+      solicitud: {
+        pasajeroId: pasajero.id,
       },
     },
     orderBy: { createdAt: "desc" },
     select: {
       id: true,
-      viajeId: true,
+      solicitudId: true,
       idTransaccion: true,
       estado: true,
       monto: true,
       createdAt: true,
-      viaje: {
+      solicitud: {
         select: {
-          solicitud: {
-            select: {
-              metodoPago: true,
-            },
-          },
+          metodoPago: true,
         },
       },
     },
@@ -46,9 +40,9 @@ export async function GET() {
   return NextResponse.json(
     transacciones.map((transaccion) => ({
       id: transaccion.id,
-      idViaje: transaccion.viajeId,
+      idSolicitud: transaccion.solicitudId,
       monto: (transaccion.monto / 100).toFixed(2),
-      metodoPago: transaccion.viaje.solicitud.metodoPago,
+      metodoPago: transaccion.solicitud.metodoPago,
       estado: transaccion.estado,
       fechaCreacion: transaccion.createdAt,
       idTransaccion: transaccion.idTransaccion,
