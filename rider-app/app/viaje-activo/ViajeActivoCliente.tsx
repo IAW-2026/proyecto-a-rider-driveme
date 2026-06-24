@@ -27,6 +27,7 @@ interface Props {
   viajeId: string | null
   idConductor: string | null
   creadaEn: string
+  buscandoConductorDesde: string
   nombrePasajero: string
 }
 
@@ -70,6 +71,7 @@ export default function ViajeActivoCliente({
   viajeId,
   idConductor,
   creadaEn,
+  buscandoConductorDesde,
   nombrePasajero,
 }: Props) {
   const router = useRouter()
@@ -158,12 +160,12 @@ export default function ViajeActivoCliente({
   const [elapsed, setElapsed] = useState(0)
   useEffect(() => {
     if (!esBuscando) return
-    const start = new Date(creadaEn).getTime()
+    const start = new Date(buscandoConductorDesde).getTime()
     const tick = () => setElapsed(Math.floor((Date.now() - start) / 1000))
     tick()
     const id = setInterval(tick, 1000)
     return () => clearInterval(id)
-  }, [esBuscando, creadaEn])
+  }, [esBuscando, buscandoConductorDesde])
 
   const isExpired = esBuscando && elapsed >= EXPIRY_SECONDS
 

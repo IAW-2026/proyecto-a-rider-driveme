@@ -109,13 +109,17 @@ export async function GET(req: NextRequest) {
   }
 
   // Expirar solicitudes viejas antes de responder (lazy expiration global)
-  await prisma.solicitudDeViaje.updateMany({
-    where: {
-      estado: "BUSCANDO_CONDUCTOR",
-      creadaEn: { lt: new Date(Date.now() - 2 * 60 * 1000) },
-    },
-    data: { estado: "EXPIRADA_SIN_ACEPTACION" },
-  })
+  const cutoffM2M = new Date(Date.now() - 2 * 60 * 1000)
+  await prisma.$transaction([
+    prisma.solicitudDeViaje.updateMany({
+      where: { estado: "BUSCANDO_CONDUCTOR", buscandoConductorDesde: { lt: cutoffM2M } },
+      data: { estado: "EXPIRADA_SIN_ACEPTACION" },
+    }),
+    prisma.solicitudDeViaje.updateMany({
+      where: { estado: "BUSCANDO_CONDUCTOR", buscandoConductorDesde: null, creadaEn: { lt: cutoffM2M } },
+      data: { estado: "EXPIRADA_SIN_ACEPTACION" },
+    }),
+  ])
 
   let solicitudes = await prisma.solicitudDeViaje.findMany({
     where: { estado: estado as never },
@@ -225,6 +229,7 @@ export async function POST(req: NextRequest) {
       precioEstimadoCents: precio_estimado != null ? Math.round(precio_estimado * 100) : null,
       metodoPago: metodo_pago,
       estado: metodo_pago === "MERCADO_PAGO" ? "PENDIENTE_PAGO" : "BUSCANDO_CONDUCTOR",
+      buscandoConductorDesde: metodo_pago === "EFECTIVO" ? new Date() : null,
     },
   })
 

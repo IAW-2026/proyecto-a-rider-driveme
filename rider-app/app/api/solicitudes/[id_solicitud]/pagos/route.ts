@@ -47,7 +47,10 @@ export async function POST(
     }),
     prisma.solicitudDeViaje.update({
       where: { id: id_solicitud },
-      data: { estado: nuevoEstado },
+      data: {
+        estado: nuevoEstado,
+        buscandoConductorDesde: estado_pago === "APROBADO" ? new Date() : undefined,
+      },
     }),
   ])
 

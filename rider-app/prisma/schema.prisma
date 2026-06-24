@@ -37,6 +37,7 @@ model SolicitudDeViaje {
   estado                   EstadoSolicitud @default(BUSCANDO_CONDUCTOR)
   comentarioExpiracion     String?
   creadaEn                 DateTime        @default(now())
+  buscandoConductorDesde   DateTime?
   pasajero             Pasajero        @relation(fields: [pasajeroId], references: [id])
   viaje                Viaje?
   transacciones        Transaccion[]

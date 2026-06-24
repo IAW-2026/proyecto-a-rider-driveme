@@ -78,6 +78,7 @@ export default async function ViajeActivoPage() {
       viajeId={solicitud.viaje?.id ?? null}
       idConductor={solicitud.viaje?.idConductor ?? null}
       creadaEn={solicitud.creadaEn.toISOString()}
+      buscandoConductorDesde={(solicitud.buscandoConductorDesde ?? solicitud.creadaEn).toISOString()}
       nombrePasajero={pasajero.nombre}
     />
   )

@@ -10,14 +10,17 @@ function solicitudSigueActiva(solicitud: { viaje: { estadoActual: EstadoViaje } 
 }
 
 async function expireOldSolicitudesByPasajeroId(pasajeroId: string) {
-  await prisma.solicitudDeViaje.updateMany({
-    where: {
-      pasajeroId,
-      estado: "BUSCANDO_CONDUCTOR",
-      creadaEn: { lt: new Date(Date.now() - EXPIRY_MS) },
-    },
-    data: { estado: "EXPIRADA_SIN_ACEPTACION" },
-  })
+  const cutoff = new Date(Date.now() - EXPIRY_MS)
+  await prisma.$transaction([
+    prisma.solicitudDeViaje.updateMany({
+      where: { pasajeroId, estado: "BUSCANDO_CONDUCTOR", buscandoConductorDesde: { lt: cutoff } },
+      data: { estado: "EXPIRADA_SIN_ACEPTACION" },
+    }),
+    prisma.solicitudDeViaje.updateMany({
+      where: { pasajeroId, estado: "BUSCANDO_CONDUCTOR", buscandoConductorDesde: null, creadaEn: { lt: cutoff } },
+      data: { estado: "EXPIRADA_SIN_ACEPTACION" },
+    }),
+  ])
 }
 
 export async function getActiveSolicitudByPasajeroId(pasajeroId: string) {

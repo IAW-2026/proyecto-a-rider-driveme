@@ -13,18 +13,20 @@ export async function POST(
   const body = await req.json()
   const { estado_actual } = body
 
-  if (!["EN_CURSO", "FINALIZADO"].includes(estado_actual)) {
+  if (!["EN_CURSO", "FINALIZADO", "CANCELADO_POR_CONDUCTOR"].includes(estado_actual)) {
     return NextResponse.json({ error: "Estado inválido" }, { status: 400 })
   }
 
-  const viaje = await prisma.viaje.findUnique({ where: { id: id_viaje } })
+  const viaje = await prisma.viaje.findFirst({
+    where: { OR: [{ id: id_viaje }, { idViajeDriver: id_viaje }] },
+  })
 
   if (!viaje) {
     return NextResponse.json({ error: "Viaje no encontrado" }, { status: 404 })
   }
 
   await prisma.viaje.update({
-    where: { id: id_viaje },
+    where: { id: viaje.id },
     data: { estadoActual: estado_actual },
   })
 
