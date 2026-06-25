@@ -322,7 +322,7 @@ export default function QuickTripForm({ tieneMercadoPago = false }: { tieneMerca
             <AutocompleteAddress
               label="¿A dónde vas?"
               placeholder="Palermo Soho, Buenos Aires"
-              initial=""
+              initial={destinoAddress}
               required
               hasError={destinoVacio}
               onChange={(val) => {

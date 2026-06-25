@@ -29,6 +29,39 @@ async function expireOldSolicitudesByPasajeroId(pasajeroId: string) {
   ])
 }
 
+/**
+ * Si la solicitud está en PENDIENTE_PAGO, consulta la Payments App para ver
+ * si el pago fue rechazado/capturado antes de que llegue el webhook.
+ * Si resultó rechazado, la marca como PAGO_RECHAZADO en la BD y devuelve null
+ * para que el pasajero pueda pedir otro viaje de inmediato.
+ */
+async function resolverEstadoPago(solicitud: { id: string; estado: EstadoSolicitud; metodoPago: string }) {
+  if (solicitud.estado !== "PENDIENTE_PAGO" || solicitud.metodoPago !== "MERCADO_PAGO") {
+    return solicitud.estado
+  }
+
+  try {
+    const { obtenerTransaccionViaje } = await import("@/lib/payments")
+    const txInfo = await obtenerTransaccionViaje(solicitud.id)
+
+    if (txInfo && (txInfo.estado === "CAPTURED" || txInfo.estado === "FAILED")) {
+      const nuevoEstado = txInfo.estado === "CAPTURED" ? "BUSCANDO_CONDUCTOR" : "PAGO_RECHAZADO"
+      await prisma.solicitudDeViaje.updateMany({
+        where: { id: solicitud.id, estado: "PENDIENTE_PAGO" },
+        data: {
+          estado: nuevoEstado,
+          ...(nuevoEstado === "BUSCANDO_CONDUCTOR" ? { buscandoConductorDesde: new Date() } : {}),
+        },
+      })
+      return nuevoEstado
+    }
+  } catch {
+    // Payments App no disponible — conservamos PENDIENTE_PAGO
+  }
+
+  return "PENDIENTE_PAGO"
+}
+
 export async function getActiveSolicitudByPasajeroId(pasajeroId: string) {
   await expireOldSolicitudesByPasajeroId(pasajeroId)
 
@@ -50,8 +83,28 @@ export async function getActiveSolicitudByPasajeroId(pasajeroId: string) {
   })
 
   if (!solicitud || !solicitudSigueActiva(solicitud)) return null
+
+  // Si está esperando pago, verificar con Payments App si ya fue resuelto
+  if (solicitud.estado === "PENDIENTE_PAGO") {
+    const estadoReal = await resolverEstadoPago({
+      id: solicitud.id,
+      estado: solicitud.estado,
+      metodoPago: solicitud.metodoPago,
+    })
+    // Si fue rechazado o capturado (y ya quedó como BUSCANDO_CONDUCTOR),
+    // refrescamos desde la BD para devolver el estado actualizado
+    if (estadoReal === "PAGO_RECHAZADO") return null
+    if (estadoReal === "BUSCANDO_CONDUCTOR") {
+      return prisma.solicitudDeViaje.findUnique({
+        where: { id: solicitud.id },
+        include: { viaje: { select: { id: true, estadoActual: true, idConductor: true } } },
+      })
+    }
+  }
+
   return solicitud
 }
+
 
 export async function getActiveSolicitudByClerkId(clerkId: string) {
   const pasajero = await prisma.pasajero.findUnique({

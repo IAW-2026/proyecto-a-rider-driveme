@@ -26,6 +26,16 @@ export default function AutocompleteAddress({
   const [hasSelection, setHasSelection] = useState(false)
   const timer = useRef<number | null>(null)
 
+  // Sync input when parent changes `initial` after mount (e.g., from a saved place)
+  useEffect(() => {
+    if (initial) {
+      setQ(initial)
+      setHasSelection(true)
+      setSuggestions([])
+      setOpen(false)
+    }
+  }, [initial])
+
   useEffect(() => {
     if (timer.current) window.clearTimeout(timer.current)
     if (!q || q.trim().length < 2) {

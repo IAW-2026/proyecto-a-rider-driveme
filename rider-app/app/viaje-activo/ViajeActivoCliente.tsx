@@ -92,16 +92,6 @@ export default function ViajeActivoCliente({
   const feedbackGuardado = useLocalStorageValue(viajeId ? `feedback_viaje_${viajeId}` : null)
   const feedbackYaDado = feedbackGuardado === "1"
 
-  // Redirección automática de 1 minuto para la pantalla de éxito post-feedback
-  useEffect(() => {
-    if (liveViajeEstado === "FINALIZADO" && (feedbackEnviado || feedbackYaDado)) {
-      const timer = setTimeout(() => {
-        router.push("/inicio")
-      }, 60000) // 1 minuto
-      return () => clearTimeout(timer)
-    }
-  }, [liveViajeEstado, feedbackEnviado, feedbackYaDado, router])
-
   // mounted guard para evitar flash de hidratación en el modal
   const mounted = useIsClient()
 
@@ -109,15 +99,6 @@ export default function ViajeActivoCliente({
   // polling para detectar confirmación de pago MP (solo cuando PENDIENTE_PAGO)
   const searchParams = useSearchParams()
   const [pagoRechazado, setPagoRechazado] = useState(false)
-  
-  useEffect(() => {
-    if (pagoRechazado) {
-      const redirectTimer = setTimeout(() => {
-        router.push("/inicio")
-      }, 5000)
-      return () => clearTimeout(redirectTimer)
-    }
-  }, [pagoRechazado, router])
 
   useEffect(() => {
     // Fallback: si Mercado Pago redirige de vuelta con status de rechazo y el webhook tarda

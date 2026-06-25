@@ -113,9 +113,21 @@ export async function PATCH(
     return NextResponse.json({ id_solicitud: solicitud.id, estado: solicitud.estado })
   }
 
-  // Cambiar estado (cancelación o expiración)
-  if (estado !== "CANCELADA_POR_PASAJERO" && estado !== "EXPIRADA_SIN_ACEPTACION") {
+  // Cambiar estado (cancelación, expiración o pago rechazado)
+  if (estado !== "CANCELADA_POR_PASAJERO" && estado !== "EXPIRADA_SIN_ACEPTACION" && estado !== "PAGO_RECHAZADO") {
     return NextResponse.json({ error: "Estado inválido" }, { status: 400 })
+  }
+
+  // PAGO_RECHAZADO: solo válido cuando está en PENDIENTE_PAGO
+  if (estado === "PAGO_RECHAZADO") {
+    if (solicitud.estado !== "PENDIENTE_PAGO") {
+      return NextResponse.json({ error: "La solicitud no está en estado PENDIENTE_PAGO" }, { status: 409 })
+    }
+    const actualizada = await prisma.solicitudDeViaje.update({
+      where: { id: id_solicitud },
+      data: { estado: "PAGO_RECHAZADO" },
+    })
+    return NextResponse.json({ id_solicitud: actualizada.id, estado: actualizada.estado })
   }
 
   if (solicitud.estado !== "BUSCANDO_CONDUCTOR") {
