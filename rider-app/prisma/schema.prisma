@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Pasajero {
+  id             String               @id @default(uuid())
+  publicId       String?              @unique
+  clerkId        String               @unique
+  nombre         String
+  email          String               @unique
+  telefono       String?
+  ratingPromedio     Decimal              @default(0) @db.Decimal(3,2)
+  comentarioPromedio String?
+  activo             Boolean              @default(true)
+  tieneMercadoPago   Boolean              @default(false)
+  solicitudes        SolicitudDeViaje[]
+  direcciones    DireccionFrecuente[]
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+}
+
+model SolicitudDeViaje {
+  id                   String          @id @default(uuid())
+  pasajeroId           String
+  origenLat            Float
+  origenLng            Float
+  origenDireccion      String?
+  destinoLat           Float?
+  destinoLng           Float?
+  destinoDireccion     String?
+  precioEstimadoCents  Int?
+  metodoPago               MetodoPago
+  estado                   EstadoSolicitud @default(BUSCANDO_CONDUCTOR)
+  comentarioExpiracion     String?
+  creadaEn                 DateTime        @default(now())
+  buscandoConductorDesde   DateTime?
+  pasajero             Pasajero        @relation(fields: [pasajeroId], references: [id])
+  viaje                Viaje?
+  transacciones        Transaccion[]
+
+  @@index([pasajeroId])
+}
+
+model Viaje {
+  id                String           @id @default(uuid())
+  solicitudId       String           @unique
+  idViajeDriver     String?          @unique
+  idConductor       String?
+  idVehiculo        String?
+  latitudActual     Float?
+  longitudActual    Float?
+  estadoActual      EstadoViaje
+  patente                     String?
+  puntajePromedioConductor    Decimal?
+  comentarioPromedioConductor String?
+  idCalificacion         String?
+  puntajeCalificacion    Int?
+  comentarioCalificacion String?
+  solicitud              SolicitudDeViaje @relation(fields: [solicitudId], references: [id])
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+}
+
+model Transaccion {
+  id            String   @id @default(uuid())
+  solicitudId   String
+  idTransaccion String
+  estado        String   // "CAPTURED" | "FAILED"
+  monto         Int      // en cents
+  solicitud     SolicitudDeViaje @relation(fields: [solicitudId], references: [id])
+  createdAt     DateTime @default(now())
+
+  @@index([solicitudId])
+}
+
+model DireccionFrecuente {
+  id         String   @id @default(uuid())
+  pasajeroId String
+  nombre     String
+  direccion  String?
+  latitud    Float
+  longitud   Float
+  pasajero   Pasajero @relation(fields: [pasajeroId], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@index([pasajeroId])
+}
+
+enum EstadoSolicitud {
+  PENDIENTE_PAGO
+  BUSCANDO_CONDUCTOR
+  ACEPTADA
+  CANCELADA_POR_PASAJERO
+  EXPIRADA_SIN_ACEPTACION
+  PAGO_RECHAZADO
+}
+
+enum EstadoViaje {
+  ACEPTADO
+  EN_CURSO
+  FINALIZADO
+  CANCELADO_POR_CONDUCTOR
+}
+
+enum MetodoPago {
+  EFECTIVO
+  MERCADO_PAGO
+}
