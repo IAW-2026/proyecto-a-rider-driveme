@@ -5,6 +5,7 @@ import { AppHeader } from "../components/AppHeader"
 import GalaxyCard from "../components/GalaxyCard"
 import QuickTripForm from "./QuickTripForm"
 import SavedPlaces from "./SavedPlaces"
+import CancelarPagoCard from "./CancelarPagoCard"
 import { getActiveSolicitudByClerkId } from "@/lib/activeSolicitud"
 import { requirePasajeroActivo } from "@/lib/requirePasajeroActivo"
 import { prisma } from "@/lib/prisma"
@@ -53,7 +54,9 @@ export default async function InicioPage() {
           <div className="flex flex-col lg:flex-row gap-6">
             {/* Left Column */}
             <div className="flex-1 space-y-4">
-              {solicitudActiva ? (
+              {solicitudActiva?.estado === "PENDIENTE_PAGO" ? (
+                <CancelarPagoCard solicitudId={solicitudActiva.id} />
+              ) : solicitudActiva ? (
                 <div className="holo-border rounded-xl p-8 text-center space-y-4 relative overflow-hidden scan-lines">
                   <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-glow-red/50 rounded-tl-xl" />
                   <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-glow-red/50 rounded-tr-xl" />
