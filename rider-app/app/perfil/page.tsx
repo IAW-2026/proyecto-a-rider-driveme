@@ -78,6 +78,17 @@ export default async function PerfilPage() {
     .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0]?.comentario;
   const comentarioAMostrar = pasajero.comentarioPromedio || latestComment || null;
 
+  // Sincronizar con la BD si hay datos más frescos (fallback para Driver App)
+  if ((rating > 0 && rating !== dbRating) || (comentarioAMostrar && comentarioAMostrar !== pasajero.comentarioPromedio)) {
+    await prisma.pasajero.update({
+      where: { id: pasajero.id },
+      data: {
+        ratingPromedio: rating,
+        comentarioPromedio: comentarioAMostrar
+      }
+    }).catch(() => null)
+  }
+
   const rank = getImperialRank(misionesCompletadas)
   const rankProgress = getRankProgress(misionesCompletadas, rank)
 

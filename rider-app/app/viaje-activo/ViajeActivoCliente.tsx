@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useSyncExternalStore } from "react"
 import { useLocalStorageValue } from "@/lib/useLocalStorage"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import dynamic from "next/dynamic"
 import { AppHeader } from "../components/AppHeader"
@@ -96,8 +96,26 @@ export default function ViajeActivoCliente({
 
 
   // polling para detectar confirmación de pago MP (solo cuando PENDIENTE_PAGO)
+  const searchParams = useSearchParams()
   const [pagoRechazado, setPagoRechazado] = useState(false)
+  
   useEffect(() => {
+    if (pagoRechazado) {
+      const redirectTimer = setTimeout(() => {
+        router.push("/inicio")
+      }, 5000)
+      return () => clearTimeout(redirectTimer)
+    }
+  }, [pagoRechazado, router])
+
+  useEffect(() => {
+    // Fallback: si Mercado Pago redirige de vuelta con status de rechazo y el webhook tarda
+    const statusParam = searchParams.get("status")
+    const collectionStatus = searchParams.get("collection_status")
+    if (estado === "PENDIENTE_PAGO" && (statusParam === "null" || statusParam === "rejected" || statusParam === "failure" || collectionStatus === "rejected")) {
+      setPagoRechazado(true)
+    }
+
     if (estado !== "PENDIENTE_PAGO") return
     async function pollPago() {
       try {
@@ -114,7 +132,7 @@ export default function ViajeActivoCliente({
     pollPago()
     const interval = setInterval(pollPago, 3000)
     return () => clearInterval(interval)
-  }, [estado, solicitudId, router])
+  }, [estado, solicitudId, router, searchParams])
 
   // feedback post-CANCELADO_POR_CONDUCTOR
   const [comentarioCancelacion, setComentarioCancelacion] = useState("")
@@ -190,6 +208,30 @@ export default function ViajeActivoCliente({
   }, [esBuscando, buscandoConductorDesde])
 
   const isExpired = esBuscando && elapsed >= EXPIRY_SECONDS
+
+  // ─── POLLING AL ESTADO DE LA SOLICITUD (Buscando Conductor) ──────────────
+  useEffect(() => {
+    if (!esBuscando || isExpired) return
+    let isCancelled = false
+
+    async function pollSolicitud() {
+      if (isCancelled) return
+      try {
+        const res = await fetch(`/api/solicitudes/${solicitudId}`, { cache: "no-store" })
+        if (!res.ok) return
+        const data = await res.json()
+        if (data.estado !== "BUSCANDO_CONDUCTOR" && !isCancelled) {
+          router.refresh()
+        }
+      } catch {}
+    }
+
+    const intervalId = setInterval(pollSolicitud, 3000)
+    return () => {
+      isCancelled = true
+      clearInterval(intervalId)
+    }
+  }, [esBuscando, isExpired, solicitudId, router])
 
   useEffect(() => {
     if (!isExpired) return

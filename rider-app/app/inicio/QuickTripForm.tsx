@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import dynamic from "next/dynamic"
 import { Navigation, MapPin, Banknote, CreditCard, ChevronDown, Rocket, Plus } from "lucide-react"
 import AutocompleteAddress from "@/components/AutocompleteAddress"
@@ -16,11 +16,25 @@ type Coords = { lat: number; lng: number }
 
 export default function QuickTripForm({ tieneMercadoPago = false }: { tieneMercadoPago?: boolean }) {
   const router = useRouter()
+  const searchParams = useSearchParams()
+
   // Selected (validated) values — only set via onSelect
   const [origenAddress, setOrigenAddress] = useState("")
   const [origenCoords, setOrigenCoords] = useState<Coords | null>(null)
   const [destinoAddress, setDestinoAddress] = useState("")
   const [destinoCoords, setDestinoCoords] = useState<Coords | null>(null)
+
+  useEffect(() => {
+    const dDir = searchParams.get("destinoDir")
+    const dLat = searchParams.get("destinoLat")
+    const dLng = searchParams.get("destinoLng")
+    if (dDir && dLat && dLng) {
+      setDestinoAddress(dDir)
+      setDestinoCoords({ lat: parseFloat(dLat), lng: parseFloat(dLng) })
+      // Auto-unlock origen so it can be typed after clicking a favorite destination
+      setOrigenHasText(true) 
+    }
+  }, [searchParams])
   // Tracks what the user has typed to control the "unlock" of destino
   const [origenHasText, setOrigenHasText] = useState(false)
   const [metodoPago, setMetodoPago] = useState<MetodoPago>("EFECTIVO")

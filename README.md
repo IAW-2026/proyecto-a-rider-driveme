@@ -15,24 +15,22 @@
 | Campo | Valor |
 |-------|-------|
 | Usuario | `riderdemo` |
-| Email | `rider+clerk_test@example.com` |
+| Email | `rider+clerk_test@iaw.com` |
 | Contraseña | `iawuser#` |
 | Código de verificación | `424242` |
 
-La cuenta tiene datos precargados para facilitar la evaluación:
+La cuenta fue limpiada para facilitar la evaluación de flujos completos desde cero:
 
-- **Historial con paginación**: 13 viajes finalizados/cancelados/expirados → el historial se divide en 2 páginas (límite de 8 por página). El buscador filtra por origen o destino con `?q=` en la URL.
-- **Calificaciones a conductores**: viajes finalizados con puntaje variado (5★, 4★, 3★, 2★), algunos con comentario y otros sin él.
-- **Viaje activo en curso**: hay un viaje en estado `EN_CURSO` asociado a esta cuenta.
-- **Todos los estados**: la cuenta incluye viajes en estado completado, cancelado por el pasajero, cancelado por el conductor y expirado sin conductor.
-- **Direcciones frecuentes**: 3 direcciones guardadas (Casa, Trabajo, Gym) visibles en el perfil.
+- **Historial**: Hay viajes existentes para ver el historial, pero no hay viajes activos ni pendientes de pago. Esto permite probar el flujo completo de creación de viaje sin contaminación de datos de prueba.
+- **Sin viaje activo**: La cuenta está lista para solicitar un nuevo viaje.
+- **Direcciones frecuentes**: 2 direcciones guardadas (Casa, Gym) visibles en el perfil para facilitar pedir el viaje.
 
 ### Administrador
 
 | Campo | Valor |
 |-------|-------|
 | Usuario | `admindemo` |
-| Email | `admin+clerk_test@example.com` |
+| Email | `admin+clerk_test@iaw.com` |
 | Contraseña | `iawuser#` |
 | Código de verificación | `424242` |
 

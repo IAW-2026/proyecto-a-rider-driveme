@@ -25,6 +25,9 @@ const orbitron = Orbitron({
 export const metadata: Metadata = {
   title: "DriveMe | Viajes Interestelares",
   description: "Tu app de viajes con estilo galáctico. Viaja a cualquier rincón de la galaxia.",
+  icons: {
+    icon: "/icon.png",
+  },
 };
 
 export default function RootLayout({

@@ -60,7 +60,7 @@ export default function SavedPlaces({ lugares }: { lugares: Direccion[] }) {
             key={lugar.id}
             type="button"
             onClick={() =>
-              router.push("/inicio")
+              router.push(`/inicio?destinoDir=${encodeURIComponent(lugar.direccion || lugar.nombre)}&destinoLat=${lugar.latitud}&destinoLng=${lugar.longitud}`)
             }
             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl holo-border hover:bg-primary/5 transition-colors text-left cursor-pointer"
           >

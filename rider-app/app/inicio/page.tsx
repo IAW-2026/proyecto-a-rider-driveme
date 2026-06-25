@@ -1,3 +1,4 @@
+import { Suspense } from "react"
 import Link from "next/link"
 import { TrendingUp } from "lucide-react"
 import { AppHeader } from "../components/AppHeader"
@@ -81,7 +82,9 @@ export default async function InicioPage() {
                 </div>
               ) : (
                 <>
-                  <QuickTripForm tieneMercadoPago={pasajero.tieneMercadoPago} />
+                  <Suspense fallback={<div className="h-48 rounded-xl holo-border flex items-center justify-center scan-lines"><div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div></div>}>
+                    <QuickTripForm tieneMercadoPago={pasajero.tieneMercadoPago} />
+                  </Suspense>
                   <SavedPlaces lugares={direcciones} />
                 </>
               )}
