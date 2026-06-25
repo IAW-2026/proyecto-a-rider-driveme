@@ -114,6 +114,12 @@ export default function ViajeActivoCliente({
     const collectionStatus = searchParams.get("collection_status")
     if (estado === "PENDIENTE_PAGO" && (statusParam === "null" || statusParam === "rejected" || statusParam === "failure" || collectionStatus === "rejected")) {
       setPagoRechazado(true)
+      // Avisarle al backend para que no quede colgado en PENDIENTE_PAGO
+      fetch(`/api/solicitudes/${solicitudId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ estado: "PAGO_RECHAZADO" }),
+      }).catch(() => {})
     }
 
     if (estado !== "PENDIENTE_PAGO") return

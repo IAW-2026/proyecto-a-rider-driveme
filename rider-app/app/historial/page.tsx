@@ -11,6 +11,8 @@ const LIMIT = 8
 function getEstadoBadge(estado: string, viajeEstado: string | null | undefined) {
   if (estado === "CANCELADA_POR_PASAJERO")
     return { label: "Misión abortada", className: "border-destructive/30 bg-destructive/10 text-destructive-foreground" }
+  if (estado === "PAGO_RECHAZADO")
+    return { label: "Pago rechazado", className: "border-destructive/30 bg-destructive/10 text-destructive-foreground glow-red" }
   if (estado === "ACEPTADA") {
     if (viajeEstado === "FINALIZADO")
       return { label: "Misión completada", className: "border-accent/30 bg-accent/10 text-accent" }
@@ -40,6 +42,7 @@ export default async function HistorialPage({
     OR: [
       { estado: "CANCELADA_POR_PASAJERO" },
       { estado: "EXPIRADA_SIN_ACEPTACION" },
+      { estado: "PAGO_RECHAZADO" },
       {
         estado: "ACEPTADA",
         viaje: {

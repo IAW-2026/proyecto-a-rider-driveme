@@ -11,6 +11,9 @@ function getBadge(estado: string, viajeEstado: string | null | undefined) {
   if (estado === "CANCELADA_POR_PASAJERO") {
     return { label: "Cancelaste este viaje", className: "border-destructive/30 bg-destructive/10 text-destructive-foreground" }
   }
+  if (estado === "PAGO_RECHAZADO") {
+    return { label: "Pago rechazado", className: "border-destructive/30 bg-destructive/10 text-destructive-foreground glow-red" }
+  }
   if (estado === "EXPIRADA_SIN_ACEPTACION") {
     return { label: "Sin conductor disponible", className: "border-yellow-500/30 bg-yellow-500/10 text-yellow-200" }
   }
@@ -73,8 +76,9 @@ export default async function HistorialDetallePage({
   const esCanceladoPorConductor = solicitud.estado === "ACEPTADA" && solicitud.viaje?.estadoActual === "CANCELADO_POR_CONDUCTOR"
   const esCanceladoPorPasajero = solicitud.estado === "CANCELADA_POR_PASAJERO"
   const esExpirada = solicitud.estado === "EXPIRADA_SIN_ACEPTACION"
+  const esPagoRechazado = solicitud.estado === "PAGO_RECHAZADO"
 
-  if (!esViajeFinalizado && !esCanceladoPorConductor && !esCanceladoPorPasajero && !esExpirada) {
+  if (!esViajeFinalizado && !esCanceladoPorConductor && !esCanceladoPorPasajero && !esExpirada && !esPagoRechazado) {
     redirect("/historial")
   }
 
