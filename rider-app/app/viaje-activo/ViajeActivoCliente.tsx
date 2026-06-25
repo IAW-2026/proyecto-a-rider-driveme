@@ -95,6 +95,27 @@ export default function ViajeActivoCliente({
   const mounted = useIsClient()
 
 
+  // polling para detectar confirmación de pago MP (solo cuando PENDIENTE_PAGO)
+  const [pagoRechazado, setPagoRechazado] = useState(false)
+  useEffect(() => {
+    if (estado !== "PENDIENTE_PAGO") return
+    async function pollPago() {
+      try {
+        const res = await fetch(`/api/solicitudes/${solicitudId}`)
+        if (!res.ok) return
+        const data = await res.json()
+        if (data.estado === "BUSCANDO_CONDUCTOR") {
+          router.refresh()
+        } else if (data.estado === "PAGO_RECHAZADO") {
+          setPagoRechazado(true)
+        }
+      } catch {}
+    }
+    pollPago()
+    const interval = setInterval(pollPago, 3000)
+    return () => clearInterval(interval)
+  }, [estado, solicitudId, router])
+
   // feedback post-CANCELADO_POR_CONDUCTOR
   const [comentarioCancelacion, setComentarioCancelacion] = useState("")
   const [cancelFeedbackLoading, setCancelFeedbackLoading] = useState(false)
@@ -221,6 +242,64 @@ export default function ViajeActivoCliente({
       setError("Error de conexión.")
       setCancelando(false)
     }
+  }
+
+  // ─── PENDIENTE DE PAGO MP ────────────────────────────────────────────────
+  if (estado === "PENDIENTE_PAGO") {
+    return (
+      <div className="min-h-screen bg-background stars-bg relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/30 to-background pointer-events-none" />
+        <div className="relative z-10 flex flex-col min-h-screen">
+          <AppHeader />
+          <main className="flex-1 flex items-center justify-center px-4 py-6">
+            <div className="w-full max-w-md holo-border rounded-xl p-8 text-center space-y-5 relative overflow-hidden scan-lines">
+              <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-primary/50 rounded-tl-xl" />
+              <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-primary/50 rounded-tr-xl" />
+              <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-primary/50 rounded-bl-xl" />
+              <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-primary/50 rounded-br-xl" />
+
+              {pagoRechazado ? (
+                <>
+                  <div className="w-16 h-16 mx-auto rounded-full bg-destructive/20 flex items-center justify-center text-2xl text-destructive glow-red">✕</div>
+                  <h1 className="text-xl font-bold text-foreground" style={{ fontFamily: "var(--font-orbitron)" }}>
+                    PAGO RECHAZADO
+                  </h1>
+                  <p className="text-sm text-muted-foreground">
+                    No pudimos confirmar tu pago. Podés intentar de nuevo.
+                  </p>
+                  <Link
+                    href="/inicio"
+                    className="inline-flex w-full h-12 items-center justify-center rounded-full bg-glow-red text-white text-sm font-semibold glow-red transition hover:brightness-110"
+                    style={{ fontFamily: "var(--font-orbitron)", letterSpacing: "0.05em" }}
+                  >
+                    VOLVER AL INICIO
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <div className="flex justify-center">
+                    <div className="w-14 h-14 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+                  </div>
+                  <h1 className="text-xl font-bold text-foreground" style={{ fontFamily: "var(--font-orbitron)" }}>
+                    PROCESANDO PAGO
+                  </h1>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Estamos confirmando tu transacción con Mercado Pago. En cuanto se acredite, te buscamos un conductor.
+                  </p>
+                  <div className="flex items-center justify-center gap-2 text-xs text-primary/60">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+                    </span>
+                    Verificando con Mercado Pago…
+                  </div>
+                </>
+              )}
+            </div>
+          </main>
+        </div>
+      </div>
+    )
   }
 
   // ─── CANCELADO POR CONDUCTOR ──────────────────────────────────────────────

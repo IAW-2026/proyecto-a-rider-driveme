@@ -1,9 +1,10 @@
 import { EstadoSolicitud, EstadoViaje } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
 
-const SOLICITUDES_ACTIVAS: EstadoSolicitud[] = ["BUSCANDO_CONDUCTOR", "ACEPTADA"]
+const SOLICITUDES_ACTIVAS: EstadoSolicitud[] = ["PENDIENTE_PAGO", "BUSCANDO_CONDUCTOR", "ACEPTADA"]
 const VIAJES_TERMINADOS: EstadoViaje[] = ["FINALIZADO", "CANCELADO_POR_CONDUCTOR"]
 const EXPIRY_MS = 2 * 60 * 1000 // 2 minutos
+const PP_EXPIRY_MS = 15 * 60 * 1000 // 15 minutos para pagos abandonados
 
 function solicitudSigueActiva(solicitud: { viaje: { estadoActual: EstadoViaje } | null }) {
   return !solicitud.viaje || !VIAJES_TERMINADOS.includes(solicitud.viaje.estadoActual)
@@ -11,6 +12,7 @@ function solicitudSigueActiva(solicitud: { viaje: { estadoActual: EstadoViaje } 
 
 async function expireOldSolicitudesByPasajeroId(pasajeroId: string) {
   const cutoff = new Date(Date.now() - EXPIRY_MS)
+  const ppCutoff = new Date(Date.now() - PP_EXPIRY_MS)
   await prisma.$transaction([
     prisma.solicitudDeViaje.updateMany({
       where: { pasajeroId, estado: "BUSCANDO_CONDUCTOR", buscandoConductorDesde: { lt: cutoff } },
@@ -19,6 +21,10 @@ async function expireOldSolicitudesByPasajeroId(pasajeroId: string) {
     prisma.solicitudDeViaje.updateMany({
       where: { pasajeroId, estado: "BUSCANDO_CONDUCTOR", buscandoConductorDesde: null, creadaEn: { lt: cutoff } },
       data: { estado: "EXPIRADA_SIN_ACEPTACION" },
+    }),
+    prisma.solicitudDeViaje.updateMany({
+      where: { pasajeroId, estado: "PENDIENTE_PAGO", creadaEn: { lt: ppCutoff } },
+      data: { estado: "PAGO_RECHAZADO" },
     }),
   ])
 }
