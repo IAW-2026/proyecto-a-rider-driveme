@@ -48,8 +48,8 @@ function getFeedbackBaseUrl() {
 function buildFeedbackHeaders() {
   const headers: Record<string, string> = { "Content-Type": "application/json" }
 
-  if (process.env.FEEDBACK_SERVICE_SECRET) {
-    headers["x-api-key"] = process.env.FEEDBACK_SERVICE_SECRET
+  if (process.env.RIDER_SERVICE_SECRET) {
+    headers["x-api-key"] = process.env.RIDER_SERVICE_SECRET
   }
 
   return headers

@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import ToggleActivoPasajero from "@/app/components/ToggleActivoPasajero"
+import EliminarPasajero from "@/app/components/EliminarPasajero"
 
 function getBadgeSolicitud(estado: string, viajeEstado: string | null | undefined) {
   if (estado === "BUSCANDO_CONDUCTOR") return { label: "Buscando conductor", className: "border-yellow-500/30 bg-yellow-500/10 text-yellow-300" }
@@ -75,6 +76,7 @@ export default async function AdminPasajeroDetallePage({
             {pasajero.activo ? "Activo" : "Inactivo"}
           </span>
           <ToggleActivoPasajero id={pasajero.id} activo={pasajero.activo} />
+          <EliminarPasajero id={pasajero.id} />
         </div>
       </div>
 

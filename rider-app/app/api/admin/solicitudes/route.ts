@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { requireRole } from "@/lib/auth"
+import { requireRole, requireM2MToken } from "@/lib/auth"
 import { Prisma } from "@prisma/client"
 
 export async function GET(req: NextRequest) {
-  const auth = await requireRole("admin")
-  if ("error" in auth) return auth.error
+  const isM2M = requireM2MToken(req) === null
+  if (!isM2M) {
+    const auth = await requireRole("admin")
+    if ("error" in auth) return auth.error
+  }
 
   const { searchParams } = new URL(req.url)
   const q = searchParams.get("q") ?? ""

@@ -60,7 +60,7 @@ export default function Home() {
             }`}
           >
             <Image
-              src="/vader1.png"
+              src="/vader1.webp"
               alt="Vader"
               width={960}
               height={960}

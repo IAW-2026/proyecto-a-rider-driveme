@@ -1,10 +1,10 @@
 const SHIPS = [
-  { src: "/TIE.png",    anim: "ship-ltr",         top: "13%", dur: 24, delay:  0, w: 108 },
-  { src: "/X-WING.png", anim: "ship-rtl-noflip",  top: "44%", dur: 32, delay:  9, w: 88  },
-  { src: "/TIE.png",    anim: "ship-ltr",          top: "71%", dur: 27, delay: 17, w: 98  },
-  { src: "/X-WING.png", anim: "ship-rtl-noflip",  top: "25%", dur: 39, delay: 24, w: 80  },
-  { src: "/TIE.png",    anim: "ship-rtl",          top: "83%", dur: 21, delay:  5, w: 92  },
-  { src: "/X-WING.png", anim: "ship-ltr-flip",    top: "58%", dur: 35, delay: 13, w: 76  },
+  { src: "/TIE.webp",    anim: "ship-ltr",         top: "13%", dur: 24, delay:  0, w: 108 },
+  { src: "/X-WING.webp", anim: "ship-rtl-noflip",  top: "44%", dur: 32, delay:  9, w: 88  },
+  { src: "/TIE.webp",    anim: "ship-ltr",          top: "71%", dur: 27, delay: 17, w: 98  },
+  { src: "/X-WING.webp", anim: "ship-rtl-noflip",  top: "25%", dur: 39, delay: 24, w: 80  },
+  { src: "/TIE.webp",    anim: "ship-rtl",          top: "83%", dur: 21, delay:  5, w: 92  },
+  { src: "/X-WING.webp", anim: "ship-ltr-flip",    top: "58%", dur: 35, delay: 13, w: 76  },
 ] as const
 
 export function SpaceshipLayer() {
