@@ -52,7 +52,9 @@ El panel de administración está disponible en `/admin` — solo accesible con 
 
 DriveMe Rider es la aplicación web para pasajeros de DriveMe, una plataforma de viajes compartidos con temática de Star Wars. Los pasajeros pueden solicitar viajes, seguir el estado en tiempo real desde un mapa interactivo, consultar su historial, calificar a los conductores y gestionar sus direcciones frecuentes.
 
-La app se integra con el servicio de conductores (Driver App) a través de una API REST inter-servicio autenticada con tokens M2M. El estado del viaje activo se actualiza en tiempo real mediante WebSocket, de modo que el pasajero ve la posición del conductor en el mapa sin necesidad de recargar la página.
+En la Etapa 3 la app se integró con el resto del sistema mediante APIs REST inter-servicio autenticadas con tokens M2M: se conecta con la Driver App (solicitudes y viajes), la Payments App (pagos), la Feedback App (calificaciones), y expone datos al Control Plane y al Analytics Dashboard. El estado del viaje activo se actualiza en tiempo real mediante WebSocket, de modo que el pasajero ve la posición del conductor en el mapa sin necesidad de recargar la página.
+
+**Flujo de pago:** en efectivo, la solicitud se crea directamente en estado `BUSCANDO_CONDUCTOR`. Con Mercado Pago, el pago se confirma *antes* de buscar conductor: la solicitud se crea en estado `PENDIENTE_PAGO` (invisible para los conductores) y, cuando Payments confirma el pago, pasa a `BUSCANDO_CONDUCTOR` y queda disponible para la Driver App.
 
 El panel de administración permite a los operadores gestionar cuentas de pasajeros (activar/desactivar), revisar el historial completo de solicitudes y viajes, y simular cambios de estado para testing. Está pensado principalmente para uso en desktop.
 
@@ -73,4 +75,4 @@ npm install
 npm run dev
 ```
 
-Requiere las variables de entorno de `.env.local` (Clerk, base de datos PostgreSQL).
+Requiere las variables de entorno de `.env.local` (Clerk, base de datos PostgreSQL, URLs y tokens de servicio de las otras apps).
