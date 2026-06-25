@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { requireRole } from "@/lib/auth"
+import { obtenerTransaccionViaje } from "@/lib/payments"
 
 export async function GET(
   _req: NextRequest,
@@ -24,9 +25,43 @@ export async function GET(
     return NextResponse.json({ error: "Sin permisos sobre esta solicitud" }, { status: 403 })
   }
 
+  // Fallback: si notifyRider falló, consultamos el estado real a Payments App
+  let estadoFinal = solicitud.estado
+  if (solicitud.estado === "PENDIENTE_PAGO" && solicitud.metodoPago === "MERCADO_PAGO") {
+    try {
+      const txInfo = await obtenerTransaccionViaje(solicitud.id)
+      if (txInfo && (txInfo.estado === "CAPTURED" || txInfo.estado === "FAILED")) {
+        const nuevoEstado = txInfo.estado === "CAPTURED" ? "BUSCANDO_CONDUCTOR" : "PAGO_RECHAZADO"
+        const updated = await prisma.solicitudDeViaje.updateMany({
+          where: { id: solicitud.id, estado: "PENDIENTE_PAGO" },
+          data: {
+            estado: nuevoEstado,
+            ...(nuevoEstado === "BUSCANDO_CONDUCTOR" ? { buscandoConductorDesde: new Date() } : {}),
+          },
+        })
+        if (updated.count > 0) {
+          estadoFinal = nuevoEstado
+          const existente = await prisma.transaccion.findFirst({ where: { solicitudId: solicitud.id } })
+          if (!existente) {
+            await prisma.transaccion.create({
+              data: {
+                solicitudId: solicitud.id,
+                idTransaccion: txInfo.idTransaccion,
+                estado: txInfo.estado,
+                monto: Math.round(txInfo.monto * 100),
+              },
+            })
+          }
+        }
+      }
+    } catch {
+      // Si Payments App no está disponible, devolvemos el estado actual sin error
+    }
+  }
+
   return NextResponse.json({
     id_solicitud: solicitud.id,
-    estado: solicitud.estado,
+    estado: estadoFinal,
     id_pasajero: solicitud.pasajero.publicId ?? solicitud.pasajero.id,
     origen: { direccion: solicitud.origenDireccion, lat: solicitud.origenLat, lng: solicitud.origenLng },
     destino: { direccion: solicitud.destinoDireccion, lat: solicitud.destinoLat, lng: solicitud.destinoLng },
