@@ -250,7 +250,7 @@ export default function ViajeActivoCliente({
       <div className="min-h-screen bg-background stars-bg relative">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/30 to-background pointer-events-none" />
         <div className="relative z-10 flex flex-col min-h-screen">
-          <AppHeader />
+          <AppHeader defaultName={nombrePasajero.split(" ")[0]} />
           <main className="flex-1 flex items-center justify-center px-4 py-6">
             <div className="w-full max-w-md holo-border rounded-xl p-8 text-center space-y-5 relative overflow-hidden scan-lines">
               <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-primary/50 rounded-tl-xl" />
@@ -308,7 +308,7 @@ export default function ViajeActivoCliente({
       <div className="min-h-screen bg-background stars-bg relative">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/30 to-background pointer-events-none" />
         <div className="relative z-10 flex flex-col min-h-screen">
-          <AppHeader />
+          <AppHeader defaultName={nombrePasajero.split(" ")[0]} />
           <main className="flex-1 flex items-center justify-center px-4 py-6">
             <div className="w-full max-w-md holo-border rounded-xl p-8 space-y-5 relative overflow-hidden scan-lines">
               <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-glow-red/50 rounded-tl-xl" />
@@ -379,7 +379,7 @@ export default function ViajeActivoCliente({
       <div className="min-h-screen bg-background stars-bg relative">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/30 to-background pointer-events-none" />
         <div className="relative z-10 flex flex-col min-h-screen">
-          <AppHeader />
+          <AppHeader defaultName={nombrePasajero.split(" ")[0]} />
           <main className="flex-1 flex items-center justify-center px-4 py-6">
             <div className="w-full max-w-md holo-border rounded-xl p-8 text-center space-y-4 relative overflow-hidden scan-lines">
               <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-glow-red/50 rounded-tl-xl" />
@@ -491,7 +491,7 @@ export default function ViajeActivoCliente({
     <div className="min-h-screen bg-background stars-bg relative">
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/30 to-background pointer-events-none" />
       <div className="relative z-10 flex flex-col min-h-screen">
-        <AppHeader />
+        <AppHeader defaultName={nombrePasajero.split(" ")[0]} />
 
         <main className="flex-1 px-4 py-6 max-w-6xl mx-auto w-full">
           {/* Page title */}

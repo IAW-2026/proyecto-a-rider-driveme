@@ -16,6 +16,7 @@ export default async function PerfilPage() {
     where: { clerkId: userId },
     select: {
       id: true,
+      publicId: true,
       nombre: true,
       email: true,
       telefono: true,
@@ -31,18 +32,52 @@ export default async function PerfilPage() {
 
   if (!pasajero) redirect("/sign-in")
 
-  const [calificaciones, misionesCompletadas] = await Promise.all([
+  const misionesCompletadas = await prisma.solicitudDeViaje.count({
+    where: {
+      pasajeroId: pasajero.id,
+      estado: "ACEPTADA",
+      viaje: { estadoActual: "FINALIZADO" },
+    },
+  })
+
+  // HACK: Buscar calificaciones en todos los IDs posibles y combinarlas
+  // Esto previene perder calificaciones si se insertaron manualmente (clerkId),
+  // si se usaron en viajes antiguos (UUID) o en viajes nuevos (publicId).
+  const [califsPublic, califsId, califsClerk] = await Promise.all([
+    pasajero.publicId ? obtenerCalificacionesUsuario(pasajero.publicId).catch(() => null) : null,
     obtenerCalificacionesUsuario(pasajero.id).catch(() => null),
-    prisma.solicitudDeViaje.count({
-      where: {
-        pasajeroId: pasajero.id,
-        estado: "ACEPTADA",
-        viaje: { estadoActual: "FINALIZADO" },
-      },
-    }),
+    obtenerCalificacionesUsuario(userId).catch(() => null),
   ])
 
-  const rating = Number(pasajero.ratingPromedio)
+  let total_calificaciones = 0;
+  let sumaPromedios = 0;
+  let detalles: any[] = [];
+
+  for (const c of [califsPublic, califsId, califsClerk]) {
+    if (c && c.total_calificaciones > 0) {
+      total_calificaciones += c.total_calificaciones;
+      sumaPromedios += c.calificacion_promedio * c.total_calificaciones;
+      detalles = detalles.concat(c.detalles);
+    }
+  }
+
+  const calificacion_promedio = total_calificaciones > 0 ? (sumaPromedios / total_calificaciones) : 0;
+  
+  const calificaciones = total_calificaciones > 0 ? {
+    id_usuario: pasajero.id,
+    calificacion_promedio,
+    total_calificaciones,
+    detalles
+  } : null;
+
+  const dbRating = Number(pasajero.ratingPromedio)
+  const rating = calificaciones ? calificaciones.calificacion_promedio : dbRating
+
+  const latestComment = detalles
+    .filter(d => d.comentario)
+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0]?.comentario;
+  const comentarioAMostrar = pasajero.comentarioPromedio || latestComment || null;
+
   const rank = getImperialRank(misionesCompletadas)
   const rankProgress = getRankProgress(misionesCompletadas, rank)
 
@@ -51,7 +86,7 @@ export default async function PerfilPage() {
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/30 to-background pointer-events-none" />
 
       <div className="relative z-10 flex flex-col min-h-screen">
-        <AppHeader imperialRank={rank.label} rankTextClass={rank.textClass} />
+        <AppHeader defaultName={pasajero.nombre.split(" ")[0]} imperialRank={rank.label} rankTextClass={rank.textClass} />
 
         <main className="flex-1 px-4 py-8 max-w-2xl mx-auto w-full space-y-6">
           <div>
@@ -149,44 +184,26 @@ export default async function PerfilPage() {
                   >
                     COMENTARIO PROMEDIO DE PILOTOS
                   </p>
-                  {feedbackData ? (
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Promedio recibido</span>
-                        <div className="flex items-center gap-1">
-                          <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                          <span className="text-sm font-bold text-foreground">
-                            {feedbackData.calificacion_promedio.toFixed(1)}
-                          </span>
+                  {comentarioAMostrar ? (
+                    <div className="relative mt-4">
+                      {/* Colita de la burbuja */}
+                      <div className="absolute -top-2 left-6 w-4 h-4 bg-[#1a0a0a] border-t border-l border-glow-red/40 transform rotate-45 z-0" />
+                      
+                      {/* Cuerpo de la burbuja */}
+                      <div className="relative z-10 rounded-xl rounded-tl-none border border-glow-red/40 bg-[#1a0a0a] p-4 shadow-[0_0_15px_rgba(220,38,38,0.15)] scan-lines">
+                        <div className="flex items-center gap-2 mb-2 border-b border-glow-red/20 pb-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-glow-red animate-pulse" />
+                          <p className="text-[9px] text-glow-red/80 tracking-widest uppercase" style={{ fontFamily: "var(--font-orbitron)" }}>
+                            Transmisión Entrante
+                          </p>
                         </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Total calificaciones</span>
-                        <span className="text-sm text-foreground">{feedbackData.total_calificaciones}</span>
-                      </div>
-                      {pasajero.comentarioPromedio && (
-                        <p className="text-xs text-muted-foreground italic border-t border-primary/10 pt-3">
-                          &ldquo;{pasajero.comentarioPromedio}&rdquo;
+                        <p className="text-sm text-foreground/90 italic leading-relaxed">
+                          &ldquo;{comentarioAMostrar}&rdquo;
                         </p>
-                      )}
-                    </div>
-                  ) : fallbackRating !== null ? (
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Rating promedio</span>
-                        <div className="flex items-center gap-1">
-                          <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                          <span className="text-sm font-bold text-foreground">{fallbackRating.toFixed(1)}</span>
-                        </div>
                       </div>
-                      {pasajero.comentarioPromedio && (
-                        <p className="text-xs text-muted-foreground italic border-t border-primary/10 pt-3">
-                          &ldquo;{pasajero.comentarioPromedio}&rdquo;
-                        </p>
-                      )}
                     </div>
                   ) : (
-                    <p className="text-xs text-muted-foreground/60">Sin evaluaciones registradas.</p>
+                    <p className="text-xs text-muted-foreground/60">Sin comentarios registrados.</p>
                   )}
                 </div>
 

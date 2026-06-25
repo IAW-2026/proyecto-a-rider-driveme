@@ -17,10 +17,11 @@ export async function PATCH(
   }
 
   const body = await req.json()
-  const { rating_promedio, comentario_promedio } = body
+  const { puntaje, rating_promedio, comentario_promedio } = body
+  const ratingValue = puntaje ?? rating_promedio
 
-  if (rating_promedio === undefined) {
-    return NextResponse.json({ error: "Falta rating_promedio" }, { status: 400 })
+  if (ratingValue === undefined) {
+    return NextResponse.json({ error: "Falta puntaje" }, { status: 400 })
   }
 
   const pasajero = await prisma.pasajero.findUnique({ where: { id: id_pasajero } })
@@ -31,7 +32,7 @@ export async function PATCH(
   const actualizado = await prisma.pasajero.update({
     where: { id: id_pasajero },
     data: {
-      ratingPromedio: rating_promedio,
+      ratingPromedio: ratingValue,
       ...(comentario_promedio !== undefined && { comentarioPromedio: comentario_promedio }),
     },
     select: { id: true, publicId: true, ratingPromedio: true, comentarioPromedio: true },

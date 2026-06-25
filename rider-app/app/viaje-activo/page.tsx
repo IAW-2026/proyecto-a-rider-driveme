@@ -16,7 +16,7 @@ export default async function ViajeActivoPage() {
       <div className="min-h-screen bg-background stars-bg relative">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/30 to-background pointer-events-none" />
         <div className="relative z-10 flex flex-col min-h-screen">
-          <AppHeader />
+          <AppHeader defaultName={pasajero.nombre.split(" ")[0]} />
 
           <main className="flex-1 flex items-center justify-center px-4 py-6">
             <div className="w-full max-w-md holo-border rounded-xl p-8 text-center space-y-4 relative overflow-hidden scan-lines">
