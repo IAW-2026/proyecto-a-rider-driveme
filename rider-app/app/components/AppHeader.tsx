@@ -2,7 +2,7 @@
 
 import { useUser } from "@clerk/nextjs"
 import dynamic from "next/dynamic"
-import { Rocket, Clock, Navigation, Home, Shield, UserCircle } from "lucide-react"
+import { Clock, Navigation, Home, Shield, UserCircle } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { clsx } from "clsx"
@@ -19,7 +19,15 @@ const navItems = [
   { href: "/perfil", label: "Perfil", icon: UserCircle },
 ]
 
-export function AppHeader({ defaultName }: { defaultName?: string } = {}) {
+export function AppHeader({
+  defaultName,
+  imperialRank,
+  rankTextClass,
+}: {
+  defaultName?: string
+  imperialRank?: string
+  rankTextClass?: string
+} = {}) {
   const pathname = usePathname()
   const { user, isLoaded } = useUser()
   const firstName =
@@ -30,7 +38,7 @@ export function AppHeader({ defaultName }: { defaultName?: string } = {}) {
   const isAdmin = (user?.publicMetadata?.role as string) === "admin"
 
   return (
-    <header className="sticky top-0 z-50 px-4 py-3 border-b border-border/50 bg-background/80 backdrop-blur-md">
+    <header className="sticky top-0 z-50 px-4 py-3 border-b border-border/50 bg-background">
       <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
         <Link href="/inicio" className="flex items-center gap-3 shrink-0" aria-label="DriveMe — Ir al inicio">
           <div className="w-9 h-9 rounded-full bg-glow-red/20 flex items-center justify-center glow-red">
@@ -51,7 +59,7 @@ export function AppHeader({ defaultName }: { defaultName?: string } = {}) {
             </svg>
           </div>
           <div className="hidden sm:block">
-            <p className="text-xs text-muted-foreground leading-none">Bienvenido de vuelta</p>
+            <p className="text-xs text-muted-foreground leading-none">Acceso concedido</p>
             {firstName ? (
               <h1
                 className="text-sm font-bold text-glow-red glow-text-red tracking-wider"
@@ -61,6 +69,14 @@ export function AppHeader({ defaultName }: { defaultName?: string } = {}) {
               </h1>
             ) : (
               <div className="h-4 w-16 rounded bg-glow-red/10 animate-pulse mt-0.5" />
+            )}
+            {imperialRank && (
+              <p
+                className={`text-[9px] tracking-[0.2em] leading-none mt-0.5 ${rankTextClass ?? "text-muted-foreground"}`}
+                style={{ fontFamily: "var(--font-orbitron)" }}
+              >
+                {imperialRank}
+              </p>
             )}
           </div>
         </Link>

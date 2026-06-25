@@ -5,7 +5,7 @@ import dynamic from "next/dynamic"
 const Map = dynamic(() => import("@/app/components/Map"), {
   ssr: false,
   loading: () => (
-    <div className="flex h-[300px] items-center justify-center rounded-xl border border-border bg-card/50 text-sm text-muted-foreground">
+    <div className="flex h-[300px] items-center justify-center rounded-xl border border-border bg-card text-sm text-muted-foreground">
       Cargando mapa…
     </div>
   ),

@@ -25,12 +25,12 @@ export default function SavedPlaces({ lugares }: { lugares: Direccion[] }) {
           DESTINOS FRECUENTES
         </p>
         <div className="rounded-xl border border-dashed border-primary/20 px-4 py-4 text-center">
-          <p className="text-xs text-muted-foreground/60">No tenés destinos guardados.</p>
+          <p className="text-xs text-muted-foreground/60">No hay coordenadas registradas.</p>
           <Link
             href="/perfil"
             className="mt-1 inline-block text-xs text-primary/60 underline underline-offset-2 hover:text-primary transition"
           >
-            Agregá desde tu perfil
+            Registrá desde tu expediente
           </Link>
         </div>
       </div>

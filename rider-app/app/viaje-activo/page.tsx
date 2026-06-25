@@ -34,10 +34,10 @@ export default async function ViajeActivoPage() {
                 className="text-xl font-bold text-foreground"
                 style={{ fontFamily: "var(--font-orbitron)" }}
               >
-                SIN VIAJE ACTIVO
+                SIN MISIÓN ACTIVA
               </h1>
               <p className="text-sm text-muted-foreground">
-                Cuando quieras, podés pedir uno nuevo desde acá.
+                Cuando quieras, podés solicitar una nueva misión desde acá.
               </p>
 
               <div className="flex flex-col gap-3 pt-2">
@@ -46,7 +46,7 @@ export default async function ViajeActivoPage() {
                   className="inline-flex h-12 items-center justify-center rounded-full bg-glow-red text-white text-sm font-semibold glow-red transition hover:brightness-110"
                   style={{ fontFamily: "var(--font-orbitron)", letterSpacing: "0.05em" }}
                 >
-                  PEDIR VIAJE
+                  SOLICITAR MISIÓN
                 </Link>
                 <Link
                   href="/inicio"

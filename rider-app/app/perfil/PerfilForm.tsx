@@ -54,7 +54,7 @@ export default function PerfilForm({ nombre, telefono }: Props) {
   }
 
   return (
-    <div className="holo-border rounded-2xl p-6 space-y-5">
+    <div className="space-y-5">
       <div className="flex items-center justify-between">
         <h2
           className="text-sm font-bold text-foreground tracking-widest"

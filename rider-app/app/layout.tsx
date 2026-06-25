@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Orbitron } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import clerkAppearance from '../lib/clerkAppearance';
+import { SpaceshipLayerWrapper } from "./components/SpaceshipLayerWrapper";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -44,6 +45,7 @@ export default function RootLayout({
           <link rel="dns-prefetch" href="https://img.clerk.com" />
         </head>
         <body className="min-h-full flex flex-col">
+          <SpaceshipLayerWrapper />
           {children}
         </body>
       </html>

@@ -31,6 +31,7 @@
   --color-glow-red: var(--glow-red);
   --color-glow-magenta: var(--glow-magenta);
   --color-glow-cyan: var(--glow-cyan);
+  --color-crimson: var(--crimson);
   --color-space-dark: var(--space-dark);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
@@ -74,6 +75,7 @@
   --glow-red: oklch(0.48 0.28 25);
   --glow-magenta: oklch(0.7 0.25 330);
   --glow-cyan: oklch(0.75 0.15 200);
+  --crimson: oklch(0.55 0.26 25);
   --space-dark: oklch(0.08 0.02 280);
   --radius: 0.75rem;
   --sidebar: oklch(0.14 0.025 280);
@@ -87,6 +89,7 @@
 }
 
 .dark {
+  --crimson: oklch(0.55 0.26 25);
   --background: oklch(0.12 0.02 280);
   --foreground: oklch(0.95 0.01 280);
   --card: oklch(0.16 0.03 280);
@@ -172,18 +175,11 @@
     radial-gradient(1px 1px at 120px 200px, oklch(0.85 0.1 25), transparent),
     radial-gradient(2px 2px at 280px 50px, oklch(0.9 0.08 310), transparent);
   background-size: 500px 250px;
-  animation: twinkle 8s ease-in-out infinite;
-}
-
-@keyframes twinkle {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
 }
 
 .holo-border {
   border: 1px solid oklch(0.65 0.28 25 / 0.3);
-  background: linear-gradient(135deg, oklch(0.16 0.03 280 / 0.9), oklch(0.12 0.02 280 / 0.95));
-  backdrop-filter: blur(10px);
+  background: linear-gradient(135deg, oklch(0.16 0.03 280), oklch(0.12 0.02 280));
 }
 
 .scroll-table {
@@ -229,6 +225,14 @@
   }
 }
 
+.glow-crimson {
+  box-shadow: 0 0 20px oklch(0.55 0.26 25 / 0.55), 0 0 45px oklch(0.55 0.26 25 / 0.3);
+}
+
+.glow-text-crimson {
+  text-shadow: 0 0 10px oklch(0.55 0.26 25 / 0.7), 0 0 22px oklch(0.55 0.26 25 / 0.5);
+}
+
 .scan-lines::before {
   content: '';
   position: absolute;
@@ -242,3 +246,39 @@
   );
   pointer-events: none;
 }
+
+@keyframes ship-ltr {
+  0%   { transform: translate(-130px, 0px); }
+  100% { transform: translate(calc(100vw + 130px), -22px); }
+}
+
+@keyframes ship-rtl {
+  0%   { transform: translate(calc(100vw + 130px), 0px) scaleX(-1); }
+  100% { transform: translate(-130px, -22px) scaleX(-1); }
+}
+
+/* X-Wing: imagen mira a la izquierda por defecto */
+@keyframes ship-ltr-flip {
+  0%   { transform: translate(-130px, 0px) scaleX(-1); }
+  100% { transform: translate(calc(100vw + 130px), -22px) scaleX(-1); }
+}
+
+@keyframes ship-rtl-noflip {
+  0%   { transform: translate(calc(100vw + 130px), 0px); }
+  100% { transform: translate(-130px, -22px); }
+}
+
+.ship-ltr, .ship-rtl, .ship-ltr-flip, .ship-rtl-noflip {
+  position: absolute;
+  will-change: transform;
+}
+
+.ship-ltr      { animation: ship-ltr      linear infinite; }
+.ship-rtl      { animation: ship-rtl      linear infinite; }
+.ship-ltr-flip { animation: ship-ltr-flip linear infinite; }
+.ship-rtl-noflip { animation: ship-rtl-noflip linear infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ship-ltr, .ship-rtl, .ship-ltr-flip, .ship-rtl-noflip { animation: none; opacity: 0; }
+}
+

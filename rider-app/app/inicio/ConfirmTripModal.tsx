@@ -35,7 +35,7 @@ export default function ConfirmTripModal({
         <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-glow-red/50 rounded-br-xl" />
 
         <p className="text-xs text-glow-red/90 tracking-widest text-center" style={{ fontFamily: "var(--font-orbitron)" }}>
-          VIAJE DISPONIBLE
+          MISIÓN DISPONIBLE
         </p>
 
         <div className="flex justify-center">
@@ -60,7 +60,7 @@ export default function ConfirmTripModal({
 
         <div className="border-y border-primary/20 py-4 text-center space-y-1">
           <p className="text-xs text-muted-foreground tracking-widest" style={{ fontFamily: "var(--font-orbitron)" }}>
-            PRECIO ESTIMADO
+            COSTO DE MISIÓN
           </p>
           <p className="text-3xl font-bold text-accent">
             ${precioEstimado?.toLocaleString("es-AR") ?? "—"} ARS
@@ -93,7 +93,7 @@ export default function ConfirmTripModal({
             className="flex-1 h-11 rounded-lg bg-glow-red text-white glow-red text-sm transition hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ fontFamily: "var(--font-orbitron)", fontSize: "0.75rem", letterSpacing: "0.05em" }}
           >
-            {loading ? "CONFIRMANDO..." : "CONFIRMAR"}
+            {loading ? "INICIANDO..." : "CONFIRMAR MISIÓN"}
           </button>
         </div>
       </div>

@@ -42,10 +42,10 @@ export default function GalaxyCard({ name, visits = 0, rank, color, emoji, descr
 
   return (
     <button
-      className={`relative overflow-hidden rounded-xl p-4 text-left transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br border border-border hover:border-primary/30 ${cardColor}`}
+      className={`relative overflow-hidden rounded-xl p-4 text-left transition-all duration-300 hover:scale-[1.02] bg-card bg-gradient-to-br border border-border hover:border-primary/30 ${cardColor}`}
     >
       {rank != null && (
-        <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-background/50 flex items-center justify-center">
+        <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-background flex items-center justify-center">
           <span
             className="text-xs font-bold text-primary"
             style={{ fontFamily: "var(--font-orbitron)" }}

@@ -10,7 +10,7 @@ import { AppHeader } from "../components/AppHeader"
 const Map = dynamic(() => import("@/app/components/Map"), {
   ssr: false,
   loading: () => (
-    <div className="flex h-[300px] items-center justify-center rounded-xl border border-border bg-card/50 text-sm text-muted-foreground">
+    <div className="flex h-[300px] items-center justify-center rounded-xl border border-border bg-card text-sm text-muted-foreground">
       Cargando mapa…
     </div>
   ),
@@ -45,12 +45,12 @@ function useIsClient() {
 }
 
 const ESTADO_LABEL: Record<string, string> = {
-  BUSCANDO_CONDUCTOR: "Buscando conductor…",
-  ACEPTADA: "Conductor asignado",
-  ACEPTADO: "Conductor confirmado",
-  EN_CURSO: "Viaje en curso",
-  FINALIZADO: "Viaje finalizado",
-  CANCELADO_POR_CONDUCTOR: "Cancelado por el conductor",
+  BUSCANDO_CONDUCTOR: "Escaneando pilotos imperiales…",
+  ACEPTADA: "Piloto Imperial asignado",
+  ACEPTADO: "Piloto Imperial confirmado",
+  EN_CURSO: "Misión en curso",
+  FINALIZADO: "Misión completada",
+  CANCELADO_POR_CONDUCTOR: "Piloto Imperial abortó la misión",
 }
 
 const MOTIVOS_CANCELACION = [
@@ -321,7 +321,7 @@ export default function ViajeActivoCliente({
                   ✕
                 </div>
                 <h1 className="text-xl font-bold text-foreground" style={{ fontFamily: "var(--font-orbitron)" }}>
-                  EL CONDUCTOR CANCELÓ
+                  PILOTO IMPERIAL ABORTÓ
                 </h1>
                 <p className="text-sm text-muted-foreground">
                   ¿Querés contarnos qué pasó? Tu comentario nos ayuda a mejorar.
@@ -391,10 +391,10 @@ export default function ViajeActivoCliente({
                 ✓
               </div>
               <h1 className="text-xl font-bold text-foreground" style={{ fontFamily: "var(--font-orbitron)" }}>
-                VIAJE FINALIZADO
+                MISIÓN COMPLETADA
               </h1>
               <p className="text-sm text-muted-foreground">
-                Tu viaje llegó a destino. ¡Gracias por usar DriveMe!
+                Destino alcanzado. ¡Gracias por usar DriveMe!
               </p>
 
               {(feedbackEnviado || feedbackYaDado) && (
@@ -404,7 +404,7 @@ export default function ViajeActivoCliente({
                     className="inline-flex h-12 items-center justify-center rounded-full bg-glow-red text-white text-sm font-semibold glow-red transition hover:brightness-110"
                     style={{ fontFamily: "var(--font-orbitron)", letterSpacing: "0.05em" }}
                   >
-                    PEDIR NUEVO VIAJE
+                    NUEVA MISIÓN
                   </Link>
                   <Link
                     href="/inicio"
@@ -432,7 +432,7 @@ export default function ViajeActivoCliente({
                 className="text-xs text-glow-red/90 tracking-widest text-center"
                 style={{ fontFamily: "var(--font-orbitron)" }}
               >
-                CALIFICÁ TU VIAJE
+                CALIFICÁ LA MISIÓN
               </p>
 
               <div className="space-y-4">
@@ -456,7 +456,7 @@ export default function ViajeActivoCliente({
                 {/* Comentario */}
                 <textarea
                   rows={3}
-                  placeholder="¿Cómo fue el viaje?"
+                  placeholder="¿Cómo fue la misión?"
                   value={comentario}
                   onChange={(e) => setComentario(e.target.value)}
                   disabled={feedbackLoading}
@@ -476,7 +476,7 @@ export default function ViajeActivoCliente({
                   className="w-full h-11 rounded-lg bg-glow-red text-white glow-red text-sm transition hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{ fontFamily: "var(--font-orbitron)", fontSize: "0.75rem", letterSpacing: "0.05em" }}
                 >
-                  {feedbackLoading ? "ENVIANDO..." : "ENVIAR FEEDBACK"}
+                  {feedbackLoading ? "ENVIANDO..." : "ENVIAR REPORTE"}
                 </button>
               </div>
             </div>
@@ -500,7 +500,7 @@ export default function ViajeActivoCliente({
               className="text-xs text-glow-cyan/70 tracking-widest"
               style={{ fontFamily: "var(--font-orbitron)" }}
             >
-              VIAJE ACTIVO · {nombrePasajero.toUpperCase()}
+              MISIÓN ACTIVA · {nombrePasajero.toUpperCase()}
             </p>
             <h1
               className="mt-1 text-2xl font-bold text-foreground"
@@ -531,7 +531,7 @@ export default function ViajeActivoCliente({
                 </span>
 
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-xl border border-border bg-card/50 p-4">
+                  <div className="rounded-xl border border-border bg-card p-4">
                     <p
                       className="text-xs text-muted-foreground tracking-widest"
                       style={{ fontFamily: "var(--font-orbitron)" }}
@@ -542,7 +542,7 @@ export default function ViajeActivoCliente({
                       {origenDireccion ?? `${origen.lat.toFixed(5)}, ${origen.lng.toFixed(5)}`}
                     </p>
                   </div>
-                  <div className="rounded-xl border border-border bg-card/50 p-4">
+                  <div className="rounded-xl border border-border bg-card p-4">
                     <p
                       className="text-xs text-muted-foreground tracking-widest"
                       style={{ fontFamily: "var(--font-orbitron)" }}
@@ -559,12 +559,12 @@ export default function ViajeActivoCliente({
                 </div>
 
                 {idConductor && (
-                  <div className="rounded-xl border border-border bg-card/50 p-4">
+                  <div className="rounded-xl border border-border bg-card p-4">
                     <p
                       className="text-xs text-muted-foreground tracking-widest"
                       style={{ fontFamily: "var(--font-orbitron)" }}
                     >
-                      CONDUCTOR
+                      PILOTO IMPERIAL
                     </p>
                     {driver ? (
                       <div className="mt-2 space-y-0.5">
@@ -582,7 +582,7 @@ export default function ViajeActivoCliente({
                 {esBuscando && (
                   <div className="rounded-xl border border-yellow-500/20 bg-yellow-950/20 p-4 space-y-3">
                     <p className="text-sm text-yellow-200/80">
-                      Tu solicitud está publicada. Un conductor se contactará pronto.
+                      Solicitud activa. Un piloto imperial responderá pronto.
                     </p>
                     <div className="flex items-center gap-3">
                       <span className="relative flex h-2.5 w-2.5">
@@ -596,7 +596,7 @@ export default function ViajeActivoCliente({
                       >
                         {String(Math.floor(elapsed / 60)).padStart(2, "0")}:{String(elapsed % 60).padStart(2, "0")}
                       </span>
-                      <span className="text-xs text-yellow-200/60">buscando…</span>
+                      <span className="text-xs text-yellow-200/60">escaneando…</span>
                     </div>
                   </div>
                 )}
@@ -614,7 +614,7 @@ export default function ViajeActivoCliente({
                 {mapReady ? (
                   <Map origen={origen} destino={destino} />
                 ) : (
-                  <div className="flex h-[300px] flex-col items-center justify-center rounded-xl border border-border bg-card/50 text-center text-sm text-muted-foreground">
+                  <div className="flex h-[300px] flex-col items-center justify-center rounded-xl border border-border bg-card text-center text-sm text-muted-foreground">
                     <span className="text-xs uppercase tracking-[0.3em] text-glow-cyan/70" style={{ fontFamily: "var(--font-orbitron)" }}>
                       CARGANDO MAPA
                     </span>
@@ -640,7 +640,7 @@ export default function ViajeActivoCliente({
                       disabled={cancelando}
                       className="w-full inline-flex h-12 items-center justify-center rounded-xl border border-destructive/30 bg-destructive/10 text-sm font-medium text-destructive-foreground transition hover:bg-destructive/20 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {cancelando ? "Cancelando…" : "Cancelar solicitud"}
+                      {cancelando ? "Abortando…" : "Abortar misión"}
                     </button>
 
                   </>
@@ -665,8 +665,8 @@ export default function ViajeActivoCliente({
                 </p>
                 <p className="text-sm text-muted-foreground leading-6">
                   {esBuscando
-                    ? "Podés cancelar mientras no haya un conductor aceptado."
-                    : "El conductor ya aceptó tu solicitud. Solo él puede cancelar en este punto."}
+                    ? "Podés abortar mientras no haya un piloto asignado."
+                    : "Un piloto imperial ha aceptado. La misión está en marcha."}
                 </p>
               </div>
             </aside>
@@ -725,10 +725,10 @@ export default function ViajeActivoCliente({
                 ⏱
               </div>
               <p className="text-xs text-yellow-400/80 tracking-widest" style={{ fontFamily: "var(--font-orbitron)" }}>
-                SOLICITUD EXPIRADA
+                TIEMPO AGOTADO
               </p>
               <p className="text-sm text-muted-foreground">
-                No encontramos ningún conductor en 2 minutos. ¿Querés volver a intentarlo?
+                Ningún piloto disponible en el sector. ¿Reintentar la búsqueda?
               </p>
             </div>
 
@@ -753,7 +753,7 @@ export default function ViajeActivoCliente({
                   }}
                   className="w-full h-10 rounded-xl border border-yellow-500/40 bg-yellow-500/10 text-yellow-200 text-sm font-medium transition hover:bg-yellow-500/20"
                 >
-                  Enviar comentario y pedir viaje
+                  Enviar reporte y solicitar misión
                 </button>
               )}
             </div>

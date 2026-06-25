@@ -399,7 +399,7 @@ export default function QuickTripForm({ tieneMercadoPago = false }: { tieneMerca
             style={{ fontFamily: "var(--font-orbitron)", fontSize: "0.8rem", letterSpacing: "0.1em" }}
           >
             <Rocket className="w-4 h-4" />
-            {loading ? "BUSCANDO CONDUCTOR..." : "SOLICITAR VIAJE"}
+            {loading ? "ESCANEANDO PILOTOS..." : "SOLICITAR MISIÓN"}
           </button>
         </form>
       </div>

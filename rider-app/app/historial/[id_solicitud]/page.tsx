@@ -146,7 +146,7 @@ export default async function HistorialDetallePage({
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-xl border border-border bg-card/50 p-4">
+                  <div className="rounded-xl border border-border bg-card p-4">
                     <p
                       className="text-xs text-muted-foreground tracking-widest"
                       style={{ fontFamily: "var(--font-orbitron)" }}
@@ -157,7 +157,7 @@ export default async function HistorialDetallePage({
                       {solicitud.origenDireccion ?? `${solicitud.origenLat.toFixed(5)}, ${solicitud.origenLng.toFixed(5)}`}
                     </p>
                   </div>
-                  <div className="rounded-xl border border-border bg-card/50 p-4">
+                  <div className="rounded-xl border border-border bg-card p-4">
                     <p
                       className="text-xs text-muted-foreground tracking-widest"
                       style={{ fontFamily: "var(--font-orbitron)" }}
@@ -173,7 +173,7 @@ export default async function HistorialDetallePage({
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-border bg-card/50 p-4">
+                <div className="rounded-xl border border-border bg-card p-4">
                   <p
                     className="text-xs text-muted-foreground tracking-widest"
                     style={{ fontFamily: "var(--font-orbitron)" }}
@@ -206,7 +206,7 @@ export default async function HistorialDetallePage({
                 )}
 
                 {patente && (
-                  <div className="rounded-xl border border-border bg-card/50 p-4">
+                  <div className="rounded-xl border border-border bg-card p-4">
                     <p
                       className="text-xs text-muted-foreground tracking-widest"
                       style={{ fontFamily: "var(--font-orbitron)" }}
@@ -221,7 +221,7 @@ export default async function HistorialDetallePage({
                 )}
 
                 {solicitud.viaje && (idVehiculo || idViajeDriver) && (
-                  <div className="rounded-xl border border-border bg-card/50 p-4">
+                  <div className="rounded-xl border border-border bg-card p-4">
                     <p
                       className="text-xs text-muted-foreground tracking-widest"
                       style={{ fontFamily: "var(--font-orbitron)" }}

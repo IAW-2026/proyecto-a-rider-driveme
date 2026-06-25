@@ -10,18 +10,18 @@ const LIMIT = 8
 
 function getEstadoBadge(estado: string, viajeEstado: string | null | undefined) {
   if (estado === "CANCELADA_POR_PASAJERO")
-    return { label: "Cancelaste este viaje", className: "border-destructive/30 bg-destructive/10 text-destructive-foreground" }
+    return { label: "Misión abortada", className: "border-destructive/30 bg-destructive/10 text-destructive-foreground" }
   if (estado === "ACEPTADA") {
     if (viajeEstado === "FINALIZADO")
-      return { label: "Viaje completado", className: "border-accent/30 bg-accent/10 text-accent" }
+      return { label: "Misión completada", className: "border-accent/30 bg-accent/10 text-accent" }
     if (viajeEstado === "CANCELADO_POR_CONDUCTOR")
-      return { label: "El conductor canceló", className: "border-yellow-500/30 bg-yellow-500/10 text-yellow-200" }
+      return { label: "Piloto Imperial canceló", className: "border-yellow-500/30 bg-yellow-500/10 text-yellow-200" }
     return { label: "En curso", className: "border-primary/30 bg-primary/10 text-primary" }
   }
   if (estado === "EXPIRADA_SIN_ACEPTACION")
-    return { label: "Sin conductor disponible", className: "border-yellow-500/30 bg-yellow-500/10 text-yellow-200" }
+    return { label: "Sin piloto disponible", className: "border-yellow-500/30 bg-yellow-500/10 text-yellow-200" }
   if (estado === "BUSCANDO_CONDUCTOR")
-    return { label: "Sin conductor", className: "border-yellow-500/30 bg-yellow-500/10 text-yellow-200" }
+    return { label: "Sin piloto", className: "border-yellow-500/30 bg-yellow-500/10 text-yellow-200" }
   return { label: estado, className: "border-border bg-muted/40 text-muted-foreground" }
 }
 
@@ -93,16 +93,16 @@ export default async function HistorialPage({
               className="text-xs text-accent/70 tracking-widest"
               style={{ fontFamily: "var(--font-orbitron)" }}
             >
-              MIS VIAJES
+              MIS MISIONES
             </p>
             <h1
               className="mt-1 text-2xl font-bold text-foreground"
               style={{ fontFamily: "var(--font-orbitron)" }}
             >
-              HISTORIAL
+              ARCHIVO DE MISIONES
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              {total} viaje{total !== 1 ? "s" : ""} registrado{total !== 1 ? "s" : ""}
+              {total} misión{total !== 1 ? "es" : ""} registrada{total !== 1 ? "s" : ""}
               {q && (
                 <>
                   {" "}que coinciden con{" "}
@@ -128,8 +128,8 @@ export default async function HistorialPage({
               </div>
               <p className="text-muted-foreground">
                 {q
-                  ? `No se encontraron viajes con "${q}".`
-                  : "Todavía no tenés viajes finalizados o cancelados."}
+                  ? `No se encontraron misiones con "${q}".`
+                  : "No hay misiones registradas aún."}
               </p>
               {!q && (
                 <Link
@@ -137,7 +137,7 @@ export default async function HistorialPage({
                   className="inline-flex h-11 items-center justify-center rounded-full bg-glow-red text-white text-sm font-semibold glow-red transition hover:brightness-110"
                   style={{ fontFamily: "var(--font-orbitron)", letterSpacing: "0.05em" }}
                 >
-                  PEDIR TU PRIMER VIAJE
+                  INICIAR PRIMERA MISIÓN
                 </Link>
               )}
             </div>
@@ -259,7 +259,7 @@ export default async function HistorialPage({
               className="inline-flex h-12 items-center justify-center rounded-full bg-glow-red text-white px-8 text-sm font-semibold glow-red transition hover:brightness-110"
               style={{ fontFamily: "var(--font-orbitron)", letterSpacing: "0.05em" }}
             >
-              PEDIR NUEVO VIAJE
+              NUEVA MISIÓN
             </Link>
           </div>
         </main>
