@@ -72,7 +72,7 @@ export async function getRecentlyFinishedSolicitudByClerkId(clerkId: string) {
   })
   if (!pasajero) return null
 
-  const since = new Date(Date.now() - 1 * 60 * 1000) // 1 minuto en vez de 5
+  const since = new Date(Date.now() - 2 * 60 * 60 * 1000) // 2 horas (para que el modal sea obligatorio)
 
   return prisma.solicitudDeViaje.findFirst({
     where: {

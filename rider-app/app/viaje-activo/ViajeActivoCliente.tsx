@@ -83,13 +83,24 @@ export default function ViajeActivoCliente({
   const [liveIdConductor, setLiveIdConductor] = useState<string | null>(idConductor)
 
   // feedback post-FINALIZADO
-  const [puntaje, setPuntaje] = useState(0)
   const [comentario, setComentario] = useState("")
+  const [puntaje, setPuntaje] = useState(0)
   const [feedbackLoading, setFeedbackLoading] = useState(false)
   const [feedbackError, setFeedbackError] = useState<string | null>(null)
   const [feedbackEnviado, setFeedbackEnviado] = useState(false)
+  
   const feedbackGuardado = useLocalStorageValue(viajeId ? `feedback_viaje_${viajeId}` : null)
   const feedbackYaDado = feedbackGuardado === "1"
+
+  // Redirección automática de 1 minuto para la pantalla de éxito post-feedback
+  useEffect(() => {
+    if (liveViajeEstado === "FINALIZADO" && (feedbackEnviado || feedbackYaDado)) {
+      const timer = setTimeout(() => {
+        router.push("/inicio")
+      }, 60000) // 1 minuto
+      return () => clearTimeout(timer)
+    }
+  }, [liveViajeEstado, feedbackEnviado, feedbackYaDado, router])
 
   // mounted guard para evitar flash de hidratación en el modal
   const mounted = useIsClient()
@@ -423,6 +434,47 @@ export default function ViajeActivoCliente({
   if (liveViajeEstado === "FINALIZADO") {
     const showFeedbackModal = mounted && !feedbackYaDado && !feedbackEnviado
 
+    if (mounted && feedbackYaDado && !feedbackEnviado) {
+      return (
+        <div className="min-h-screen bg-background stars-bg relative">
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/30 to-background pointer-events-none" />
+          <div className="relative z-10 flex flex-col min-h-screen">
+            <AppHeader defaultName={nombrePasajero.split(" ")[0]} />
+            <main className="flex-1 flex items-center justify-center px-4 py-6">
+              <div className="w-full max-w-md holo-border rounded-xl p-8 text-center space-y-4 relative overflow-hidden scan-lines">
+                <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-glow-cyan/50 rounded-tl-xl" />
+                <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-glow-cyan/50 rounded-tr-xl" />
+                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-glow-cyan/50 rounded-bl-xl" />
+                <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-glow-cyan/50 rounded-br-xl" />
+
+                <div className="w-16 h-16 mx-auto rounded-full bg-glow-cyan/20 flex items-center justify-center"
+                  style={{ boxShadow: "0 0 20px oklch(0.75 0.15 200 / 0.4), 0 0 40px oklch(0.75 0.15 200 / 0.2)" }}>
+                  <span className="text-2xl text-glow-cyan">i</span>
+                </div>
+
+                <h1 className="text-xl font-bold text-foreground" style={{ fontFamily: "var(--font-orbitron)" }}>
+                  SIN MISIÓN ACTIVA
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  Cuando quieras, podés solicitar una nueva misión desde acá.
+                </p>
+
+                <div className="flex flex-col gap-3 pt-2">
+                  <Link
+                    href="/inicio"
+                    className="inline-flex h-12 items-center justify-center rounded-full bg-glow-red text-white text-sm font-semibold glow-red transition hover:brightness-110"
+                    style={{ fontFamily: "var(--font-orbitron)", letterSpacing: "0.05em" }}
+                  >
+                    VOLVER AL INICIO
+                  </Link>
+                </div>
+              </div>
+            </main>
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div className="min-h-screen bg-background stars-bg relative">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/30 to-background pointer-events-none" />
@@ -445,20 +497,14 @@ export default function ViajeActivoCliente({
                 Destino alcanzado. ¡Gracias por usar DriveMe!
               </p>
 
-              {(feedbackEnviado || feedbackYaDado) && (
+              {feedbackEnviado && (
                 <div className="flex flex-col gap-3 pt-2">
                   <Link
                     href="/inicio"
                     className="inline-flex h-12 items-center justify-center rounded-full bg-glow-red text-white text-sm font-semibold glow-red transition hover:brightness-110"
                     style={{ fontFamily: "var(--font-orbitron)", letterSpacing: "0.05em" }}
                   >
-                    NUEVA MISIÓN
-                  </Link>
-                  <Link
-                    href="/inicio"
-                    className="inline-flex h-12 items-center justify-center rounded-full border border-primary/30 text-primary text-sm font-medium transition hover:bg-primary/10"
-                  >
-                    Volver al inicio
+                    VOLVER AL INICIO
                   </Link>
                 </div>
               )}

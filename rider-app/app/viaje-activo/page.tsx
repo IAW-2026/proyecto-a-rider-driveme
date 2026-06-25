@@ -46,13 +46,7 @@ export default async function ViajeActivoPage() {
                   className="inline-flex h-12 items-center justify-center rounded-full bg-glow-red text-white text-sm font-semibold glow-red transition hover:brightness-110"
                   style={{ fontFamily: "var(--font-orbitron)", letterSpacing: "0.05em" }}
                 >
-                  SOLICITAR MISIÓN
-                </Link>
-                <Link
-                  href="/inicio"
-                  className="inline-flex h-12 items-center justify-center rounded-full border border-primary/30 text-primary text-sm font-medium transition hover:bg-primary/10"
-                >
-                  Volver al inicio
+                  VOLVER AL INICIO
                 </Link>
               </div>
             </div>
